@@ -1,48 +1,56 @@
 package com.ms8.smartirhub.android
 
+import android.databinding.DataBindingUtil
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.Snackbar
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.view.MenuItem
-import android.support.v4.widget.DrawerLayout
 import android.support.design.widget.NavigationView
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.Toolbar
+import android.util.Log
 import android.view.Menu
+import com.google.firebase.auth.FirebaseAuth
+import com.ms8.smartirhub.android.databinding.ActivityMainBinding
+import com.ms8.smartirhub.android.firebase.FirebaseAuthActions
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+    lateinit var binding : ActivityMainBinding
+
+    override fun onCreate(savedInstanceState: Bundle?) = super.onCreate(savedInstanceState).also {
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        setSupportActionBar(binding.toolbar)
 
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        val toolbar: Toolbar = findViewById(R.id.toolbar)
-        setSupportActionBar(toolbar)
+        // Run FirebaseAuth initialization procedure
+        FirebaseAuthActions.init(this)
 
-        val fab: FloatingActionButton = findViewById(R.id.fab)
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
-        }
-        val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
-        val navView: NavigationView = findViewById(R.id.nav_view)
-        val toggle = ActionBarDrawerToggle(
-            this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close
-        )
-        drawerLayout.addDrawerListener(toggle)
+        // Setup ActionBar
+        val toggle = ActionBarDrawerToggle(this, binding.drawerLayout, binding.toolbar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close)
+        binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
-        navView.setNavigationItemSelectedListener(this)
+        // Bind Sliding Nav Bar
+        binding.userActionsView.setNavigationItemSelectedListener(this)
+
+        // Bind Bottom Nav Bar
+        binding.bottomNav.setOnNavigationItemSelectedListener {item ->
+            when (item.itemId) {
+                binding.bottomNav.selectedItemId -> {}
+                 else -> {
+                     // TODO load fragment
+                 }
+            }
+            return@setOnNavigationItemSelectedListener true
+        }
+
     }
 
     override fun onBackPressed() {
-        val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START)
-        } else {
-            super.onBackPressed()
+        when (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            true -> binding.drawerLayout.closeDrawer(GravityCompat.START)
+            false -> super.onBackPressed()
         }
     }
 
@@ -52,18 +60,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
+    // Handle action bar item clicks here. The action bar will
+    // automatically handle clicks on the Home/Up button, so long
+    // as you specify a parent activity in AndroidManifest.xml.
+    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+        when (item.itemId) {
             R.id.action_settings -> true
             else -> super.onOptionsItemSelected(item)
         }
-    }
+
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        // Handle navigation view item clicks here.
         when (item.itemId) {
             R.id.nav_home -> {
                 // Handle the camera action
@@ -83,9 +90,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_send -> {
 
             }
+            else -> Log.e(TAG, "Unknown item selected (${item.itemId}")
         }
-        val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
-        drawerLayout.closeDrawer(GravityCompat.START)
+        binding.drawerLayout.closeDrawer(GravityCompat.START)
         return true
+    }
+
+    companion object {
+        const val TAG = "MainActivity"
     }
 }
