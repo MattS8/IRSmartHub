@@ -7,8 +7,13 @@ import com.andrognito.flashbar.Flashbar
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FirebaseFirestore
 import com.ms8.smartirhub.android.R
 import java.lang.Exception
 
@@ -56,10 +61,13 @@ object FirebaseAuthActions {
     /**
      * Starts the process of signing a user in/up with Google.
      */
-    fun signInWithGoogle(activity: AppCompatActivity, idToken : String) {
+    fun signInWithGoogle(activity: AppCompatActivity) {
         Log.d("TEST###", "Signing in with Google...")
+        if (GoogleSignIn.getLastSignedInAccount(activity) == null)
+            Log.d("TEST#", "No previous google sign in")
+
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(idToken)
+            .requestIdToken(activity.getString(R.string.client_id))
             .requestProfile()
             .build()
         activity.startActivityForResult(GoogleSignIn.getClient(activity, gso).signInIntent, RC_SIGN_IN)
@@ -78,7 +86,7 @@ object FirebaseAuthActions {
     }
 
     /**
-     *
+     *  Attempts to sign user in with their google account
      */
     fun handleGoogleSignInResult(data: Intent?) : Exception? {
         Log.d("TEST###", "Handling Google Sign In Result...")
@@ -94,6 +102,51 @@ object FirebaseAuthActions {
             }
         } catch (e : Exception) {
             return e.also { Log.e(TAG, "Google sign in failed", e) }
+        }
+
+        return null
+    }
+
+    /**
+     *  Creates an entry in the database for newly created user.
+     */
+    fun createUserDB() {
+        val user = FirebaseAuth.getInstance().currentUser
+
+
+    }
+
+
+    /**
+     * Shows a flashBar view notifying the user that signing in with Google has failed.
+     */
+    fun showSignInWithGoogleError(activity: AppCompatActivity) {
+        Flashbar.Builder(activity)
+            .title(R.string.err_sign_in_title)
+            .message(R.string.err_sign_in_google_desc)
+            .primaryActionText(android.R.string.ok)
+            .primaryActionTapListener(object : Flashbar.OnActionTapListener {
+                override fun onActionTapped(bar: Flashbar) { bar.dismiss() }
+            })
+            .build()
+            .show()
+    }
+
+
+    fun createAccount(emailString: String, passwordString: String): Task<AuthResult> {
+        return FirebaseAuth.getInstance().createUserWithEmailAndPassword(emailString, passwordString)
+    }
+
+    fun signInWithEmail(email: String, password: String): Task<AuthResult> {
+        return FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
+    }
+
+    /**
+     * Fetches the username corresponding to the current user
+     */
+    fun getUsername(): DocumentReference? {
+        FirebaseAuth.getInstance().currentUser?.uid?.let {
+            return FirebaseFirestore.getInstance().collection("users_uid").document(it)
         }
 
         return null

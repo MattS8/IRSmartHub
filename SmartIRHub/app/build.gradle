@@ -37,10 +37,14 @@ dependencies {
     implementation 'com.google.firebase:firebase-database:17.0.0'
     implementation 'com.google.android.gms:play-services-auth:16.0.1'
 
+    implementation 'com.google.firebase:firebase-firestore:17.1.2'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
     // SnackBar library
     implementation 'com.andrognito.flashbar:flashbar:1.0.3'
+
+    // Email, Username, and Password Validation
+    implementation "com.wajahatkarim3.easyvalidation:easyvalidation-core:1.0.1"
 }

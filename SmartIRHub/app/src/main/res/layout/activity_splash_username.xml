@@ -23,7 +23,7 @@
     />
     <TextView
             android:textAppearance="@style/AppTheme.TextAppearance.SplashHeader"
-            android:text="@string/welcomeTitle"
+            android:text="@string/almost_done"
             android:layout_width="0dp"
             android:gravity="center"
             android:layout_height="wrap_content"
@@ -39,7 +39,7 @@
     />
     <TextView
             android:textAppearance="@style/AppTheme.TextAppearance.SplashSubHeader"
-            android:text="@string/welcome_desc"
+            android:text="@string/pick_username"
             android:layout_width="0dp"
             android:gravity="center"
             android:layout_height="wrap_content"
@@ -64,6 +64,8 @@
                                                 app:layout_constraintBottom_toBottomOf="parent"
                                                 app:layout_constraintVertical_bias="0"
                                                 android:layout_marginTop="32dp"
+                                                android:alpha="0"
+                                                android:visibility="invisible"
                                                 app:buttonSize="wide"/>
 
     <!-- Email Sign In Views -->
@@ -79,6 +81,8 @@
             android:layout_marginEnd="8dp"
             android:layout_marginTop="16dp"
             app:layout_constraintTop_toBottomOf="@+id/signInGoogle"
+            android:alpha="0"
+            android:visibility="invisible"
             android:layout_marginBottom="16dp" app:layout_constraintBottom_toTopOf="@+id/email"/>
 
     <android.support.design.widget.TextInputLayout
@@ -94,6 +98,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintVertical_bias="0.0"
             android:layout_marginTop="8dp"
+            android:alpha="0"
+            android:visibility="invisible"
     >
 
         <android.support.design.widget.TextInputEditText
@@ -104,17 +110,19 @@
 
 
     <android.support.design.widget.TextInputLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="32dp"
-            android:layout_marginEnd="32dp" app:layout_constraintEnd_toEndOf="parent" android:layout_marginTop="16dp"
-            app:layout_constraintTop_toBottomOf="@+id/or" android:id="@+id/email"
-            android:theme="@style/AppTheme.TextInputAppearance.SplashSignIn">
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp" app:layout_constraintEnd_toEndOf="parent" android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/or" android:id="@+id/email"
+        android:theme="@style/AppTheme.TextInputAppearance.SplashSignIn"
+    >
 
         <android.support.design.widget.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/email_address"
+                android:gravity="center_horizontal"
         />
     </android.support.design.widget.TextInputLayout>
     <Button
@@ -141,6 +149,8 @@
             android:layout_marginEnd="32dp"
             android:layout_marginStart="8dp"
             android:minWidth="100dp"
+            android:alpha="0"
+            android:visibility="invisible"
     />
     <Button
             android:text="@string/skip_sign_in"
@@ -150,7 +160,8 @@
             app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="32dp" android:layout_marginTop="8dp"
             app:layout_constraintTop_toBottomOf="@+id/btnSignUp" android:layout_marginBottom="8dp"
             android:textColor="@color/splash_button_bg"
-            style="Theme.Mater"
+            android:alpha="0"
+            android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintVertical_bias="0.8"/>
 
 </android.support.constraint.ConstraintLayout>

@@ -17,9 +17,35 @@
     <string name="welcome_desc">Please sign in or sign up to get started</string>
     <string name="welcomeTitle">Welcome!</string>
     <string name="remind_verify_email">Don\'t forget to verify your email by clicking the link in the email sent to </string>
-    <string name="client_id">152988922698-f3djfa8m5pgtc3hped0k0k5kdq13psco.apps.googleusercontent.com</string>
+    <string name="client_id" translatable="false">152988922698-8oq2ogokh7khth08q9h2mtodgmb6k8bg.apps.googleusercontent.com</string>
     <string name="verify_email">Verify Email Address</string>
     <string name="resend_verification_email">Resend Verification Email</string>
     <string name="err_sign_in_title">Problem Signing In</string>
     <string name="err_sign_in_google_desc">There was a problem signing in with Google. Please try again.</string>
+    <string name="or">or</string>
+    <string name="email_address">Email Address</string>
+    <string name="password">Password</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="sign_in">Sign In</string>
+    <string name="skip_sign_in">Skip</string>
+    <string name="almost_done">Almost Done!</string>
+    <string name="pick_username">Pick a username to help you connect to other peoples\' hubs</string>
+    <string name="err_invalid_email">Invalid email address</string>
+    <string name="err_pass">Must be between 5 – 25 characters, one lower case, one upper case, and one number</string>
+    <string name="finish_sign_up">Finish Sign Up</string>
+    <string name="err_invalid_username">Must be between 5 – 15 characters and contain no special characters</string>
+    <string name="err_account_made_title">Existing Account Found</string>
+    <string name="err_acount_made_desc">An account was already made with that email address. Try signing in
+        instead!
+    </string>
+    <string name="err_sign_in_desc">Something went wrong. Please try again! If the problem persists please send us a bug
+        report.
+    </string>
+    <string name="dismiss">Dismiss</string>
+    <string name="report_issue">Report Issue</string>
+    <string name="err_inv_email_pass">Invalid Email or Password</string>
+    <string name="err_inv_email_pass_desc">The email and password combination was not valid. Please try again.</string>
+    <string name="err_email_nonexistant">Account Not Found</string>
+    <string name="err_email_nonexistant_desc">No account with that email account was found. Try signing up instead.
+    </string>
 </resources>
