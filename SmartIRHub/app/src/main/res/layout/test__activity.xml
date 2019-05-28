@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
+    <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:background="@color/colorPrimaryDark"
+    >
+
+        <Button
+                android:text="Test Get User Data (matts88)"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/btnTestGetUser"
+                android:textAllCaps="false"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/btnTestGetUserFromUID" app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintHorizontal_bias="0.5" app:layout_constraintEnd_toEndOf="parent"/>
+        <Button
+                android:text="Test Create User (matts88)"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/btnTestCreateUser"
+                android:textAllCaps="false"
+                app:layout_constraintTop_toBottomOf="@+id/btnTestGetUserFromUID"
+                app:layout_constraintBottom_toTopOf="@+id/btnTestCreateUserDB"
+                app:layout_constraintStart_toStartOf="parent" app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintEnd_toEndOf="parent"/>
+        <Button
+                android:text="Test Create User DB (matts88)"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/btnTestCreateUserDB"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btnTestCreateUser"
+                app:layout_constraintStart_toStartOf="parent" app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintEnd_toEndOf="parent" android:textAllCaps="false"/>
+        <Button
+                android:text="Test getUserFromUID"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/btnTestGetUserFromUID"
+                app:layout_constraintTop_toBottomOf="@+id/btnTestGetUser"
+                app:layout_constraintBottom_toTopOf="@+id/btnTestCreateUser"
+                app:layout_constraintStart_toStartOf="parent" app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintEnd_toEndOf="parent" android:textAllCaps="false"/>
+    </android.support.constraint.ConstraintLayout>
+</layout>
+

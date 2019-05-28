@@ -13,14 +13,14 @@ import android.util.Log
 import android.view.animation.AccelerateDecelerateInterpolator
 import com.andrognito.flashbar.Flashbar
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.firebase.FirebaseError.ERROR_CREDENTIAL_ALREADY_IN_USE
-import com.google.firebase.FirebaseError.ERROR_EMAIL_ALREADY_IN_USE
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.ms8.smartirhub.android.databinding.ActivitySplashBinding
 import com.ms8.smartirhub.android.firebase.FirebaseAuthActions
+import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.utils.MySharedPreferences
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validator
 
@@ -45,28 +45,21 @@ class SplashActivity : AppCompatActivity() {
     }
 
     /**
-     * Used to wait until FirebaseAuth has initialized.
-     * If the user has never signed in before -> show sign in layout
-     * If the user has signed in, but never declared a username -> show username layout
-     * If the user has completely signed in -> go to MainActivity
+     * Used to wait until [FirebaseAuth] has initialized.
+     * * If the user has never signed in before -> [showSignIn]
+     * * If the user has signed in, but never declared a username -> [showCreateUsername]
+     * * If the user has completely signed in -> [gotoMainPage]
      */
-    val authStateListener : FirebaseAuth.AuthStateListener = FirebaseAuth.AuthStateListener {
+    private val authStateListener : FirebaseAuth.AuthStateListener = FirebaseAuth.AuthStateListener {
+        val bHasSeenSplash = MySharedPreferences.hasSeenSplash(this)
+        Log.d("TEST", "bHasSeenSplash = $bHasSeenSplash")
         when {
             // First time
-            it.currentUser == null && splashState.layoutState == LayoutState.SHOW_SPLASH ->
+            splashState.layoutState == LayoutState.SHOW_SPLASH && !bHasSeenSplash ->
                 Handler().postDelayed({showSignIn(true)}, 50)
-            // Already signed in
-            it.currentUser != null && !splashState.isSigningIn() -> {
-                when (MySharedPreferences.hasUsername(this) || it.currentUser!!.isAnonymous) {
-                    true -> {
-                        // Completely signed in
-                        gotoMainPage()
-                    }
-                    false -> {
-                        // Need to get username
-                        showCreateUsername(true)
-                    }
-                }
+            // Already signed in and seen splash screen
+            it.currentUser != null && bHasSeenSplash -> {
+                gotoMainPage()
             }
         }
     }
@@ -74,190 +67,120 @@ class SplashActivity : AppCompatActivity() {
     /* -------------------- OnClick Functions -------------------- */
 
     /**
-     * Attempts to sign user in with inputted email and password
-     * If input is invalid, show error
-     * If input is valid, attempt sign in
-     *  If sign in successful, check for linked username
-     *      If username is in offline storage, goto MainActivity
-     *      If username is not in offline storage, find linked username
-     *          If username is found, save in offline storage and goto MainActivity
-     *          If username if not found, show create username layout
-     *  If sign in unsuccessful, show error as to why it failed
+     * Attempts to sign user in with inputted email and password.
+     * * If input is invalid -> [showError]
+     * * If input is valid -> attempt sign in:
+     *      * If sign-in successful -> check for linked username (see [onSignInSuccess])
+     * * If sign in unsuccessful -> [showError]
      */
     private fun btnSignInClicked() {
-        if (isValidEmailAndPassword()) {
-            FirebaseAuthActions.signInWithEmail(binding.email.editText?.text.toString(),
-                                                binding.password.editText?.text.toString())
-                .addOnCompleteListener { task ->
-                    when {
-                        task.isSuccessful -> {
-                            if (MySharedPreferences.hasUsername(this))
-                                gotoMainPage()
-                            else
-                                FirebaseAuthActions.getUsername()?.get()
-                                    ?.addOnSuccessListener {doc ->
-                                        if (doc != null) {
-                                            Log.d("TEST##", "found username: $doc")
-                                            gotoMainPage()
-                                            MySharedPreferences.setUsername(this, doc["username"] as String?)
-                                        } else {
-                                            showCreateUsername(true)
-                                        }
-                                    }
-                                    ?.addOnFailureListener {exception ->
-                                        Log.e(TAG, "get failed with $exception")
-                                    }
-                        }
-                        task.exception is FirebaseAuthInvalidCredentialsException -> {
-                            Flashbar.Builder(this)
-                                .dismissOnTapOutside()
-                                .enableSwipeToDismiss()
-                                .duration(Flashbar.DURATION_SHORT)
-                                .title(R.string.err_inv_email_pass)
-                                .message(R.string.err_inv_email_pass_desc)
-                                .positiveActionText(R.string.dismiss)
-                                .positiveActionTapListener(object : Flashbar.OnActionTapListener {
-                                    override fun onActionTapped(bar: Flashbar) = bar.dismiss()
-                                }).build().show()
-                        }
-                        task.exception is FirebaseAuthInvalidUserException -> {
-                            Flashbar.Builder(this)
-                                .dismissOnTapOutside()
-                                .enableSwipeToDismiss()
-                                .duration(Flashbar.DURATION_SHORT)
-                                .title(R.string.err_email_nonexistant)
-                                .message(R.string.err_email_nonexistant_desc)
-                                .positiveActionText(R.string.dismiss)
-                                .positiveActionTapListener(object : Flashbar.OnActionTapListener {
-                                    override fun onActionTapped(bar: Flashbar) = bar.dismiss()
-                                }).build().show()
-                        }
-                        else -> {
-                            Log.e(TAG, "Unknown sign in error (${task.exception})")
-                            Flashbar.Builder(this)
-                                .dismissOnTapOutside()
-                                .enableSwipeToDismiss()
-                                .title(R.string.err_sign_in_title)
-                                .message(R.string.err_sign_in_desc)
-                                .positiveActionText(R.string.dismiss)
-                                .positiveActionTapListener(object : Flashbar.OnActionTapListener {
-                                    override fun onActionTapped(bar: Flashbar) = bar.dismiss()
-                                })
-                                .negativeActionText(R.string.report_issue)
-                                .negativeActionTapListener(object : Flashbar.OnActionTapListener {
-                                    override fun onActionTapped(bar: Flashbar) {
-                                        bar.dismiss()
-                                        TODO("Not yet implemented")
-                                    }
-                                }).build().show()
-                        }
+        val email = binding.email.editText?.text.toString()
+        val password = binding.password.editText?.text.toString()
+        if (isValidEmailAndPassword(email, password)) {
+            FirebaseAuthActions.signInWithEmail(email, password).addOnCompleteListener { task ->
+                when {
+                    task.isSuccessful -> onSignInSuccess()
+                    task.exception is FirebaseAuthInvalidCredentialsException ->
+                        showError(R.string.err_inv_email_pass, R.string.err_inv_email_pass_desc)
+                    task.exception is FirebaseAuthInvalidUserException ->
+                        showError(R.string.err_email_nonexistant, R.string.err_email_nonexistant_desc)
+                    else -> {
+                        Log.e(TAG, "Unknown sign in error (${task.exception})")
+                        showUnknownError()
                     }
                 }
+            }
         }
     }
 
     /**
-     * Attempt to sign in with Google
+     * Handles logic when [btnSignInClicked] is successful.
+     * * If username is found ->  [gotoMainPage]
+     * * If username if not found -> [showCreateUsername]
      */
-    private fun btnGoogleSignInClicked() {
-        FirebaseAuthActions.signInWithGoogle(this)
+    private fun onSignInSuccess() {
+        FirestoreActions.getUserFromUID()
+            .addOnSuccessListener { querySnapshot ->
+                when {
+                    querySnapshot.isEmpty -> showCreateUsername(true)
+                    else -> gotoMainPage()
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Username query failed for user with uid: ${FirebaseAuth.getInstance().currentUser?.uid} ($e)")
+                showUnknownError()
+            }
     }
 
     /**
-     * If sign in layout is being shown, continue to username layout
-     * If username layout is shown, check username for validity and set current user's username
+     * Handles logic when sign-up button is clicked.
+     * * If sign in layout is being shown -> [showCreateUsername]
+     * * If username layout is shown -> check username validity:
+     *  * If username is not valid -> [showError]
+     *  * If username already exists -> [showError]
+     *  * If username is valid and doesn't exist -> link username to account:
+     *      * If success -> [gotoMainPage]
+     *      * If failure -> [showError]
      */
     private fun btnSignUpClicked() {
         when (splashState.layoutState) {
             LayoutState.SHOW_SIGN_IN -> {
-                if (isValidEmailAndPassword())
-                    FirebaseAuthActions.createAccount(binding.email.editText?.text.toString(), binding.password.editText?.text.toString())
+                val email = binding.email.editText?.text.toString()
+                val password = binding.password.editText?.text.toString()
+                Log.d("TEST", "password = $password")
+                if (isValidEmailAndPassword(email, password))
+                    FirebaseAuthActions.createAccount(email, password)
                         .addOnCompleteListener { task ->
                             when {
-                                task.isSuccessful -> {
-                                    showCreateUsername(true)
-                                }
-                                task.exception is FirebaseAuthUserCollisionException -> {
-                                    Flashbar.Builder(this)
-                                        .dismissOnTapOutside()
-                                        .enableSwipeToDismiss()
-                                        .title(R.string.err_account_made_title)
-                                        .message(R.string.err_acount_made_desc)
-                                        .positiveActionText(R.string.dismiss)
-                                        .positiveActionTapListener(object : Flashbar.OnActionTapListener {
-                                            override fun onActionTapped(bar: Flashbar) = bar.dismiss()
-                                        })
-                                        .barDismissListener(object: Flashbar.OnBarDismissListener {
-                                            override fun onDismissProgress(bar: Flashbar, progress: Float) {}
-                                            override fun onDismissing(bar: Flashbar, isSwiped: Boolean) {}
-
-                                            override fun onDismissed(bar: Flashbar, event: Flashbar.DismissEvent) {
-                                                showSignIn(true)
-                                            }
-                                        })
-                                        .build()
-                                        .show()
-                                }
+                                task.isSuccessful -> { showCreateUsername(true) }
+                                task.exception is FirebaseAuthUserCollisionException ->
+                                    showError(R.string.err_account_made_title, R.string.err_acount_made_desc)
                                 else -> {
                                     Log.e(TAG, "Unexpected task result: ${task.result} (${task.exception})")
-                                    Flashbar.Builder(this)
-                                        .dismissOnTapOutside()
-                                        .enableSwipeToDismiss()
-                                        .title(R.string.err_sign_in_title)
-                                        .message(R.string.err_sign_in_desc)
-                                        .positiveActionText(R.string.dismiss)
-                                        .positiveActionTapListener(object : Flashbar.OnActionTapListener {
-                                            override fun onActionTapped(bar: Flashbar) = bar.dismiss()
-                                        })
-                                        .negativeActionText(R.string.report_issue)
-                                        .negativeActionTapListener(object : Flashbar.OnActionTapListener {
-                                            override fun onActionTapped(bar: Flashbar) {
-                                                bar.dismiss()
-                                                TODO("Not yet implemented")
-                                            }
-                                        })
-                                        .build()
-                                        .show()
+                                    showUnknownError()
                                 }
                             }
                     }
             }
+            // Finishing Sign Up Process
             LayoutState.SHOW_USERNAME -> {
                 val username : String = binding.email.editText?.text.toString()
-                val validUsername = username.validator()
-                    .nonEmpty()
-                    .noSpecialCharacters()
-                    .minLength(5)
-                    .maxLength(15)
-                    .addErrorCallback {
-                        binding.email.error = getString(R.string.err_invalid_username)
-                    }.addSuccessCallback {
-                        binding.email.error = ""
-                    }
-                    .check()
-
-                if (validUsername) {
-                    when {
-                        // Signed in with Google
-                        GoogleSignIn.getLastSignedInAccount(this) != null -> {
-                            Log.d("TEST", "Adding username to google account")
+                if (isValidUsername(username)) {
+                    FirestoreActions.createNewUser(username)
+                        .addOnSuccessListener {
+                            MySharedPreferences.setUsername(this, username)
+                            gotoMainPage()
                         }
-
-                        // Create account with email and password
-                        else -> {
-                            Log.d("TEST", "Adding creating account from email and password")
+                        .addOnFailureListener { e ->
+                            when {
+                                e is FirebaseFirestoreException && e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED -> {
+                                    binding.email.editText?.setText("")
+                                    showError(R.string.username_taken_title, R.string.err_username_taken_desc)
+                                }
+                                else -> showUnknownError()
+                            }
                         }
-                    }
                 }
             }
             else -> Log.e(TAG, "btnSignUpClicked was called when state was ${splashState.layoutState.getString()}")
         }
     }
 
+    /**
+     * Attempts to sign in with Google.
+     */
+    private fun btnGoogleSignInClicked() {
+        if (GoogleSignIn.getLastSignedInAccount(this) != null) {
+            onSignInSuccess()
+        } else {
+            FirebaseAuthActions.signInWithGoogle(this)
+        }
+    }
+
     /* -------------------- Transition Functions -------------------- */
 
     /**
-     * Transition to the username layout
+     * Transitions to the username layout.
      */
     private fun showCreateUsername(bAnimate: Boolean) {
         Log.d("TEST###", "Starting Username Transition...")
@@ -267,13 +190,32 @@ class SplashActivity : AppCompatActivity() {
         binding.welcomeTitle.text = getString(R.string.almost_done)
         binding.welcomeDescription.text = getString(R.string.pick_username)
         binding.email.editText?.setText(splashState.usernameStr)
+        binding.email.error = ""
+        binding.email.hint = getString(R.string.username)
         binding.password.editText?.setText("")
+        binding.password.error = ""
         binding.btnSignUp.text = getString(R.string.finish_sign_up)
+
+        // Disable Unused Buttons
+        binding.btnSignIn.isEnabled = false
+        binding.btnSkip.isEnabled = false
+        binding.signInGoogle.isEnabled = false
+        binding.password.isEnabled = false
 
         // Get layout transition
         val newLayout = ConstraintSet().apply {
             clone(this@SplashActivity, R.layout.activity_splash_username)
-            centerHorizontally(binding.email.id, ConstraintSet.PARENT_ID)
+            centerVertically(binding.btnSignUp.id, binding.email.id, ConstraintSet.BOTTOM, 16, ConstraintSet.PARENT_ID, ConstraintSet.BOTTOM, 16, 0.0f)
+            centerHorizontally(binding.btnSignUp.id, ConstraintSet.PARENT_ID, ConstraintSet.LEFT, 0, ConstraintSet.PARENT_ID, ConstraintSet.RIGHT, 0, 0.0f)
+            setVerticalBias(binding.email.id, 0.25f)
+            constrainHeight(binding.signInGoogle.id, 1)
+            constrainHeight(binding.password.id, 1)
+            constrainHeight(binding.btnSignIn.id, 1)
+            constrainHeight(binding.btnSkip.id, 1)
+            setAlpha(binding.signInGoogle.id, 0.0f)
+            setAlpha(binding.password.id, 0.0f)
+            setAlpha(binding.btnSignIn.id, 0.0f)
+            setAlpha(binding.btnSkip.id, 0.0f)
         }
 
         if (bAnimate) {
@@ -283,7 +225,7 @@ class SplashActivity : AppCompatActivity() {
     }
 
     /**
-     * Transition to the sign in layout
+     * Transitions to the sign in layout.
      */
     private fun showSignIn(bAnimate : Boolean) {
         Log.d("TEST###", "Starting Sign In Transition...")
@@ -293,8 +235,17 @@ class SplashActivity : AppCompatActivity() {
         binding.welcomeTitle.text = getString(R.string.welcomeTitle)
         binding.welcomeDescription.text = getString(R.string.welcome_desc)
         binding.email.editText?.setText(splashState.emailStr)
+        binding.email.hint = getString(R.string.email_address)
         binding.password.editText?.setText(splashState.passStr)
         binding.btnSignUp.text = getString(R.string.sign_up)
+        binding.email.error = ""
+        binding.password.error = ""
+
+        // Enable Buttons
+        binding.btnSignIn.isEnabled = true
+        binding.btnSkip.isEnabled = true
+        binding.signInGoogle.isEnabled = true
+        binding.password.isEnabled = true
 
         // Get Layout transition
         val constraintSet = ConstraintSet().apply {
@@ -310,7 +261,7 @@ class SplashActivity : AppCompatActivity() {
 
 
     /**
-     * Show the splash screen
+     * Transitions to the splash screen layout.
      */
     private fun showSplash(bAnimate: Boolean) {
         splashState.layoutState = LayoutState.SHOW_SPLASH
@@ -328,9 +279,6 @@ class SplashActivity : AppCompatActivity() {
 
     /* -------------------- Overridden Functions -------------------- */
 
-    /**
-     * Write all State variables to SavedInstanceState
-     */
     override fun onSaveInstanceState(outState: Bundle?) {
         super.onSaveInstanceState(outState)
         outState?.let {
@@ -351,6 +299,9 @@ class SplashActivity : AppCompatActivity() {
 
         // Show sign in once FirebaseAuth has initialized
         FirebaseAuth.getInstance().addAuthStateListener(authStateListener)
+        if (FirebaseAuth.getInstance().currentUser == null)
+            FirebaseAuth.getInstance().signInAnonymously()
+        Log.d("TEST####", "Current user uid = ${FirebaseAuth.getInstance().currentUser?.uid}")
     }
 
     override fun onBackPressed() {
@@ -364,6 +315,12 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_splash)
 
+        // Jump to username layout if the user left mid-sign-up
+        if (FirebaseAuth.getInstance().currentUser != null
+            && !FirebaseAuth.getInstance().currentUser!!.isAnonymous
+            && !MySharedPreferences.hasSeenSplash(this))
+            showCreateUsername(true)
+
         // Restore state
         savedInstanceState?.let {
             splashState.layoutState = layoutStateFromString(it.getString(SPLASH_INSTANCE_STATE + "_LAYOUT", SHOW_SPLASH))
@@ -376,6 +333,7 @@ class SplashActivity : AppCompatActivity() {
         binding.signInGoogle.setOnClickListener { btnGoogleSignInClicked() }
         binding.btnSignUp.setOnClickListener { btnSignUpClicked() }
         binding.btnSignIn.setOnClickListener { btnSignInClicked() }
+        binding.btnSkip.setOnClickListener { gotoMainPage() }
 
         // Set proper constraints
         when (splashState.layoutState) {
@@ -387,8 +345,11 @@ class SplashActivity : AppCompatActivity() {
     }
 
     /**
-     * Check for successful sign in with Google and either show username layout or
-     * show error message
+     * Checks for successful sign-in with Google.
+     * * If error -> [showError]
+     * * If no error -> check for username in offline storage:
+     *  * If username found -> [gotoMainPage]
+     *  * If no username found -> [showCreateUsername]
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         Log.d("TEST###", "onActivityResult")
@@ -400,7 +361,12 @@ class SplashActivity : AppCompatActivity() {
                         Log.d("TEST###", "Result OK")
                         when (FirebaseAuthActions.handleGoogleSignInResult(data)) {
                             // No Error
-                            null -> { showCreateUsername(true) }
+                            null -> {
+                                when (MySharedPreferences.hasUsername(this)) {
+                                    true -> { gotoMainPage() }
+                                    false -> { showCreateUsername(true) }
+                                }
+                            }
                             // Google Sign In failed
                             else -> FirebaseAuthActions.showSignInWithGoogleError(this)
                         }
@@ -412,16 +378,80 @@ class SplashActivity : AppCompatActivity() {
         }
     }
 
-    /* -------------------- Helper Functions -------------------- */
-
-    private fun gotoMainPage() = startActivity(Intent(this, MainActivity::class.java))
+    /* -------------------- Show Error Functions -------------------- */
 
     /**
-     * Does sanitation checks on email and password input
+     * Shows an error message with title: [titleRes] and message: [messageRes]
+     * and run [onDismissed] when [Flashbar] is dismissed.
      */
-    private fun isValidEmailAndPassword() : Boolean {
-        val emailString : String = binding.email.editText?.text.toString()
-        val passwordString : String = binding.password.editText?.text.toString()
+    private fun showError(titleRes : Int, messageRes : Int, onDismissed : () -> Any? ) {
+        Flashbar.Builder(this)
+            .dismissOnTapOutside()
+            .enableSwipeToDismiss()
+            .title(titleRes)
+            .backgroundColorRes(R.color.colorPrimaryDark)
+            .positiveActionTextColorRes(R.color.colorAccent)
+            .titleColorRes(android.R.color.holo_red_dark)
+            .message(messageRes)
+            .positiveActionText(R.string.dismiss)
+            .positiveActionTapListener(object : Flashbar.OnActionTapListener {
+                override fun onActionTapped(bar: Flashbar) = bar.dismiss()
+            })
+            .barDismissListener(object: Flashbar.OnBarDismissListener {
+                override fun onDismissProgress(bar: Flashbar, progress: Float) {}
+                override fun onDismissing(bar: Flashbar, isSwiped: Boolean) {}
+
+                override fun onDismissed(bar: Flashbar, event: Flashbar.DismissEvent) {
+                    onDismissed()
+                }
+            })
+            .build()
+            .show()
+    }
+
+    /**
+     * See [showError]([titleRes] : Int, [messageRes] : Int, [onDismissed] : () -> Any?)
+     */
+    private fun showError(titleRes : Int, messageRes : Int) = showError(titleRes, messageRes) {}
+
+    /**
+     * Shows an error whenever there's a potential bug in the sign in process.
+     */
+    private fun showUnknownError() {
+        Flashbar.Builder(this)
+            .dismissOnTapOutside()
+            .enableSwipeToDismiss()
+            .titleColorRes(android.R.color.holo_red_dark)
+            .backgroundColorRes(R.color.colorPrimaryDark)
+            .positiveActionTextColorRes(R.color.colorAccent)
+            .title(R.string.err_sign_in_title)
+            .message(R.string.err_sign_in_desc)
+            .positiveActionText(R.string.dismiss)
+            .positiveActionTapListener(object : Flashbar.OnActionTapListener {
+                override fun onActionTapped(bar: Flashbar) = bar.dismiss()
+            })
+            .negativeActionText(R.string.report_issue)
+            .negativeActionTapListener(object : Flashbar.OnActionTapListener {
+                override fun onActionTapped(bar: Flashbar) {
+                    bar.dismiss()
+                    TODO("Not yet implemented")
+                }
+            }).build().show()
+    }
+
+    /* -------------------- Helper Functions -------------------- */
+
+    private fun gotoMainPage() {
+        MySharedPreferences.setHasSeenSplash(this,true)
+        startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
+    }
+
+    /**
+     * Does sanitation checks on [emailString] and [passwordString] input.
+     */
+    private fun isValidEmailAndPassword(emailString : String, passwordString : String) : Boolean {
+        binding.email.error = ""
+        binding.email.error = ""
         val validPassword = passwordString.validator()
             .nonEmpty()
             .atleastOneLowerCase()
@@ -444,6 +474,24 @@ class SplashActivity : AppCompatActivity() {
             .check()
 
         return validEmail && validPassword
+    }
+
+    /**
+     * Does sanitation checks on [username] input.
+     */
+    private fun isValidUsername(username: String): Boolean {
+        binding.email.error = ""
+        return username.validator()
+            .nonEmpty()
+            .noSpecialCharacters()
+            .minLength(5)
+            .maxLength(15)
+            .addErrorCallback {
+                binding.email.error = getString(R.string.err_invalid_username)
+            }.addSuccessCallback {
+                binding.email.error = ""
+            }
+            .check()
     }
 
     /* -------------------- Static Stuff -------------------- */

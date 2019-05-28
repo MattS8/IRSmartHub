@@ -29,7 +29,7 @@
     <string name="sign_in">Sign In</string>
     <string name="skip_sign_in">Skip</string>
     <string name="almost_done">Almost Done!</string>
-    <string name="pick_username">Pick a username to help you connect to other peoples\' hubs</string>
+    <string name="pick_username">Pick a username and you\'re good to go.</string>
     <string name="err_invalid_email">Invalid email address</string>
     <string name="err_pass">Must be between 5 – 25 characters, one lower case, one upper case, and one number</string>
     <string name="finish_sign_up">Finish Sign Up</string>
@@ -48,4 +48,9 @@
     <string name="err_email_nonexistant">Account Not Found</string>
     <string name="err_email_nonexistant_desc">No account with that email account was found. Try signing up instead.
     </string>
+    <string name="username_taken_title">Username Already Taken</string>
+    <string name="err_username_taken_desc">An account with that username already exists. Please select a different one
+        and try again.
+    </string>
+    <string name="username">Username</string>
 </resources>
