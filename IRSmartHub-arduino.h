@@ -8,7 +8,9 @@
 #include <DNSServer.h>            		//Local DNS Server used for redirecting all requests to the configuration portal
 #include <ESP8266WebServer.h>     		//Local WebServer used to serve the configuration portal
 #include <WiFiManager.h>          		//https://github.com/tzapu/WiFiManager WiFi Configuration Magic
-#include <IRremoteESP8266.h>			//https://github.com/markszabo/IRremoteESP8266
+#include "IRLibAll.h"					//https://github.com/cyborg5/IRLib2
+
+#define IR_RECV_PIN 6
 
 const String FIREBASE_HOST = "ir-home-hub.firebaseio.com";
 const String FIREBASE_AUTH = "OVupEOIVjxTW1brlm02WISnExnOWRBxc9yhJVyPy";
@@ -28,8 +30,12 @@ public:
 
 	void sendSignal(const String& irSignal);
 
+	void setup();
+
 private:
 	String lastReadSignal;
+	IRrecvPCI irReceiver(IR_RECV_PIN);
+	IRDecode irDecoder;
 	// TODO IRrecv irrecv(IR_RECV_PIN);
 };
 

@@ -3,7 +3,7 @@
 #define ON LOW
 #define OFF HIGH
 #define AP_NAME "SMART-IR-DEBUG_001"
-#define IR_RECV_PIN 6
+
 #define IR_BLAST_PIN 100
 
 /* -------------------- IR Hub States -------------------- */
@@ -21,22 +21,56 @@ int ir_hub_state = STATE_CONFIG_WIFI;
 ArduinoIRFunctions IRFunctions;
 ArduinoFirebaseFunctions FirebaseFunctions;
 
-/* -------------------- Wifi Manager Callbacks -------------------- */
+/* -------------------- Debug Functions -------------------- */
 
-void onSaveConfig() 
+void debug_printFirebaseObject(FirebaseObject event)
+{
+	Serial.print("path: ");
+	Serial.println(event.getString("path"));
+	Serial.print("data: ");
+	event.getJsonVariant("data").prettyPrintTo(Serial);
+	Serial.print("Performing action: ");
+}
+
+void debug_printSendAction(const String& irSignal)
+{
+	Serial.print("ir_action_send (");
+	Serial.print(irSignal);
+	Serial.println(")");
+}
+
+void debug_printOnSaveConfig()
 {
 	Serial.print(dWifiManager);
 	Serial.println("Saving SSID and password info...");
-	ir_hub_state = STATE_CONFIG_FIREBASE;
 }
 
-void configModeCallback (WiFiManager *myWiFiManager) 
+void debug_printConfigModeCallback(WiFiManager* myWiFiManager)
 {
 	Serial.print(dWifiManager);
 	Serial.println("Entered config mode");
 	Serial.println(WiFi.softAPIP());
 	Serial.println("-----");
 	Serial.println(myWiFiManager->getConfigPortalSSID());
+}
+
+void debug_printStartingAutoConnect()
+{
+	Serial.print(dWifiManager);
+	Serial.println("Starting autoConnect...");
+}
+
+/* -------------------- Wifi Manager Callbacks -------------------- */
+
+void onSaveConfig() 
+{
+	if (bDEBUG) debug_printOnSaveConfig();
+	ir_hub_state = STATE_CONFIG_FIREBASE;
+}
+
+void configModeCallback (WiFiManager *myWiFiManager) 
+{
+	if (bDEBUG) debug_printConfigModeCallback(myWiFiManager);
 }
 
 /* -------------------- Wifi Manager Functions -------------------- */
@@ -49,14 +83,13 @@ void connectToWifi()
 	wifiManager.setAPCallback(configModeCallback);
 	wifiManager.setSaveConfigCallback(onSaveConfig);
 
-	Serial.print(dWifiManager);
-	Serial.println("Starting autoConnect...");
+	if (bDEBUG) debug_printStartingAutoConnect();
 	if (!wifiManager.autoConnect(AP_NAME))
 	{
-		Serial.println("Couldn't connect.");
+		if (bDEBUG) Serial.println("Couldn't connect.");
 		wifiManager.startConfigPortal(AP_NAME);
 	} else {
-		Serial.println("Connected!");
+		if (bDEBUG) Serial.println("Connected!");
 		FirebaseFunctions.connect();
 	}
 }
@@ -88,24 +121,6 @@ void ArduinoIRFunctions::sendSignal(const String& irSignal)
 	Serial.println("TODO - sendSignal");
 }
 
-/* -------------------- Debug Functions -------------------- */
-
-void debug_printFirebaseObject(FirebaseObject event)
-{
-	Serial.print("path: ");
-	Serial.println(event.getString("path"));
-	Serial.print("data: ");
-	event.getJsonVariant("data").prettyPrintTo(Serial);
-	Serial.print("Performing action: ");
-}
-
-void debug_printSendAction(const String& irSignal)
-{
-	Serial.print("ir_action_send (");
-	Serial.print(irSignal);
-	Serial.println(")");
-}
-
 /* -------------------- Arduino Functions -------------------- */
 
 void setup() 
@@ -118,7 +133,7 @@ void setup()
 
 void loop()
 {
-	if (Firebase.failed()) {
+	if (Firebase.failed() && bDEBUG) {
 		Serial.println("streaming error");
 		Serial.println(Firebase.error());
 	}
@@ -142,11 +157,11 @@ void loop()
 					IRFunctions.sendSignal(event.getString("/data/signal"));
 					break;
 				case IR_ACTION_LEARN:
-					Serial.println("ir_action_learn");
+					if (bDEBUG) Serial.println("ir_action_learn");
 					IRFunctions.readNextSignal();
 					break;
 				default: 
-					Serial.println("ERROR - Unknown action");
+					if (bDEBUG) Serial.println("ERROR - Unknown action");
 					break;
 			}
 
