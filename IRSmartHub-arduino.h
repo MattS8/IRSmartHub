@@ -62,8 +62,9 @@ public:
 
 	void sendError(const int errorType);
 
-private:
-	String IR_UID = "JFIERKKFCIIKERI";
+	String ActionPath;
+	String ResultPath;
+	String BasePath;
 };
 
 #endif

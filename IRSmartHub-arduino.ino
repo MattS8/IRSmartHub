@@ -2,7 +2,7 @@
 
 #define ON LOW
 #define OFF HIGH
-#define AP_NAME "SMART-IR-DEBUG_001"
+#define AP_NAME_BASE "IRSmartHub-"
 
 /* -------------------- IR Hub States -------------------- */
 
@@ -11,13 +11,15 @@
 
 /* -------------------- DEBUG VALUES -------------------- */
 
-String dWifiManager = "WiFiManager: ";
+const String dWifiManager = "WiFiManager: ";
 #define bDEBUG true
 
 /* -------------------- Global Variables -------------------- */
 int ir_hub_state = STATE_CONFIG_WIFI;
 ArduinoIRFunctions IRFunctions;
 ArduinoFirebaseFunctions FirebaseFunctions;
+
+String WifiAPName;
 
 /* -------------------- Debug Functions -------------------- */
 
@@ -69,6 +71,19 @@ void debug_pulse_LED()
 	digitalWrite(LED_BUILTIN, OFF);	
 }
 
+void debug_printResults(decode_results* results)
+{
+   Serial.println(resultToHumanReadableBasic(results));
+   // Output RAW timing info of the result.
+   Serial.println(resultToTimingInfo(results));
+   yield();  // Feed the WDT (again)
+
+   // Output the results as source code
+   Serial.println(resultToSourceCode(results));
+   Serial.println("");  // Blank line between entries
+   yield();             // Feed the WDT (again)
+}
+
 /* -------------------- Wifi Manager Callbacks -------------------- */
 
 void onSaveConfig() 
@@ -94,10 +109,10 @@ void connectToWifi()
 	wifiManager.setSaveConfigCallback(onSaveConfig);
 
 	if (bDEBUG) debug_printStartingAutoConnect();
-	if (!wifiManager.autoConnect(AP_NAME))
+	if (!wifiManager.autoConnect(WifiAPName.c_str()))
 	{
 		if (bDEBUG) Serial.println("Couldn't connect.");
-		wifiManager.startConfigPortal(AP_NAME);
+		wifiManager.startConfigPortal(WifiAPName.c_str());
 	} else {
 		if (bDEBUG) Serial.println("Connected!");
 		FirebaseFunctions.connect();
@@ -110,7 +125,8 @@ void ArduinoFirebaseFunctions::connect()
 {
 	if (bDEBUG) Serial.println("Connecting to firebase...");
 	Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
-	Firebase.stream("/devices/" + IR_UID + "/action");
+	if (bDEBUG) Serial.println(ActionPath.c_str());
+	Firebase.stream(ActionPath);
 }
 
 void ArduinoFirebaseFunctions::setHubName(const String& name)
@@ -131,7 +147,6 @@ void ArduinoFirebaseFunctions::sendError(const int errorType)
 
 	}
 }
-
 
 /* -------------------- Arduino IR Functions -------------------- */
 
@@ -182,8 +197,7 @@ void ArduinoIRFunctions::readNextSignal() //TODO
 		}
 
 		// Debug statement prints signal results
-		if (bDEBUG) Serial.println("Printing readable results...");
-		if (bDEBUG) Serial.println(resultToHumanReadableBasic(&results));
+		if (bDEBUG) debug_printResults(&results);
 
 		if (!results.repeat)
 		{
@@ -209,6 +223,28 @@ void ArduinoIRFunctions::sendSignal(const String& irSignal, bool bRepeat)
 void setup() 
 {
 	Serial.begin(SMART_HUB_BAUD_RATE);
+
+	// Setup dynamic string variables
+	char* temp = (char*) malloc(50 * sizeof(char));
+
+	// Set base path
+	sprintf(temp, "/device/%lu", ESP.getChipId());
+	FirebaseFunctions.BasePath = String(temp);
+
+	// Set action path
+	sprintf(temp, "%s/action", FirebaseFunctions.BasePath.c_str());
+	FirebaseFunctions.ActionPath = String(temp);
+
+	// Set result path
+	sprintf(temp, "%s/result", FirebaseFunctions.BasePath.c_str());
+	FirebaseFunctions.ResultPath = String(temp);
+
+	// Set Wifi Access Point Name
+	sprintf(temp, "%s%lu", AP_NAME_BASE, ESP.getChipId());
+	WifiAPName = String(temp);
+
+	delete[] temp;
+
 	pinMode(LED_BUILTIN, OUTPUT);
 	connectToWifi();
 	digitalWrite(LED_BUILTIN, OFF);
