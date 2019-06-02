@@ -4,8 +4,6 @@
 #define OFF HIGH
 #define AP_NAME "SMART-IR-DEBUG_001"
 
-#define IR_BLAST_PIN 100
-
 /* -------------------- IR Hub States -------------------- */
 
 #define STATE_CONFIG_WIFI 1
@@ -60,12 +58,24 @@ void debug_printStartingAutoConnect()
 	Serial.println("Starting autoConnect...");
 }
 
+void debug_pulse_LED()
+{
+	digitalWrite(LED_BUILTIN, ON);
+	delay(500);
+	digitalWrite(LED_BUILTIN, OFF);
+	delay(500);
+	digitalWrite(LED_BUILTIN, ON);
+	delay(500);	
+	digitalWrite(LED_BUILTIN, OFF);	
+}
+
 /* -------------------- Wifi Manager Callbacks -------------------- */
 
 void onSaveConfig() 
 {
 	if (bDEBUG) debug_printOnSaveConfig();
 	ir_hub_state = STATE_CONFIG_FIREBASE;
+	FirebaseFunctions.connect();
 }
 
 void configModeCallback (WiFiManager *myWiFiManager) 
@@ -98,6 +108,7 @@ void connectToWifi()
 
 void ArduinoFirebaseFunctions::connect()
 {
+	if (bDEBUG) Serial.println("Connecting to firebase...");
 	Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
 	Firebase.stream("/devices/" + IR_UID + "/action");
 }
@@ -107,16 +118,88 @@ void ArduinoFirebaseFunctions::setHubName(const String& name)
 	Serial.println("TODO - setHubName");
 }
 
+void ArduinoFirebaseFunctions::sendRecordedSignal(decode_results* results)
+{
+	Serial.println("TODO - sendRecordedSignal");
+}
+
+void ArduinoFirebaseFunctions::sendError(const int errorType)
+{
+	Serial.println("TODO - sendError");
+	switch (errorType)
+	{
+
+	}
+}
+
 
 /* -------------------- Arduino IR Functions -------------------- */
 
 void ArduinoIRFunctions::readNextSignal() //TODO
 {
-	Serial.println("TODO - readNextSignal");
-	lastReadSignal = "0xFFFFFFF";
+	// Variable to store results
+	decode_results results;
+
+	// Start listening for IR signals
+	irReceiver.enableIRIn();
+
+	if (bDEBUG) Serial.print("Listeneing for IR Signal");
+	long dDelayTimer = millis();
+	
+	// Get current time for checks against timeout 
+	long timeoutTimer = millis();
+
+	// Continue to loop until a valid signal is read or timeout
+	while (true)
+	{		
+		// Check for timeout
+		if (millis() - timeoutTimer >= IR_READ_TIMEOUT)
+		{
+			if (bDEBUG) Serial.println("readNextSignal timeout!");
+			FirebaseFunctions.sendError(ERR_TIMEOUT);
+			break;
+		}
+
+		// Debug statment prints "." every second until IR signal has been read
+		if (bDEBUG && millis() - dDelayTimer >= 1000) { dDelayTimer = millis(); Serial.print("."); }
+
+		// Debug to check timeout functionality
+
+		// Check if complete IR signal has been read
+		if (!irReceiver.decode(&results)){
+			delay(IR_RECV_MESSAGE_TIMEOUT);
+			continue;
+		}
+
+		if (bDEBUG) Serial.println("Got results!");
+
+		// Check for overflow
+		if (results.overflow) 
+		{
+			if (bDEBUG) Serial.println("Overflow occurred...");
+			FirebaseFunctions.sendError(ERR_OVERFLOW);
+			break;
+		}
+
+		// Debug statement prints signal results
+		if (bDEBUG) Serial.println("Printing readable results...");
+		if (bDEBUG) Serial.println(resultToHumanReadableBasic(&results));
+
+		if (!results.repeat)
+		{
+			if (bDEBUG) Serial.println("Sending...");
+			FirebaseFunctions.sendRecordedSignal(&results);			
+			break;
+		} 
+		else if (bDEBUG) Serial.println("\nIgnoring repeat code...");
+	}
+
+	if (bDEBUG) Serial.println("Exiting loop");
+
+	irReceiver.disableIRIn();
 }
 
-void ArduinoIRFunctions::sendSignal(const String& irSignal)
+void ArduinoIRFunctions::sendSignal(const String& irSignal, bool bRepeat)
 {
 	Serial.println("TODO - sendSignal");
 }
@@ -125,10 +208,10 @@ void ArduinoIRFunctions::sendSignal(const String& irSignal)
 
 void setup() 
 {
-	Serial.begin(115200);
+	Serial.begin(SMART_HUB_BAUD_RATE);
 	pinMode(LED_BUILTIN, OUTPUT);
 	connectToWifi();
-	digitalWrite(LED_BUILTIN, ON);
+	digitalWrite(LED_BUILTIN, OFF);
 }
 
 void loop()
@@ -154,7 +237,8 @@ void loop()
 					break;
 				case IR_ACTION_SEND:
 					if (bDEBUG) debug_printSendAction(event.getString("/data/signal"));
-					IRFunctions.sendSignal(event.getString("/data/signal"));
+					IRFunctions.sendSignal(event.getString("/data/signal"),
+										   event.getBool("/data/repeat"));
 					break;
 				case IR_ACTION_LEARN:
 					if (bDEBUG) Serial.println("ir_action_learn");
@@ -165,13 +249,8 @@ void loop()
 					break;
 			}
 
-			digitalWrite(LED_BUILTIN, OFF);
-			delay(500);
-			digitalWrite(LED_BUILTIN, ON);
-			delay(500);
-			digitalWrite(LED_BUILTIN, OFF);
-			delay(500);	
-			digitalWrite(LED_BUILTIN, ON);
+			if (bDEBUG) debug_pulse_LED();
+
 		}
 	}
 }
