@@ -4,108 +4,41 @@
 #define OFF HIGH
 #define AP_NAME_BASE "IRSmartHub-"
 
-/* -------------------- IR Hub States -------------------- */
+/* ------------------------- IR Hub States ------------------------- */
 
 #define STATE_CONFIG_WIFI 1
 #define STATE_CONFIG_FIREBASE 2
 
-/* -------------------- DEBUG VALUES -------------------- */
 
-const String dWifiManager = "WiFiManager: ";
-#define bDEBUG true
-
-/* -------------------- Global Variables -------------------- */
+/* ------------------------ Global Variables ----------------------- */
 int ir_hub_state = STATE_CONFIG_WIFI;
 ArduinoIRFunctions IRFunctions;
 ArduinoFirebaseFunctions FirebaseFunctions;
-
 String WifiAPName;
 
-/* -------------------- Debug Functions -------------------- */
+#ifdef IR_DEBUG
+IRSmartHubDebug SHDebug;
+#endif
 
-void debug_printFirebaseObject(FirebaseObject event)
-{
-	Serial.print("path: ");
-	Serial.println(event.getString("path"));
-	Serial.print("data: ");
-	event.getJsonVariant("data").prettyPrintTo(Serial);
-	Serial.println("");
-	Serial.print("Performing action: ");
-}
-
-void debug_printSendAction(const String& irSignal)
-{
-	Serial.print("ir_action_send (");
-	Serial.print(irSignal);
-	Serial.println(")");
-}
-
-void debug_printOnSaveConfig()
-{
-	Serial.print(dWifiManager);
-	Serial.println("Saving SSID and password info...");
-}
-
-void debug_printConfigModeCallback(WiFiManager* myWiFiManager)
-{
-	Serial.print(dWifiManager);
-	Serial.println("Entered config mode");
-	Serial.println(WiFi.softAPIP());
-	Serial.println("-----");
-	Serial.println(myWiFiManager->getConfigPortalSSID());
-}
-
-void debug_printStartingAutoConnect()
-{
-	Serial.print(dWifiManager);
-	Serial.println("Starting autoConnect...");
-}
-
-void debug_pulse_LED()
-{
-	Serial.println("pulsing LED...");
-	digitalWrite(LED_BUILTIN, ON);
-	delay(500);
-	digitalWrite(LED_BUILTIN, OFF);
-	delay(500);
-	digitalWrite(LED_BUILTIN, ON);
-	delay(500);	
-	digitalWrite(LED_BUILTIN, OFF);	
-}
-
-void debug_printResults(decode_results* results)
-{
-   Serial.println(resultToHumanReadableBasic(results));
-   // Output RAW timing info of the result.
-   Serial.println(resultToTimingInfo(results));
-   yield();  // Feed the WDT (again)
-
-   // Output the results as source code
-   String resSourceCode = resultToSourceCode(results);
-   Serial.println(resSourceCode);
-   char* temp = new char[100];
-   sprintf(temp, "\trawlen = %lu, resSourceCode size = %lu", results->rawlen, resSourceCode.length());
-   Serial.println(temp);
-   Serial.println("");  // Blank line between entries
-   delete[] temp;
-   yield();             // Feed the WDT (again)
-}
-
-/* -------------------- Wifi Manager Callbacks -------------------- */
+/* --------------------- Wifi Manager Callbacks -------------------- */
 
 void onSaveConfig() 
 {
-	if (bDEBUG) debug_printOnSaveConfig();
+	#ifdef IR_DEBUG
+	SHDebug.printOnSaveConfig();
 	ir_hub_state = STATE_CONFIG_FIREBASE;
+	#endif
 	FirebaseFunctions.connect();
 }
 
 void configModeCallback (WiFiManager *myWiFiManager) 
 {
-	if (bDEBUG) debug_printConfigModeCallback(myWiFiManager);
+	#ifdef IR_DEBUG
+	SHDebug.printConfigModeCallback(myWiFiManager);
+	#endif
 }
 
-/* -------------------- Wifi Manager Functions -------------------- */
+/* -------------------- Wifi Manager Functions --------------------- */
 
 void connectToWifi() 
 {
@@ -115,133 +48,24 @@ void connectToWifi()
 	wifiManager.setAPCallback(configModeCallback);
 	wifiManager.setSaveConfigCallback(onSaveConfig);
 
-	if (bDEBUG) debug_printStartingAutoConnect();
+	#ifdef IR_DEBUG 
+	SHDebug.printStartingAutoConnect(); 
+	#endif
 	if (!wifiManager.autoConnect(WifiAPName.c_str()))
 	{
-		if (bDEBUG) Serial.println("Couldn't connect.");
+		#ifdef IR_DEBUG 
+		Serial.println("Couldn't connect.");
+		#endif
 		wifiManager.startConfigPortal(WifiAPName.c_str());
 	} else {
-		if (bDEBUG) Serial.println("Connected!");
 		FirebaseFunctions.connect();
+		#ifdef IR_DEBUG 
+		Serial.println("Connected!");
+		#endif
 	}
 }
 
-/* -------------------- Arduino Firebase Functions -------------------- */
-
-void ArduinoFirebaseFunctions::connect()
-{
-	if (bDEBUG) { Serial.print("Connecting to firebase at: "); Serial.println(ActionPath.c_str()); }
-	// Initialize Firebase
-	Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
-	
-	// Initialize action root for device
-	sprintf(responseBuffer, "{\"type\": %d, \"timestamp\": \"%lu\"}", 
-		bDEBUG ? IR_ACTION_LEARN : IR_ACTION_NONE,
-		millis());
-	FirebaseObject obj = FirebaseObject(responseBuffer);
-	Firebase.set(FirebaseFunctions.ActionPath, obj.getJsonVariant());
-
-	Serial.println("Done sending initialization post");
-
-	// Begin listening for actions
-	Firebase.stream(ActionPath);
-}
-
-void ArduinoFirebaseFunctions::setHubName(const String& name)
-{
-	Serial.println("TODO - setHubName");
-}
-
-void ArduinoFirebaseFunctions::sendRecordedSignal(decode_results* results)
-{
-	Serial.println("TODO - sendRecordedSignal");
-}
-
-void ArduinoFirebaseFunctions::sendError(const int errorType)
-{
-	sprintf(responseBuffer, "{\"code\": %d, \"timestamp\": \"%lu\"}",
-		errorType,
-		millis());
-	FirebaseObject obj = FirebaseObject(responseBuffer);
-	Firebase.set(FirebaseFunctions.ResultPath, obj.getJsonVariant());
-
-	if (Firebase.failed())
-	{
-		Serial.print("Failed to send error response... ");	
-	} else if (bDEBUG) Serial.println("Sent error result");
-}
-
-/* -------------------- Arduino IR Functions -------------------- */
-
-void ArduinoIRFunctions::readNextSignal() //TODO
-{
-	// Variable to store results
-	decode_results results;
-
-	// Start listening for IR signals
-	irReceiver.enableIRIn();
-
-	if (bDEBUG) Serial.print("Listeneing for IR Signal");
-	long dDelayTimer = millis();
-	
-	// Get current time for checks against timeout 
-	long timeoutTimer = millis();
-
-	// Continue to loop until a valid signal is read or timeout
-	while (true)
-	{		
-		// Check for timeout
-		if (millis() - timeoutTimer >= IR_READ_TIMEOUT)
-		{
-			if (bDEBUG) Serial.println("timeout!");
-			FirebaseFunctions.sendError(ERR_TIMEOUT);
-			break;
-		}
-
-		// Debug statment prints "." every second until IR signal has been read
-		if (bDEBUG && millis() - dDelayTimer >= 1000) { dDelayTimer = millis(); Serial.print("."); }
-
-		// Debug to check timeout functionality
-
-		// Check if complete IR signal has been read
-		if (!irReceiver.decode(&results)){
-			delay(IR_RECV_MESSAGE_TIMEOUT);
-			continue;
-		}
-
-		if (bDEBUG) Serial.println("Got results!");
-
-		// Check for overflow
-		if (results.overflow) 
-		{
-			if (bDEBUG) Serial.println("Overflow occurred...");
-			FirebaseFunctions.sendError(ERR_OVERFLOW);
-			break;
-		}
-
-		// Debug statement prints signal results
-		if (bDEBUG) debug_printResults(&results);
-
-		if (!results.repeat)
-		{
-			if (bDEBUG) Serial.println("Sending...");
-			FirebaseFunctions.sendRecordedSignal(&results);			
-			break;
-		} 
-		else if (bDEBUG) Serial.println("\nIgnoring repeat code...");
-	}
-
-	if (bDEBUG) Serial.println("Exiting loop");
-
-	irReceiver.disableIRIn();
-}
-
-void ArduinoIRFunctions::sendSignal(const String& irSignal, bool bRepeat)
-{
-	Serial.println("TODO - sendSignal");
-}
-
-/* -------------------- Arduino Functions -------------------- */
+/* ----------------------- Arduino Functions ----------------------- */
 
 void setup() 
 {
@@ -268,13 +92,12 @@ void setup()
 
 	delete[] temp;
 
-	if (bDEBUG)
-	{
-		Serial.println("");
-		Serial.print("BasePath = "); Serial.println(FirebaseFunctions.BasePath);
-		Serial.print("ActionPath = "); Serial.println(FirebaseFunctions.ActionPath);
-		Serial.print("ResultPath = "); Serial.println(FirebaseFunctions.ResultPath);
-	}
+	#ifdef IR_DEBUG
+	Serial.println("");
+	Serial.print("BasePath = "); Serial.println(FirebaseFunctions.BasePath);
+	Serial.print("ActionPath = "); Serial.println(FirebaseFunctions.ActionPath);
+	Serial.print("ResultPath = "); Serial.println(FirebaseFunctions.ResultPath);
+	#endif
 
 	pinMode(LED_BUILTIN, OUTPUT);
 	connectToWifi();
@@ -283,11 +106,13 @@ void setup()
 
 void loop()
 {
-	if (Firebase.failed() && bDEBUG) {
-		Serial.print("streaming error");
+	#ifdef IR_DEBUG
+	if (Firebase.failed()) {
+		Serial.print("streaming error: ");
 		Serial.println(Firebase.error());
 		delay(1000);
 	}
+	#endif
 
 	if (Firebase.available())
 	{
@@ -296,29 +121,38 @@ void loop()
 		type.toLowerCase();
 		if (type == "put") 
 		{
-			if (bDEBUG) debug_printFirebaseObject(event);
+			#ifdef IR_DEBUG
+			SHDebug.printFirebaseObject(event);
+			#endif
 
 			switch (event.getInt("/data/type")) 
 			{
 				case IR_ACTION_NONE: 
-					if (bDEBUG) Serial.println("ir_action_none");
+					#ifdef IR_DEBUG
+					Serial.println("ir_action_none");
+					#endif
 					break;
 				case IR_ACTION_SEND:
-					if (bDEBUG) debug_printSendAction(event.getString("/data/signal"));
+					#ifdef IR_DEBUG
+					SHDebug.printSendAction(event.getString("/data/signal"));
+					#endif
 					IRFunctions.sendSignal(event.getString("/data/signal"),
 										   event.getBool("/data/repeat"));
 					break;
 				case IR_ACTION_LEARN:
-					if (bDEBUG) Serial.println("ir_action_learn");
+					#ifdef IR_DEBUG
+					Serial.println("ir_action_learn");
+					#endif
 					IRFunctions.readNextSignal();
 					break;
 				default: 
-					if (bDEBUG) Serial.println("ERROR - Unknown action");
+					#ifdef IR_DEBUG
+					Serial.println("ERROR - Unknown action");
+					#endif
 					break;
 			}
 
-			if (bDEBUG) debug_pulse_LED();
-
+			SHDebug.pulse_LED();
 		}
 	}
 }
