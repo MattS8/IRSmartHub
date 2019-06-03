@@ -29,6 +29,7 @@ void debug_printFirebaseObject(FirebaseObject event)
 	Serial.println(event.getString("path"));
 	Serial.print("data: ");
 	event.getJsonVariant("data").prettyPrintTo(Serial);
+	Serial.println("");
 	Serial.print("Performing action: ");
 }
 
@@ -62,6 +63,7 @@ void debug_printStartingAutoConnect()
 
 void debug_pulse_LED()
 {
+	Serial.println("pulsing LED...");
 	digitalWrite(LED_BUILTIN, ON);
 	delay(500);
 	digitalWrite(LED_BUILTIN, OFF);
@@ -79,8 +81,13 @@ void debug_printResults(decode_results* results)
    yield();  // Feed the WDT (again)
 
    // Output the results as source code
-   Serial.println(resultToSourceCode(results));
+   String resSourceCode = resultToSourceCode(results);
+   Serial.println(resSourceCode);
+   char* temp = new char[100];
+   sprintf(temp, "\trawlen = %lu, resSourceCode size = %lu", results->rawlen, resSourceCode.length());
+   Serial.println(temp);
    Serial.println("");  // Blank line between entries
+   delete[] temp;
    yield();             // Feed the WDT (again)
 }
 
@@ -123,9 +130,20 @@ void connectToWifi()
 
 void ArduinoFirebaseFunctions::connect()
 {
-	if (bDEBUG) Serial.println("Connecting to firebase...");
+	if (bDEBUG) { Serial.print("Connecting to firebase at: "); Serial.println(ActionPath.c_str()); }
+	// Initialize Firebase
 	Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
-	if (bDEBUG) Serial.println(ActionPath.c_str());
+	
+	// Initialize action root for device
+	sprintf(responseBuffer, "{\"type\": %d, \"timestamp\": \"%lu\"}", 
+		bDEBUG ? IR_ACTION_LEARN : IR_ACTION_NONE,
+		millis());
+	FirebaseObject obj = FirebaseObject(responseBuffer);
+	Firebase.set(FirebaseFunctions.ActionPath, obj.getJsonVariant());
+
+	Serial.println("Done sending initialization post");
+
+	// Begin listening for actions
 	Firebase.stream(ActionPath);
 }
 
@@ -141,11 +159,16 @@ void ArduinoFirebaseFunctions::sendRecordedSignal(decode_results* results)
 
 void ArduinoFirebaseFunctions::sendError(const int errorType)
 {
-	Serial.println("TODO - sendError");
-	switch (errorType)
-	{
+	sprintf(responseBuffer, "{\"code\": %d, \"timestamp\": \"%lu\"}",
+		errorType,
+		millis());
+	FirebaseObject obj = FirebaseObject(responseBuffer);
+	Firebase.set(FirebaseFunctions.ResultPath, obj.getJsonVariant());
 
-	}
+	if (Firebase.failed())
+	{
+		Serial.print("Failed to send error response... ");	
+	} else if (bDEBUG) Serial.println("Sent error result");
 }
 
 /* -------------------- Arduino IR Functions -------------------- */
@@ -170,7 +193,7 @@ void ArduinoIRFunctions::readNextSignal() //TODO
 		// Check for timeout
 		if (millis() - timeoutTimer >= IR_READ_TIMEOUT)
 		{
-			if (bDEBUG) Serial.println("readNextSignal timeout!");
+			if (bDEBUG) Serial.println("timeout!");
 			FirebaseFunctions.sendError(ERR_TIMEOUT);
 			break;
 		}
@@ -228,7 +251,7 @@ void setup()
 	char* temp = (char*) malloc(50 * sizeof(char));
 
 	// Set base path
-	sprintf(temp, "/device/%lu", ESP.getChipId());
+	sprintf(temp, "/devices/%lu", ESP.getChipId());
 	FirebaseFunctions.BasePath = String(temp);
 
 	// Set action path
@@ -245,6 +268,14 @@ void setup()
 
 	delete[] temp;
 
+	if (bDEBUG)
+	{
+		Serial.println("");
+		Serial.print("BasePath = "); Serial.println(FirebaseFunctions.BasePath);
+		Serial.print("ActionPath = "); Serial.println(FirebaseFunctions.ActionPath);
+		Serial.print("ResultPath = "); Serial.println(FirebaseFunctions.ResultPath);
+	}
+
 	pinMode(LED_BUILTIN, OUTPUT);
 	connectToWifi();
 	digitalWrite(LED_BUILTIN, OFF);
@@ -253,8 +284,9 @@ void setup()
 void loop()
 {
 	if (Firebase.failed() && bDEBUG) {
-		Serial.println("streaming error");
+		Serial.print("streaming error");
 		Serial.println(Firebase.error());
+		delay(1000);
 	}
 
 	if (Firebase.available())

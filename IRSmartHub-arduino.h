@@ -22,11 +22,14 @@ const uint32_t SMART_HUB_BAUD_RATE = 115200;
 const uint8_t  IR_RECV_MESSAGE_TIMEOUT = 50;
 const uint16_t IR_RECV_BUFFER_SIZE = 1024;
 
+const size_t MAX_RESPONSE_SIZE = 128;
+
 const String FIREBASE_HOST = "ir-home-hub.firebaseio.com";
 const String FIREBASE_AUTH = "OVupEOIVjxTW1brlm02WISnExnOWRBxc9yhJVyPy";
 
-/* -------------------- Error Codes -------------------- */
-const int ERR_TIMEOUT = 800;
+/* -------------------- Result Codes -------------------- */
+const int RES_SEND_SIG = 700;
+const int ERR_TIMEOUT  = 800;
 const int ERR_OVERFLOW = 801;
 
 /* -------------------- Hub Actions -------------------- */
@@ -65,6 +68,9 @@ public:
 	String ActionPath;
 	String ResultPath;
 	String BasePath;
+
+private:
+	char* responseBuffer = new char[MAX_RESPONSE_SIZE];
 };
 
 #endif
