@@ -31,6 +31,16 @@ void ArduinoFirebaseFunctions::connect()
 void ArduinoFirebaseFunctions::setHubName(const String& name)
 {
 	Serial.println("TODO - setHubName");
+	sprintf(responseBuffer, "%s/name", BasePath.c_str());
+	String namePath = String(responseBuffer);
+	Firebase.setString(namePath, name);
+
+	if (Firebase.failed())
+	{
+		if (bDEBUG) Serial.println("Failed to set hub name.");
+		sendError(ERR_UNKNOWN);
+	}
+	else if (bDEBUG) { Serial.print("Changed hub name to "); Serial.println(name); }
 }
 
 /**
@@ -38,7 +48,18 @@ void ArduinoFirebaseFunctions::setHubName(const String& name)
  **/
 void ArduinoFirebaseFunctions::sendRecordedSignal(decode_results* results)
 {
-	Serial.println("TODO - sendRecordedSignal");
+	sprintf(responseBuffer, "{\"code:\": %d, \"timestamp\": \"%lu\", "
+		"\"rawData\": \"%s\", \"rawLen\": %lu}",
+		RES_SEND_SIG, millis(), results->rawBuff, results->rawlen);
+	FirebaseObject obj = FirebaseObject(responseBuffer);
+	Firebase.set(FirebaseFunctions.ResultPath, obj.getJsonVariant());
+
+	if (Firebase.failed()) 
+	{
+		if (bDEBUG) Serial.println("Failed to send signal result...");
+		sendError(ERR_UNKNOWN);
+	}
+	else if (bDEBUG) Serial.println("Sent signal result.");
 }
 
 /**
@@ -52,10 +73,12 @@ void ArduinoFirebaseFunctions::sendError(const int errorType)
 	FirebaseObject obj = FirebaseObject(responseBuffer);
 	Firebase.set(FirebaseFunctions.ResultPath, obj.getJsonVariant());
 
-	if (Firebase.failed()) 
-		Serial.print("Failed to send error response... ");	
-	else if (bDEBUG) 
-		Serial.println("Sent error result");
+	if (bDEBUG) {
+		if (Firebase.failed()) 
+			Serial.print("Failed to send error response... ");	
+		else
+			Serial.println("Sent error result.");
+	}
 }
 
 /**

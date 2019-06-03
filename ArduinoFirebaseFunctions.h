@@ -15,8 +15,9 @@ const size_t MAX_RESPONSE_SIZE = 1024;
 
 /* -------------------- Result Codes -------------------- */
 const int RES_SEND_SIG = 700;
-const int ERR_TIMEOUT  = 800;
-const int ERR_OVERFLOW = 801;
+const int ERR_UNKNOWN  = 800;
+const int ERR_TIMEOUT  = 801;
+const int ERR_OVERFLOW = 802;
 
 class ArduinoFirebaseFunctions {
 public:
