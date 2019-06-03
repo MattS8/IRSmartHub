@@ -22,7 +22,7 @@ const uint32_t SMART_HUB_BAUD_RATE = 115200;
 const uint8_t  IR_RECV_MESSAGE_TIMEOUT = 50;
 const uint16_t IR_RECV_BUFFER_SIZE = 1024;
 
-const size_t MAX_RESPONSE_SIZE = 128;
+const size_t MAX_RESPONSE_SIZE = 1024;
 
 const String FIREBASE_HOST = "ir-home-hub.firebaseio.com";
 const String FIREBASE_AUTH = "OVupEOIVjxTW1brlm02WISnExnOWRBxc9yhJVyPy";
