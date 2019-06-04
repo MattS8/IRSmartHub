@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<android.support.constraint.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        tools:background="@color/colorPrimaryDark">
+
+    <!-- Welcome Views -->
+    <ImageView
+            android:id="@+id/splashLogo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:contentDescription="@string/app_logo"
+            android:src="@drawable/temp_splash_logo"
+            app:layout_constraintVertical_bias=".0"
+    />
+    <TextView
+            android:textAppearance="@style/AppTheme.TextAppearance.SplashHeader"
+            android:text="@string/almost_done"
+            android:layout_width="0dp"
+            android:gravity="center"
+            android:layout_height="wrap_content"
+            android:id="@+id/welcomeTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginEnd="32dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginStart="32dp" app:layout_constraintTop_toBottomOf="@+id/splashLogo"
+            app:layout_constraintVertical_bias="0.0"
+    />
+    <TextView
+            android:textAppearance="@style/AppTheme.TextAppearance.SplashSubHeader"
+            android:text="@string/pick_username"
+            android:layout_width="0dp"
+            android:gravity="center"
+            android:layout_height="wrap_content"
+            android:id="@+id/welcomeDescription"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginEnd="32dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginStart="32dp"
+            app:layout_constraintTop_toBottomOf="@+id/welcomeTitle"
+            app:layout_constraintVertical_bias="0.0"
+    />
+
+    <com.google.android.gms.common.SignInButton android:layout_width="wrap_content"
+                                                android:layout_height="wrap_content"
+                                                android:id="@+id/signInGoogle"
+                                                app:layout_constraintTop_toBottomOf="@id/welcomeDescription"
+                                                app:layout_constraintStart_toStartOf="parent"
+                                                app:layout_constraintEnd_toEndOf="parent"
+                                                app:layout_constraintBottom_toBottomOf="parent"
+                                                app:layout_constraintVertical_bias="0"
+                                                android:layout_marginTop="32dp"
+                                                app:buttonSize="wide"/>
+
+    <!-- Email Sign In Views -->
+    <TextView
+            android:textAppearance="@style/AppTheme.TextAppearance.SplashSubHeader"
+            android:text="@string/or"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/or"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@+id/signInGoogle"
+            android:alpha="0"
+            android:layout_marginBottom="16dp" app:layout_constraintBottom_toTopOf="@+id/email"/>
+
+    <android.support.design.widget.TextInputLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:id="@+id/password"
+            android:theme="@style/AppTheme.TextInputAppearance.SplashSignIn"
+            app:layout_constraintTop_toBottomOf="@+id/email"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintVertical_bias="0.0"
+            android:layout_marginTop="8dp"
+    >
+
+        <android.support.design.widget.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/password"/>
+    </android.support.design.widget.TextInputLayout>
+
+
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp" app:layout_constraintEnd_toEndOf="parent" android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/or" android:id="@+id/email"
+        android:theme="@style/AppTheme.TextInputAppearance.SplashSignIn"
+    >
+
+        <android.support.design.widget.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/email_address"
+                android:gravity="center_horizontal"
+        />
+    </android.support.design.widget.TextInputLayout>
+    <Button
+            android:text="@string/finish_sign_up"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnSignUp"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="8dp"
+            style="@style/AppTheme.Button.SplashSignIn.Colored"
+            android:minWidth="100dp"
+    />
+    <Button
+            android:text="@string/sign_in"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnSignIn"
+            style="@style/AppTheme.Button.SplashSignIn"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@+id/password"
+            app:layout_constraintStart_toEndOf="@+id/btnSignUp"
+            app:layout_constraintHorizontal_bias="0.5"
+            android:layout_marginEnd="32dp"
+            android:layout_marginStart="8dp"
+            android:minWidth="100dp"
+
+    />
+    <Button
+            android:text="@string/skip_sign_in"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnSkip" app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="32dp"
+            app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="32dp" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/btnSignUp" android:layout_marginBottom="8dp"
+            android:textColor="@color/splash_button_bg"
+
+            app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintVertical_bias="0.8"/>
+
+</android.support.constraint.ConstraintLayout>

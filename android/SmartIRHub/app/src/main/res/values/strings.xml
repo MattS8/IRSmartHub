@@ -1,0 +1,58 @@
+<resources>
+    <string name="app_name">Smart IR Hub</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_slideshow">Slideshow</string>
+    <string name="menu_tools">Tools</string>
+    <string name="menu_share">Share</string>
+    <string name="menu_send">Send</string>
+    <string name="app_logo">App logo</string>
+    <string name="welcome_desc">Please sign in or sign up to get started</string>
+    <string name="welcomeTitle">Welcome!</string>
+    <string name="remind_verify_email">Don\'t forget to verify your email by clicking the link in the email sent to </string>
+    <string name="client_id" translatable="false">152988922698-8oq2ogokh7khth08q9h2mtodgmb6k8bg.apps.googleusercontent.com</string>
+    <string name="verify_email">Verify Email Address</string>
+    <string name="resend_verification_email">Resend Verification Email</string>
+    <string name="err_sign_in_title">Problem Signing In</string>
+    <string name="err_sign_in_google_desc">There was a problem signing in with Google. Please try again.</string>
+    <string name="or">or</string>
+    <string name="email_address">Email Address</string>
+    <string name="password">Password</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="sign_in">Sign In</string>
+    <string name="skip_sign_in">Skip</string>
+    <string name="almost_done">Almost Done!</string>
+    <string name="pick_username">Pick a username and you\'re good to go.</string>
+    <string name="err_invalid_email">Invalid email address</string>
+    <string name="err_pass">Must be between 5 – 25 characters, one lower case, one upper case, and one number</string>
+    <string name="finish_sign_up">Finish Sign Up</string>
+    <string name="err_invalid_username">Must be between 5 – 15 characters and contain no special characters</string>
+    <string name="err_account_made_title">Existing Account Found</string>
+    <string name="err_acount_made_desc">An account was already made with that email address. Try signing in
+        instead!
+    </string>
+    <string name="err_sign_in_desc">Something went wrong. Please try again! If the problem persists please send us a bug
+        report.
+    </string>
+    <string name="dismiss">Dismiss</string>
+    <string name="report_issue">Report Issue</string>
+    <string name="err_inv_email_pass">Invalid Email or Password</string>
+    <string name="err_inv_email_pass_desc">The email and password combination was not valid. Please try again.</string>
+    <string name="err_email_nonexistant">Account Not Found</string>
+    <string name="err_email_nonexistant_desc">No account with that email account was found. Try signing up instead.
+    </string>
+    <string name="username_taken_title">Username Already Taken</string>
+    <string name="err_username_taken_desc">An account with that username already exists. Please select a different one
+        and try again.
+    </string>
+    <string name="username">Username</string>
+    <string name="title_remotes">Remotes</string>
+    <string name="title_actions">Actions</string>
+</resources>

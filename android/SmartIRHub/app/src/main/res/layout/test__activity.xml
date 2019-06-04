@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
+
+    <android.support.v4.widget.NestedScrollView android:layout_width="match_parent"
+                                                android:layout_height="match_parent"
+                                                android:background="@color/colorPrimaryDark"
+                                                android:id="@+id/nestedScrollView">
+        <android.support.constraint.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:background="@color/colorPrimaryDark"
+        >
+
+            <TextView
+                    android:text="Firebase Auth Actions"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:id="@+id/tvFirebaseAuthActions"
+                    app:layout_constraintTop_toBottomOf="@+id/btnTestCreateUserDB"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" android:layout_marginTop="24dp"
+                    android:textAppearance="@style/AppTheme.TextAppearance.SubHeader" android:layout_marginBottom="24dp"
+                    app:layout_constraintVertical_bias="0.0" app:layout_constraintBottom_toTopOf="@+id/btnViewToken"
+                    app:layout_constraintHorizontal_bias="0.5"/>
+            <TextView
+                    android:text="Firestore User DB Actions"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:id="@+id/tvFirestoreUserDataActions"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:textAppearance="@style/AppTheme.TextAppearance.SubHeader"
+                    app:layout_constraintHorizontal_bias="0.5" android:layout_marginTop="32dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toTopOf="@+id/btnTestGetUser" android:layout_marginBottom="24dp"/>
+            <Button
+                    android:text="View User Token"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:id="@+id/btnViewToken"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tvFirebaseAuthActions"
+                    app:layout_constraintHorizontal_bias="0.5" android:textAllCaps="false"
+                    app:layout_constraintBottom_toTopOf="@+id/btnConnectToIRHub"/>
+            <Button
+                    android:text="Test Get User Data (matts88)"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/btnTestGetUser"
+                    android:textAllCaps="false"
+                    app:layout_constraintBottom_toTopOf="@+id/btnTestGetUserFromUID"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5" app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tvFirestoreUserDataActions"/>
+            <Button
+                    android:text="Test Create User (matts88)"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/btnTestCreateUser"
+                    android:textAllCaps="false"
+                    app:layout_constraintTop_toBottomOf="@+id/btnTestGetUserFromUID"
+                    app:layout_constraintBottom_toTopOf="@+id/btnTestCreateUserDB"
+                    app:layout_constraintStart_toStartOf="parent" app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+            <Button
+                    android:text="Test Create User DB (matts88)"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/btnTestCreateUserDB"
+                    app:layout_constraintTop_toBottomOf="@+id/btnTestCreateUser"
+                    app:layout_constraintStart_toStartOf="parent" app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintEnd_toEndOf="parent" android:textAllCaps="false"
+                    app:layout_constraintBottom_toTopOf="@+id/tvFirebaseAuthActions"/>
+            <Button
+                    android:text="Test getUserFromUID"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/btnTestGetUserFromUID"
+                    app:layout_constraintTop_toBottomOf="@+id/btnTestGetUser"
+                    app:layout_constraintBottom_toTopOf="@+id/btnTestCreateUser"
+                    app:layout_constraintStart_toStartOf="parent" app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintEnd_toEndOf="parent" android:textAllCaps="false"/>
+            <Button
+                    android:text="Connect to IR Hub (SMART-IR-DEBUG_001)"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/btnConnectToIRHub"
+                    app:layout_constraintTop_toBottomOf="@+id/btnViewToken"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5" android:textAllCaps="false"/>
+        </android.support.constraint.ConstraintLayout>
+    </android.support.v4.widget.NestedScrollView>
+
+</layout>
+
