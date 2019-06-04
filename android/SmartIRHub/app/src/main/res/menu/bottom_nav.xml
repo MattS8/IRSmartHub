@@ -9,9 +9,4 @@
             android:id="@+id/navigation_app_actions"
             android:icon="@drawable/temp_splash_logo"
             android:title="@string/title_actions"/>
-
-    <item
-            android:id="@+id/navigation_about"
-            android:icon="@drawable/temp_splash_logo"
-            android:title="@string/title_help"/>
 </menu>
