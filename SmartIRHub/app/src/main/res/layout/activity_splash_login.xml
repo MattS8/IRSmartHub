@@ -145,6 +145,7 @@
     />
     <Button
             android:text="@string/skip_sign_in"
+            android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/btnSkip" app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="32dp"

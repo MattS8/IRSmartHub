@@ -53,4 +53,6 @@
         and try again.
     </string>
     <string name="username">Username</string>
+    <string name="title_remotes">Remotes</string>
+    <string name="title_actions">Actions</string>
 </resources>

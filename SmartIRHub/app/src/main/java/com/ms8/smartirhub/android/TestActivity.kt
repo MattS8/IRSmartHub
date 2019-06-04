@@ -1,11 +1,17 @@
 package com.ms8.smartirhub.android
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
 import android.databinding.DataBindingUtil
+import android.net.ConnectivityManager
+import android.net.wifi.WifiConfiguration
+import android.net.wifi.WifiManager
 import android.os.Bundle
+import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestoreException
 import com.ms8.smartirhub.android.databinding.TestActivityBinding
 import com.ms8.smartirhub.android.firebase.FirebaseAuthActions
 import com.ms8.smartirhub.android.firebase.FirestoreActions
@@ -25,6 +31,50 @@ class TestActivity : AppCompatActivity() {
         binding.btnTestGetUser.setOnClickListener { testGetUser() }
         binding.btnTestCreateUserDB.setOnClickListener { testCreateUserDB() }
         binding.btnTestGetUserFromUID.setOnClickListener { testGetUserQuery() }
+        binding.btnViewToken.setOnClickListener { printUserToken() }
+        binding.btnConnectToIRHub.setOnClickListener { testConnectToIRHub() }
+    }
+
+    private fun connectToIRHub() {
+        val networkSSID = "SMART-IR-DEBUG_001"
+        val conf = WifiConfiguration().apply {
+            SSID = "\"" + networkSSID + "\""
+            allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE)
+        }
+
+        val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        wifiManager.addNetwork(conf)
+
+
+        wifiManager.configuredNetworks.forEach { network ->
+            network?.SSID.let { SSID ->
+                if (SSID == ("\"" + networkSSID + "\"")) {
+                    wifiManager.disconnect()
+                    wifiManager.enableNetwork(network.networkId, true)
+                    wifiManager.reconnect()
+
+                    return@forEach
+                }
+            }
+        }
+
+        // TODO something...
+    }
+
+    private fun testConnectToIRHub() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.RECORD_AUDIO),
+            REQ_WIFI_STATE)
+    }
+
+    private fun printUserToken() {
+        FirebaseAuth.getInstance().currentUser?.getIdToken(false)?.addOnCompleteListener { task ->
+            when {
+                task.isSuccessful -> {Log.d("TEST####", "User Token: ${task.result?.token}")}
+                else -> {Log.d("TEST####", "Failed to get user token...")}
+            }
+        }
     }
 
     private fun testCreateUserDB() {
@@ -68,4 +118,21 @@ class TestActivity : AppCompatActivity() {
             .addOnFailureListener {e -> Log.d("TEST####", "Query failed... $e")}
     }
 
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        when (requestCode) {
+            REQ_WIFI_STATE -> {
+                if (grantResults[0] != PackageManager.PERMISSION_GRANTED){
+                    Log.d("TEST####", "Got wifi permission")
+                    connectToIRHub()
+                } else {
+                    Log.d("TEST####", "Wifi permission DENIED")
+                }
+            }
+            else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        }
+    }
+
+    companion object {
+        const val REQ_WIFI_STATE = 8
+    }
 }

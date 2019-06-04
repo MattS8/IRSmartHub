@@ -52,13 +52,14 @@ class SplashActivity : AppCompatActivity() {
      */
     private val authStateListener : FirebaseAuth.AuthStateListener = FirebaseAuth.AuthStateListener {
         val bHasSeenSplash = MySharedPreferences.hasSeenSplash(this)
+        val bHasUsername = MySharedPreferences.hasUsername(this)
         Log.d("TEST", "bHasSeenSplash = $bHasSeenSplash")
         when {
             // First time
             splashState.layoutState == LayoutState.SHOW_SPLASH && !bHasSeenSplash ->
                 Handler().postDelayed({showSignIn(true)}, 50)
             // Already signed in and seen splash screen
-            it.currentUser != null && bHasSeenSplash -> {
+            it.currentUser != null && bHasUsername && bHasSeenSplash -> {
                 gotoMainPage()
             }
         }
@@ -99,11 +100,15 @@ class SplashActivity : AppCompatActivity() {
      * * If username if not found -> [showCreateUsername]
      */
     private fun onSignInSuccess() {
+        Log.d("TEST##", "onSignInSuccess")
         FirestoreActions.getUserFromUID()
             .addOnSuccessListener { querySnapshot ->
                 when {
                     querySnapshot.isEmpty -> showCreateUsername(true)
-                    else -> gotoMainPage()
+                    else -> {
+                        MySharedPreferences.setUsername(this, querySnapshot.documents[0].id)
+                        gotoMainPage()
+                    }
                 }
             }
             .addOnFailureListener { e ->
@@ -170,11 +175,7 @@ class SplashActivity : AppCompatActivity() {
      * Attempts to sign in with Google.
      */
     private fun btnGoogleSignInClicked() {
-        if (GoogleSignIn.getLastSignedInAccount(this) != null) {
-            onSignInSuccess()
-        } else {
-            FirebaseAuthActions.signInWithGoogle(this)
-        }
+        FirebaseAuthActions.signInWithGoogle(this)
     }
 
     /* -------------------- Transition Functions -------------------- */
@@ -315,12 +316,6 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_splash)
 
-        // Jump to username layout if the user left mid-sign-up
-        if (FirebaseAuth.getInstance().currentUser != null
-            && !FirebaseAuth.getInstance().currentUser!!.isAnonymous
-            && !MySharedPreferences.hasSeenSplash(this))
-            showCreateUsername(true)
-
         // Restore state
         savedInstanceState?.let {
             splashState.layoutState = layoutStateFromString(it.getString(SPLASH_INSTANCE_STATE + "_LAYOUT", SHOW_SPLASH))
@@ -361,12 +356,7 @@ class SplashActivity : AppCompatActivity() {
                         Log.d("TEST###", "Result OK")
                         when (FirebaseAuthActions.handleGoogleSignInResult(data)) {
                             // No Error
-                            null -> {
-                                when (MySharedPreferences.hasUsername(this)) {
-                                    true -> { gotoMainPage() }
-                                    false -> { showCreateUsername(true) }
-                                }
-                            }
+                            null -> onSignInSuccess()
                             // Google Sign In failed
                             else -> FirebaseAuthActions.showSignInWithGoogleError(this)
                         }
