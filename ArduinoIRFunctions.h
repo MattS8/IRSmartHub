@@ -11,13 +11,13 @@
 #endif
 
 #ifndef IR_BLAST_PIN
-#define IR_BLAST_PIN 100
+#define IR_BLAST_PIN 12
 #endif
 
 const uint8_t  IR_RECV_MESSAGE_TIMEOUT = 50;
 const uint16_t IR_RECV_BUFFER_SIZE = 1024;
 const uint32_t IR_READ_TIMEOUT = 10000;
-
+const uint16_t SEND_FREQUENCY = 38;
 /* -------------------- Hub Actions -------------------- */
 const int IR_ACTION_NONE = 0;
 const int IR_ACTION_LEARN = 1;
@@ -31,11 +31,15 @@ public:
 	**/
 	void readNextSignal();
 
-	void sendSignal(const String& irSignal, bool bRepeat);
+	void sendSignal(const String& rawDataStr, uint16_t rawlen, bool bRepeat);
 
 	void setDebug(bool debug);
 
+	void init();
+
 private:
+	uint16_t* parseRawDataString(const char* dataStr, uint16_t rawlen);
+
 	bool bDEBUG;
 	IRrecv irReceiver = IRrecv(IR_RECV_PIN, 
 							   IR_RECV_BUFFER_SIZE, 

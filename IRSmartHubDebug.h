@@ -16,7 +16,13 @@ public:
 	void pulse_LED();
 	void printResults(decode_results* results);
 
+	void sendTestIRSignal();
+
+	void init(bool pulseLED);
+
+
 private:
+	bool bPulseLED = false;
 	const String dWifiManager = "WiFiManager: ";
 };
 

@@ -99,9 +99,19 @@ void setup()
 	Serial.print("ResultPath = "); Serial.println(FirebaseFunctions.ResultPath);
 	#endif
 
+	// Enable debug statements
+	FirebaseFunctions.setDebug(true);
+	IRFunctions.setDebug(true);
+
+	// Initialize IR hardware
+	IRFunctions.init();
+	SHDebug.init(false);
+
 	pinMode(LED_BUILTIN, OUTPUT);
 	connectToWifi();
 	digitalWrite(LED_BUILTIN, OFF);
+
+	Serial.println("Starting IR Blaster test:");
 }
 
 void loop()
@@ -134,9 +144,10 @@ void loop()
 					break;
 				case IR_ACTION_SEND:
 					#ifdef IR_DEBUG
-					SHDebug.printSendAction(event.getString("/data/signal"));
+					SHDebug.printSendAction(event.getString("/data/rawData"));
 					#endif
-					IRFunctions.sendSignal(event.getString("/data/signal"),
+					IRFunctions.sendSignal(event.getString("/data/rawData"),
+										   (uint16_t) event.getInt("/data/rawLen"),
 										   event.getBool("/data/repeat"));
 					break;
 				case IR_ACTION_LEARN:

@@ -36,6 +36,8 @@ public:
 	String BasePath;
 
 private:
+	String rawDataToString(decode_results* results);
+
 	char* responseBuffer = new char[MAX_RESPONSE_SIZE];
 	bool bDEBUG = false;
 };

@@ -38,17 +38,6 @@ void IRSmartHubDebug::printStartingAutoConnect()
 	Serial.println("Starting autoConnect...");
 }
 
-void IRSmartHubDebug::pulse_LED()
-{
-	digitalWrite(LED_BUILTIN, ON);
-	delay(500);
-	digitalWrite(LED_BUILTIN, OFF);
-	delay(500);
-	digitalWrite(LED_BUILTIN, ON);
-	delay(500);	
-	digitalWrite(LED_BUILTIN, OFF);
-}
-
 void IRSmartHubDebug::printResults(decode_results* results)
 {
    Serial.println(resultToHumanReadableBasic(results));
@@ -61,6 +50,37 @@ void IRSmartHubDebug::printResults(decode_results* results)
    String resSourceCode = resultToSourceCode(results);
    Serial.println(resSourceCode);
    yield();
+}
+
+void IRSmartHubDebug::sendTestIRSignal()
+{
+	pinMode(12, OUTPUT);
+	for (int i = 0; i < 200; i++) 
+	{
+		digitalWrite(12, HIGH);
+		delay(300);
+		digitalWrite(12, LOW);
+		delay(300);
+	}
+}
+
+void IRSmartHubDebug::init(bool pulseLED)
+{
+	bPulseLED = pulseLED;
+}
+
+void IRSmartHubDebug::pulse_LED()
+{
+	if (!bPulseLED)
+		return;
+
+	digitalWrite(LED_BUILTIN, ON);
+	delay(500);
+	digitalWrite(LED_BUILTIN, OFF);
+	delay(500);
+	digitalWrite(LED_BUILTIN, ON);
+	delay(500);	
+	digitalWrite(LED_BUILTIN, OFF);
 }
 
 
