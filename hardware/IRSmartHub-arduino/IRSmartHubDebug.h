@@ -1,10 +1,10 @@
 #ifndef IRSMART_HUB_DEBUG_H
 #define IRSMART_HUB_DEBUG_H
 
-#include <WiFiManager.h>          		// https://github.com/tzapu/WiFiManager WiFi Configuration Magic
-#include <IRrecv.h>						// Used to print IR data from decode_results
+#include "WiFiManager.h"          		// https://github.com/tzapu/WiFiManager WiFi Configuration Magic
+#include "IRrecv.h"						// Used to print IR data from decode_results
 #include <ESP8266WiFi.h>          		// ESP8266 Core WiFi Library
-#include <FirebaseArduino.h>			// https://github.com/FirebaseExtended/firebase-arduino
+#include "FirebaseArduino.h"			// https://github.com/FirebaseExtended/firebase-arduino
 
 class IRSmartHubDebug {
 public:

@@ -1,10 +1,10 @@
 #ifndef ARDUINO_IR_FUNCTIONS_H
 #define ARDUINO_IR_FUNCTIONS_H
 
-#include <IRsend.h>
-#include <IRrecv.h>
-#include <IRremoteESP8266.h>
-#include <IRutils.h>
+#include "IRsend.h"
+#include "IRrecv.h"
+#include "IRremoteESP8266.h"
+#include "IRutils.h"
 
 #ifndef IR_RECV_PIN
 #define IR_RECV_PIN 14

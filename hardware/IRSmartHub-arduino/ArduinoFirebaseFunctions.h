@@ -3,9 +3,9 @@
 #ifndef ARDUINO_FIREBASE_FUNCTIONS_H
 #define ARDUINO_FIREBASE_FUNCTIONS_H
 
-#include <FirebaseArduino.h>			// https://github.com/FirebaseExtended/firebase-arduino
-#include <ArduinoJson.h>				// https://github.com/bblanchon/ArduinoJson
-#include <IRrecv.h>						// Used to send IR data from decode_results
+#include "FirebaseArduino.h"			// https://github.com/FirebaseExtended/firebase-arduino
+#include "ArduinoJson.h"				// https://github.com/bblanchon/ArduinoJson
+#include "IRrecv.h"						// Used to send IR data from decode_results
 
 
 const String FIREBASE_HOST = "ir-home-hub.firebaseio.com";
