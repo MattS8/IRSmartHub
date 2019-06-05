@@ -34,13 +34,14 @@ public:
 	String ActionPath;
 	String ResultPath;
 	String BasePath;
-	String SetupPath;
+	String SetupPath = "";
 
 private:
 	String rawDataToString(decode_results* results);
 
 	char* responseBuffer = new char[MAX_RESPONSE_SIZE];
 	bool bDEBUG = false;
+	bool bConnected = false;
 };
 
 #endif

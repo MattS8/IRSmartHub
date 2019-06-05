@@ -19,6 +19,15 @@ void onSaveConfig()
 	SHDebug.printOnSaveConfig();
 	ir_hub_state = STATE_CONFIG_FIREBASE;
 	#endif
+
+	// Set path to initial setup message
+	char* temp = (char*) malloc(75 * sizeof(char));
+	sprintf(temp, "/setups/%s/%lu", wifiManager.getConfigurer().c_str(), 
+ 	ESP.getChipId());
+ 	FirebaseFunctions.SetupPath = String(temp);
+	delete[] temp;
+
+	// Connect to firebase
 	FirebaseFunctions.connect();
 }
 
@@ -48,10 +57,11 @@ void connectToWifi()
 		#endif
 		wifiManager.startConfigPortal(WifiAPName.c_str());
 	} else {
-		FirebaseFunctions.connect();
 		#ifdef IR_DEBUG 
-		Serial.println("Connected!");
+		Serial.println("Automatically Connected!");
 		#endif
+		FirebaseFunctions.connect();
+
 	}
 }
 
@@ -80,10 +90,6 @@ void setup()
 	sprintf(temp, "%s%lu", AP_NAME_BASE.c_str(), ESP.getChipId());
 	WifiAPName = String(temp);
 
-	sprintf(temp, "/setups/%s/%s", wifiManager.getConfigurer().c_str(), 
-		ESP.getChipId());
-	FirebaseFunctions.SetupPath = String(temp);
-
 	delete[] temp;
 
 	#ifdef IR_DEBUG
@@ -91,7 +97,6 @@ void setup()
 	Serial.print("BasePath = "); Serial.println(FirebaseFunctions.BasePath);
 	Serial.print("ActionPath = "); Serial.println(FirebaseFunctions.ActionPath);
 	Serial.print("ResultPath = "); Serial.println(FirebaseFunctions.ResultPath);
-	Serial.print("SetupPath = "); Serial.println(FirebaseFunctions.SetupPath);
 	#endif
 
 	// Enable debug statements
@@ -105,8 +110,6 @@ void setup()
 	pinMode(LED_BUILTIN, OUTPUT);
 	connectToWifi();
 	digitalWrite(LED_BUILTIN, OFF);
-
-	Serial.println("Starting IR Blaster test:");
 }
 
 void loop()

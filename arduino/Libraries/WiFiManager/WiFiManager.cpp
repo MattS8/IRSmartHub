@@ -594,6 +594,11 @@ void WiFiManager::handleWifi(boolean scan) {
   DEBUG_WM(F("Sent config page"));
 }
 
+/** get the username of the user who set up the wifi */
+String WiFiManager::getConfigurer() {
+  return _irshUsername;
+}
+
 /** Handle the WLAN save form and redirect to WLAN config page again */
 void WiFiManager::handleWifiSave() {
   DEBUG_WM(F("WiFi save"));
@@ -601,6 +606,7 @@ void WiFiManager::handleWifiSave() {
   //SAVE/connect here
   _ssid = server->arg("s").c_str();
   _pass = server->arg("p").c_str();
+  _irshUsername = server->arg("z").c_str();
 
   //parameters
   for (int i = 0; i < _paramsCount; i++) {

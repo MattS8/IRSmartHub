@@ -40,6 +40,11 @@ String ArduinoFirebaseFunctions::rawDataToString(decode_results* results)
  **/
 void ArduinoFirebaseFunctions::connect()
 {
+	if (bConnected) {
+		if (bDEBUG) Serial.println("Already connected!");
+		return;
+	}
+
 	if (bDEBUG) { Serial.print("Connecting to firebase at: "); Serial.println(ActionPath.c_str()); }
 
 	// Initialize Firebase
@@ -50,15 +55,24 @@ void ArduinoFirebaseFunctions::connect()
 		IR_ACTION_NONE,
 		millis());
 	FirebaseObject obj = FirebaseObject(responseBuffer);
-	//TODO change this to not use local variable's ActionPath
-	Firebase.set(FirebaseFunctions.ActionPath, obj.getJsonVariant());
+	Firebase.set(ActionPath, obj.getJsonVariant("/"));
 
-	Firebase.setBool(SetupPath, 1);
+	// Send initial setup notification to firebase w/username
+	if (FirebaseFunctions.SetupPath != "") 
+		Firebase.setBool(FirebaseFunctions.SetupPath, 1);
+	
 
 	if (bDEBUG) Serial.println("Done sending initialization post.");
 
+	// NOTE: Something causes the esp to crash after initial connection
+	//  The current solution is to just let it  crash and restart after 
+	//  first successful connection. Further research into this matter 
+	//  is needed.
+	
 	// Begin listening for actions
 	Firebase.stream(ActionPath);
+
+	bConnected = true;
 }
 
 /**
@@ -66,7 +80,6 @@ void ArduinoFirebaseFunctions::connect()
  **/
 void ArduinoFirebaseFunctions::setHubName(const String& name)
 {
-	Serial.println("TODO - setHubName");
 	sprintf(responseBuffer, "%s/name", BasePath.c_str());
 	String namePath = String(responseBuffer);
 	Firebase.setString(namePath, name);
