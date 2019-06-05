@@ -34,6 +34,7 @@ public:
 	String ActionPath;
 	String ResultPath;
 	String BasePath;
+	String SetupPath;
 
 private:
 	String rawDataToString(decode_results* results);

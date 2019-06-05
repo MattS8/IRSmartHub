@@ -50,7 +50,10 @@ void ArduinoFirebaseFunctions::connect()
 		IR_ACTION_NONE,
 		millis());
 	FirebaseObject obj = FirebaseObject(responseBuffer);
+	//TODO change this to not use local variable's ActionPath
 	Firebase.set(FirebaseFunctions.ActionPath, obj.getJsonVariant());
+
+	Firebase.setBool(SetupPath, 1);
 
 	if (bDEBUG) Serial.println("Done sending initialization post.");
 

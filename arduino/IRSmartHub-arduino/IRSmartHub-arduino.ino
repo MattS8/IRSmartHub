@@ -1,19 +1,10 @@
 #include "IRSmartHub-arduino.h"
 
-#define ON LOW
-#define OFF HIGH
-#define AP_NAME_BASE "IRSmartHub-"
-
-/* ------------------------- IR Hub States ------------------------- */
-
-#define STATE_CONFIG_WIFI 1
-#define STATE_CONFIG_FIREBASE 2
-
-
 /* ------------------------ Global Variables ----------------------- */
 int ir_hub_state = STATE_CONFIG_WIFI;
 ArduinoIRFunctions IRFunctions;
 ArduinoFirebaseFunctions FirebaseFunctions;
+WiFiManager wifiManager;
 String WifiAPName;
 
 #ifdef IR_DEBUG
@@ -42,7 +33,6 @@ void configModeCallback (WiFiManager *myWiFiManager)
 
 void connectToWifi() 
 {
-	WiFiManager wifiManager;
 	wifiManager.setBreakAfterConfig(true);
 	wifiManager.setDebugOutput(true);
 	wifiManager.setAPCallback(configModeCallback);
@@ -87,8 +77,12 @@ void setup()
 	FirebaseFunctions.ResultPath = String(temp);
 
 	// Set Wifi Access Point Name
-	sprintf(temp, "%s%lu", AP_NAME_BASE, ESP.getChipId());
+	sprintf(temp, "%s%lu", AP_NAME_BASE.c_str(), ESP.getChipId());
 	WifiAPName = String(temp);
+
+	sprintf(temp, "/setups/%s/%s", wifiManager.getConfigurer().c_str(), 
+		ESP.getChipId());
+	FirebaseFunctions.SetupPath = String(temp);
 
 	delete[] temp;
 
@@ -97,6 +91,7 @@ void setup()
 	Serial.print("BasePath = "); Serial.println(FirebaseFunctions.BasePath);
 	Serial.print("ActionPath = "); Serial.println(FirebaseFunctions.ActionPath);
 	Serial.print("ResultPath = "); Serial.println(FirebaseFunctions.ResultPath);
+	Serial.print("SetupPath = "); Serial.println(FirebaseFunctions.SetupPath);
 	#endif
 
 	// Enable debug statements

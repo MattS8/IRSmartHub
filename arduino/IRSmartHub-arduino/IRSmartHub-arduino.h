@@ -16,7 +16,15 @@
 #endif
 #include "ArduinoIRFunctions.h"			// Contains all functionality having to do with controlling the IR sender/receiver
 #include "ArduinoFirebaseFunctions.h"	// Contains all functionality having to do with communicating with Firebase backend
+#define ON LOW
+#define OFF HIGH
 
+const String AP_NAME_BASE = "IRSmartHub-";
 const uint32_t SMART_HUB_BAUD_RATE = 115200;
+
+/* ------------------------- IR Hub States ------------------------- */
+
+#define STATE_CONFIG_WIFI 1
+#define STATE_CONFIG_FIREBASE 2
 
 #endif
