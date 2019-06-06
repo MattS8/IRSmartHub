@@ -25,6 +25,18 @@ Contains a collection of users, remote profiles, and associated hubs. This is us
 	- ***Remove Remote Profiles***: Allows user to remove any remote profile shared with the group.
 ## Firebase
 ## Android Application
+This is the primary front-end user interface. From it, users can create an account that allows them to: 
+- Link/Enable interaction with IRSmartHubs
+- Create custom actions to hubs as well as remote profiles (aka, custom remote controllers)
+- Create groups, allowing multiple users to share hubs/remote profiles
+### Current App Development Progress
+The splash screen/sign-in screen is fully operational *(highlighted in **green** in the following flow diagram)*. Additional passes on it will be done at a later time to refine the experience. Fetching user data and showing the appropriate walk-through screens is currently under development *(highlighted in **yellow** in the following flow diagram)*. After cursory funtionality is built out for that, development on creating usable remote profiles is next. This will allow physical testing of the IRSmartHub and App in conjunction!
+
+The following is a WIP flow diagram of the app experience:
+<img src="https://i.imgur.com/gbUhyBY.png"
+     style="float: center; margin-right: 10px;"
+/>
+
 ## Physical Device
 The physical device is essentially a Wifi connected IR receiver / blaster. The hardware consists of a simple IR LED setup, ESP8266 board, and IR receiver. Utilizes a Firebase backend for a "serverless" implementation. 
 
