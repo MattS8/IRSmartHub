@@ -8,17 +8,6 @@ import com.ms8.smartirhub.android.data.User
 
 object FirestoreActions {
 
-    /**
-     * Fetches the username corresponding to the current user
-     */
-    fun getUsernameDocRef(): DocumentReference? {
-        FirebaseAuth.getInstance().currentUser?.uid?.let {
-            return FirebaseFirestore.getInstance().collection("users_uid").document(it)
-        }
-
-        return null
-    }
-
     fun getUser(username: String): Task<DocumentSnapshot> {
         return FirebaseFirestore.getInstance().collection("users").document(username).get()
     }
@@ -32,11 +21,7 @@ object FirestoreActions {
      *  Creates an entry in the database for newly created user.
      */
     fun createNewUser(username: String) : Task<Void> {
-        val options = SetOptions.merge()
-        val data = HashMap<String, Any>().apply {
-            put("uid", FirebaseAuth.getInstance().currentUser!!.uid)
-        }
         return FirebaseFirestore.getInstance().collection("users").document(username)
-            .set(data, options)
+            .set(User(FirebaseAuth.getInstance().currentUser!!.uid), SetOptions.merge())
     }
 }

@@ -16,10 +16,18 @@ import com.ms8.smartirhub.android.firebase.FirebaseAuthActions
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     lateinit var binding : ActivityMainBinding
 
+
+    val navItemSelectedListener = NavigationView.OnNavigationItemSelectedListener {item ->
+        when (item.itemId) {
+            R.id.action_settings -> true
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) = super.onCreate(savedInstanceState).also {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         setSupportActionBar(binding.toolbar)
-
 
         // Run FirebaseAuth initialization procedure
         FirebaseAuthActions.init(this)

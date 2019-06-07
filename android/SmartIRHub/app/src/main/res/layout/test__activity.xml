@@ -31,7 +31,7 @@
                     android:textAppearance="@style/AppTheme.TextAppearance.SubHeader"
                     app:layout_constraintHorizontal_bias="0.5" android:layout_marginTop="32dp"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toTopOf="@+id/btnTestGetUser" android:layout_marginBottom="24dp"/>
+            />
             <Button
                     android:text="View User Token"
                     android:layout_width="wrap_content"
@@ -50,7 +50,18 @@
                     app:layout_constraintBottom_toTopOf="@+id/btnTestGetUserFromUID"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintHorizontal_bias="0.5" app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/tvFirestoreUserDataActions"/>
+                    app:layout_constraintTop_toBottomOf="@+id/btnTestMakeUser"/>
+            <Button
+                    android:text="Test Make User Data (testUser008)"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/btnTestMakeUser"
+                    android:textAllCaps="false"
+                    app:layout_constraintBottom_toTopOf="@+id/btnTestGetUser"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5" app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tvFirestoreUserDataActions"
+                    android:layout_marginTop="24dp"/>
             <Button
                     android:text="Test Create User (matts88)"
                     android:layout_width="wrap_content"

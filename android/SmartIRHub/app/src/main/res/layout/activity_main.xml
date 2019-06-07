@@ -53,7 +53,9 @@
                     android:id="@+id/bottom_nav"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/bottom_nav_height"
-                    android:layout_gravity="bottom"/>
+                    android:layout_gravity="bottom"
+                    app:menu="@menu/bottom_nav"
+            />
 
         </android.support.design.widget.CoordinatorLayout>
 

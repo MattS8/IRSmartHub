@@ -12,6 +12,8 @@ import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.ms8.smartirhub.android.data.User
 import com.ms8.smartirhub.android.databinding.TestActivityBinding
 import com.ms8.smartirhub.android.firebase.FirebaseAuthActions
 import com.ms8.smartirhub.android.firebase.FirestoreActions
@@ -33,6 +35,15 @@ class TestActivity : AppCompatActivity() {
         binding.btnTestGetUserFromUID.setOnClickListener { testGetUserQuery() }
         binding.btnViewToken.setOnClickListener { printUserToken() }
         binding.btnConnectToIRHub.setOnClickListener { testConnectToIRHub() }
+        binding.btnTestMakeUser.setOnClickListener { testMakeUser() }
+    }
+
+    private fun testMakeUser() {
+        val user = User(FirebaseAuth.getInstance().currentUser!!.uid)
+        FirebaseFirestore.getInstance().collection("users").document("testUser008").set(user)
+            .addOnCompleteListener {
+                Log.d("T#", "done adding new user... success? ${it.isSuccessful}")
+            }
     }
 
     private fun connectToIRHub() {
