@@ -12,12 +12,12 @@ import android.transition.TransitionManager
 import android.util.Log
 import android.view.animation.AccelerateDecelerateInterpolator
 import com.andrognito.flashbar.Flashbar
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.QuerySnapshot
 import com.ms8.smartirhub.android.databinding.ActivitySplashBinding
 import com.ms8.smartirhub.android.firebase.FirebaseAuthActions
 import com.ms8.smartirhub.android.firebase.FirestoreActions
@@ -71,7 +71,7 @@ class SplashActivity : AppCompatActivity() {
      * Attempts to sign user in with inputted email and password.
      * * If input is invalid -> [showError]
      * * If input is valid -> attempt sign in:
-     *      * If sign-in successful -> check for linked username (see [onSignInSuccess])
+     *      * If sign-in successful -> fetch user info (see [onSignInSuccess])
      * * If sign in unsuccessful -> [showError]
      */
     private fun btnSignInClicked() {
@@ -96,25 +96,31 @@ class SplashActivity : AppCompatActivity() {
 
     /**
      * Handles logic when [btnSignInClicked] is successful.
-     * * If username is found ->  [gotoMainPage]
+     * * If username is found ->  [onUserInfoReceived]
      * * If username if not found -> [showCreateUsername]
      */
     private fun onSignInSuccess() {
         Log.d("TEST##", "onSignInSuccess")
         FirestoreActions.getUserFromUID()
             .addOnSuccessListener { querySnapshot ->
-                when {
-                    querySnapshot.isEmpty -> showCreateUsername(true)
-                    else -> {
-                        MySharedPreferences.setUsername(this, querySnapshot.documents[0].id)
-                        gotoMainPage()
-                    }
-                }
+                if (querySnapshot.isEmpty)
+                    showCreateUsername(true)
+                else
+                    onUserInfoReceived(querySnapshot)
             }
             .addOnFailureListener { e ->
                 Log.e(TAG, "Username query failed for user with uid: ${FirebaseAuth.getInstance().currentUser?.uid} ($e)")
                 showUnknownError()
             }
+    }
+
+    private fun onUserInfoReceived(querySnapshot: QuerySnapshot) {
+        if (querySnapshot.size() > 1)
+            Log.e(TAG, "Received more than one user object from uid: ${FirebaseAuth.getInstance().currentUser?.uid}")
+
+
+        MySharedPreferences.setUsername(this, querySnapshot.documents[0].id)
+        gotoMainPage()
     }
 
     /**

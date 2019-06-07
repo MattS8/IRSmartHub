@@ -1,12 +1,19 @@
 package com.ms8.smartirhub.android.utils
 
 import android.content.Context
+import com.ms8.smartirhub.android.data.User
 
 object MySharedPreferences {
 
     fun hasUsername(context: Context) : Boolean {
         return context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE)
             .getString(USER_NAME, "") != ""
+    }
+
+    fun setUser(context: Context, user : User?) {
+        context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE)
+            .edit()
+            .put
     }
 
     fun setUsername(context: Context, username: String?) {
