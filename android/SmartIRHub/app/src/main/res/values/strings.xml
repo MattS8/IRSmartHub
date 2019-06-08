@@ -16,8 +16,11 @@
     <string name="app_logo">App logo</string>
     <string name="welcome_desc">Please sign in or sign up to get started</string>
     <string name="welcomeTitle">Welcome!</string>
-    <string name="remind_verify_email">Don\'t forget to verify your email by clicking the link in the email sent to </string>
-    <string name="client_id" translatable="false">152988922698-8oq2ogokh7khth08q9h2mtodgmb6k8bg.apps.googleusercontent.com</string>
+    <string name="remind_verify_email">Don\'t forget to verify your email by clicking the link in the email sent to
+    </string>
+    <string name="client_id" translatable="false">
+        152988922698-8oq2ogokh7khth08q9h2mtodgmb6k8bg.apps.googleusercontent.com
+    </string>
     <string name="verify_email">Verify Email Address</string>
     <string name="resend_verification_email">Resend Verification Email</string>
     <string name="err_sign_in_title">Problem Signing In</string>
@@ -55,4 +58,5 @@
     <string name="username">Username</string>
     <string name="title_remotes">Remotes</string>
     <string name="title_actions">Actions</string>
+    <string name="passwordConfirm">Confirm Password</string>
 </resources>
