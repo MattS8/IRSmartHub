@@ -12,9 +12,7 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.firestore.*
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.data.User
 import com.ms8.smartirhub.android.utils.MySharedPreferences
 import java.lang.Exception
 
@@ -134,7 +132,7 @@ object FirebaseAuthActions {
     }
 
     fun signOut(context: Context) {
-        MySharedPreferences.setUsername(context, "")
+        MySharedPreferences.removeUser(context)
         FirebaseAuth.getInstance().signOut()
     }
 

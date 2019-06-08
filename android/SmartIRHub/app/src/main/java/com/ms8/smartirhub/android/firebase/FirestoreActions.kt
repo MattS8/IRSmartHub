@@ -22,6 +22,6 @@ object FirestoreActions {
      */
     fun createNewUser(username: String) : Task<Void> {
         return FirebaseFirestore.getInstance().collection("users").document(username)
-            .set(User(FirebaseAuth.getInstance().currentUser!!.uid), SetOptions.merge())
+            .set(User().apply { FirebaseAuth.getInstance().currentUser!!.uid }, SetOptions.merge())
     }
 }

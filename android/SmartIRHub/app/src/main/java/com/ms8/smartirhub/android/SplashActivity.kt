@@ -18,11 +18,15 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.QuerySnapshot
+import com.google.gson.GsonBuilder
+import com.ms8.smartirhub.android.data.User
+import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.databinding.ActivitySplashBinding
 import com.ms8.smartirhub.android.firebase.FirebaseAuthActions
 import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.utils.MySharedPreferences
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validator
+import java.lang.Exception
 
 
 class SplashActivity : AppCompatActivity() {
@@ -52,14 +56,13 @@ class SplashActivity : AppCompatActivity() {
      */
     private val authStateListener : FirebaseAuth.AuthStateListener = FirebaseAuth.AuthStateListener {
         val bHasSeenSplash = MySharedPreferences.hasSeenSplash(this)
-        val bHasUsername = MySharedPreferences.hasUsername(this)
         Log.d("TEST", "bHasSeenSplash = $bHasSeenSplash")
         when {
             // First time
             splashState.layoutState == LayoutState.SHOW_SPLASH && !bHasSeenSplash ->
                 Handler().postDelayed({showSignIn(true)}, 50)
             // Already signed in and seen splash screen
-            it.currentUser != null && bHasUsername && bHasSeenSplash -> {
+            it.currentUser != null && LocalData.userData != null && bHasSeenSplash -> {
                 gotoMainPage()
             }
         }
@@ -78,18 +81,22 @@ class SplashActivity : AppCompatActivity() {
         val email = binding.email.editText?.text.toString()
         val password = binding.password.editText?.text.toString()
         if (isValidEmailAndPassword(email, password)) {
-            FirebaseAuthActions.signInWithEmail(email, password).addOnCompleteListener { task ->
-                when {
-                    task.isSuccessful -> onSignInSuccess()
-                    task.exception is FirebaseAuthInvalidCredentialsException ->
-                        showError(R.string.err_inv_email_pass, R.string.err_inv_email_pass_desc)
-                    task.exception is FirebaseAuthInvalidUserException ->
-                        showError(R.string.err_email_nonexistant, R.string.err_email_nonexistant_desc)
-                    else -> {
-                        Log.e(TAG, "Unknown sign in error (${task.exception})")
-                        showUnknownError()
-                    }
-                }
+            FirebaseAuthActions.signInWithEmail(email, password)
+                .addOnSuccessListener { onSignInSuccess() }
+                .addOnFailureListener { e ->  onSignInError(e) }
+        }
+    }
+
+    /**
+     * Handles what message to show a user based on sign-in error.
+     */
+    private fun onSignInError(exception: Exception) {
+        when (exception) {
+            is FirebaseAuthInvalidCredentialsException -> showError(R.string.err_inv_email_pass, R.string.err_inv_email_pass_desc)
+            is FirebaseAuthInvalidUserException -> showError(R.string.err_email_nonexistant, R.string.err_email_nonexistant_desc)
+            else -> {
+                Log.e(TAG, "Unknown sign in error ($exception)")
+                showUnknownError()
             }
         }
     }
@@ -114,12 +121,16 @@ class SplashActivity : AppCompatActivity() {
             }
     }
 
+    /**
+     * Determines what view to show the user based on the user data received.
+     * * If user has connected Devices -> [gotoMainPage]
+     * * If no associated hubs -> [fetchGroupHubs]
+     */
     private fun onUserInfoReceived(querySnapshot: QuerySnapshot) {
         if (querySnapshot.size() > 1)
             Log.e(TAG, "Received more than one user object from uid: ${FirebaseAuth.getInstance().currentUser?.uid}")
+        LocalData.userData = querySnapshot.toObjects(User::class.java)[0]
 
-
-        MySharedPreferences.setUsername(this, querySnapshot.documents[0].id)
         gotoMainPage()
     }
 
@@ -130,7 +141,7 @@ class SplashActivity : AppCompatActivity() {
      *  * If username is not valid -> [showError]
      *  * If username already exists -> [showError]
      *  * If username is valid and doesn't exist -> link username to account:
-     *      * If success -> [gotoMainPage]
+     *      * If success -> [onSignInSuccess]
      *      * If failure -> [showError]
      */
     private fun btnSignUpClicked() {
@@ -158,10 +169,7 @@ class SplashActivity : AppCompatActivity() {
                 val username : String = binding.email.editText?.text.toString()
                 if (isValidUsername(username)) {
                     FirestoreActions.createNewUser(username)
-                        .addOnSuccessListener {
-                            MySharedPreferences.setUsername(this, username)
-                            gotoMainPage()
-                        }
+                        .addOnSuccessListener { onSignInSuccess() }
                         .addOnFailureListener { e ->
                             when {
                                 e is FirebaseFirestoreException && e.code == FirebaseFirestoreException.Code.PERMISSION_DENIED -> {
@@ -180,9 +188,7 @@ class SplashActivity : AppCompatActivity() {
     /**
      * Attempts to sign in with Google.
      */
-    private fun btnGoogleSignInClicked() {
-        FirebaseAuthActions.signInWithGoogle(this)
-    }
+    private fun btnGoogleSignInClicked() { FirebaseAuthActions.signInWithGoogle(this) }
 
     /* -------------------- Transition Functions -------------------- */
 

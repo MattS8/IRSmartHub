@@ -39,8 +39,11 @@ class TestActivity : AppCompatActivity() {
     }
 
     private fun testMakeUser() {
-        val user = User(FirebaseAuth.getInstance().currentUser!!.uid)
-        FirebaseFirestore.getInstance().collection("users").document("testUser008").set(user)
+        val user = User().apply {
+            uid = FirebaseAuth.getInstance().currentUser!!.uid
+            username = "testUser009"
+        }
+        FirebaseFirestore.getInstance().collection("users").document(user.username).set(user)
             .addOnCompleteListener {
                 Log.d("T#", "done adding new user... success? ${it.isSuccessful}")
             }
