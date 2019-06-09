@@ -59,4 +59,11 @@
     <string name="title_remotes">Remotes</string>
     <string name="title_actions">Actions</string>
     <string name="passwordConfirm">Confirm Password</string>
+    <string name="error">Error</string>
+    <string name="err_no_internet">Something went wrong. Check your internet connection and try again. If the problem
+        persists, please report this issue.
+    </string>
+    <string name="welcome_sign_up">Enter an your email address and pick a password below.</string>
+    <string name="welcome_sign_in">Enter your email address and password below.</string>
+    <string name="err_pass_match">Passwords do not match</string>
 </resources>

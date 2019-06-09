@@ -13,6 +13,7 @@ import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.ms8.smartirhub.android.R
+import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.utils.MySharedPreferences
 import java.lang.Exception
 
@@ -85,6 +86,21 @@ object FirebaseAuthActions {
         }
     }
 
+
+    fun handleGoogleSignInResult2(data: Intent?): Task<AuthResult>? {
+        Log.d(TAG, "Handling Google Sign In Result...")
+        val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+        return try {
+            val account = task.getResult(ApiException::class.java)
+            val credential = GoogleAuthProvider.getCredential(account!!.idToken, null)
+            FirebaseAuth.getInstance().signInWithCredential(credential)
+
+        } catch (e : Exception) {
+            Log.e(TAG, "Google sign in failed", e)
+            null
+        }
+    }
+
     /**
      *  Attempts to sign user in with their google account
      */
@@ -133,6 +149,7 @@ object FirebaseAuthActions {
 
     fun signOut(context: Context) {
         MySharedPreferences.removeUser(context)
+        LocalData.removeUserData()
         FirebaseAuth.getInstance().signOut()
     }
 

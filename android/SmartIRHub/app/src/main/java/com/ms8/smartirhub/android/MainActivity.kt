@@ -30,7 +30,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setSupportActionBar(binding.toolbar)
 
         // Run FirebaseAuth initialization procedure
-        FirebaseAuthActions.init(this)
 
         // Setup ActionBar
         val toggle = ActionBarDrawerToggle(this, binding.drawerLayout, binding.toolbar,

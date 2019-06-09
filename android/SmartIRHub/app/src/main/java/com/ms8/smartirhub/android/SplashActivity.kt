@@ -25,6 +25,7 @@ import com.ms8.smartirhub.android.databinding.ActivitySplashBinding
 import com.ms8.smartirhub.android.firebase.FirebaseAuthActions
 import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.utils.MySharedPreferences
+import com.ms8.smartirhub.android.utils.SignInUtils
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validator
 import java.lang.Exception
 
@@ -453,26 +454,13 @@ class SplashActivity : AppCompatActivity() {
      */
     private fun isValidEmailAndPassword(emailString : String, passwordString : String) : Boolean {
         binding.email.error = ""
-        binding.email.error = ""
-        val validPassword = passwordString.validator()
-            .nonEmpty()
-            .atleastOneLowerCase()
-            .atleastOneNumber()
-            .atleastOneUpperCase()
-            .minLength(5)
-            .addErrorCallback {
-                binding.password.error = getString(R.string.err_pass)
-            }.addSuccessCallback {
-                binding.password.error = ""
-            }
+        binding.password.error = ""
+        val validPassword = SignInUtils.PasswordValidator(passwordString)
+            .addErrorCallback { binding.password.error = getString(R.string.err_pass) }
             .check()
-        val validEmail = emailString.validator()
+        val validEmail = SignInUtils.EmailValidator(emailString)
             .validEmail()
-            .addErrorCallback {
-                binding.email.error = getString(R.string.err_invalid_email)
-            }.addSuccessCallback {
-                binding.email.error = ""
-            }
+            .addErrorCallback { binding.email.error = getString(R.string.err_invalid_email) }
             .check()
 
         return validEmail && validPassword

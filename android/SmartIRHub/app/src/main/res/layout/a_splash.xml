@@ -33,11 +33,10 @@
                 app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginEnd="32dp"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                android:layout_marginStart="32dp" app:layout_constraintTop_toBottomOf="@+id/splashLogo"
+                android:layout_marginStart="32dp" app:layout_constraintTop_toBottomOf="parent"
                 app:layout_constraintVertical_bias="0.0"
+                android:alpha="0"
         />
         <TextView
                 android:textAppearance="@style/AppTheme.TextAppearance.SplashSubHeader"
@@ -82,67 +81,8 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginTop="16dp"
                 app:layout_constraintTop_toBottomOf="@+id/signInGoogle"
-                android:layout_marginBottom="16dp" app:layout_constraintBottom_toTopOf="@+id/email"
+                android:layout_marginBottom="16dp"
         />
-
-        <android.support.design.widget.TextInputLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginStart="32dp"
-                android:layout_marginEnd="32dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:id="@+id/password"
-                android:theme="@style/AppTheme.TextInputAppearance.SplashSignIn"
-                app:layout_constraintTop_toBottomOf="@+id/email"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintVertical_bias="0.0"
-                android:layout_marginTop="8dp"
-        >
-
-            <android.support.design.widget.TextInputEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/password"/>
-        </android.support.design.widget.TextInputLayout>
-
-
-        <android.support.design.widget.TextInputLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="32dp"
-                android:layout_marginEnd="32dp" app:layout_constraintEnd_toEndOf="parent" android:layout_marginTop="16dp"
-                app:layout_constraintTop_toBottomOf="@+id/or" android:id="@+id/email"
-                android:theme="@style/AppTheme.TextInputAppearance.SplashSignIn"
-        >
-
-            <android.support.design.widget.TextInputEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/email_address"
-            />
-        </android.support.design.widget.TextInputLayout>
-
-        <android.support.design.widget.TextInputLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginStart="32dp"
-                android:layout_marginEnd="32dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:id="@+id/passwordConfirm"
-                android:theme="@style/AppTheme.TextInputAppearance.SplashSignIn"
-                app:layout_constraintTop_toBottomOf="@+id/password"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintVertical_bias="0.0"
-                android:layout_marginTop="8dp"
-        >
-
-            <android.support.design.widget.TextInputEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/passwordConfirm"/>
-        </android.support.design.widget.TextInputLayout>
 
         <Button
                 android:text="@string/sign_up"
@@ -150,9 +90,10 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/btnSignUp" app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginStart="32dp"
-                android:layout_marginTop="24dp" app:layout_constraintTop_toBottomOf="@+id/passwordConfirm"
-                app:layout_constraintHorizontal_bias="1.0" app:layout_constraintEnd_toStartOf="@+id/btnSignIn"
-                android:layout_marginEnd="32dp" style="@style/AppTheme.Button.SplashSignIn.Colored"
+                android:layout_marginTop="16dp" app:layout_constraintTop_toBottomOf="@+id/btnSignIn"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginEnd="32dp"
+                style="@style/AppTheme.Button.SplashSignIn.Colored"
                 android:minWidth="150dp"
         />
         <Button
@@ -162,13 +103,83 @@
                 android:id="@+id/btnSignIn"
                 style="@style/AppTheme.Button.SplashSignIn"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="24dp"
-                app:layout_constraintTop_toBottomOf="@+id/passwordConfirm"
-                app:layout_constraintStart_toEndOf="@+id/btnSignUp"
-                app:layout_constraintHorizontal_bias="0.5"
+                android:layout_marginTop="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/or"
+                app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginEnd="32dp"
                 android:layout_marginStart="32dp"
                 android:minWidth="150dp"
         />
+
+
+        <!-- Text Inputs -->
+        <android.support.constraint.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/input_layout"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/or"
+                android:alpha="0"
+        >
+            <android.support.design.widget.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="32dp"
+                    android:layout_marginEnd="32dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:id="@+id/password"
+                    android:theme="@style/AppTheme.TextInputAppearance.SplashSignIn"
+                    app:layout_constraintTop_toBottomOf="@+id/email"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintVertical_bias="0.0"
+                    android:layout_marginTop="8dp"
+            >
+
+                <android.support.design.widget.TextInputEditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/password"/>
+            </android.support.design.widget.TextInputLayout>
+
+
+            <android.support.design.widget.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="32dp"
+                    android:layout_marginEnd="32dp" app:layout_constraintEnd_toEndOf="parent" android:layout_marginTop="16dp"
+                    app:layout_constraintTop_toTopOf="parent" android:id="@+id/email"
+                    android:theme="@style/AppTheme.TextInputAppearance.SplashSignIn"
+            >
+
+                <android.support.design.widget.TextInputEditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/email_address"
+                />
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="32dp"
+                    android:layout_marginEnd="32dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:id="@+id/passwordConfirm"
+                    android:theme="@style/AppTheme.TextInputAppearance.SplashSignIn"
+                    app:layout_constraintTop_toBottomOf="@+id/password"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintVertical_bias="0.0"
+                    android:layout_marginTop="8dp"
+            >
+
+                <android.support.design.widget.TextInputEditText
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/passwordConfirm"/>
+            </android.support.design.widget.TextInputLayout>
+        </android.support.constraint.ConstraintLayout>
     </android.support.constraint.ConstraintLayout>
 </layout>
