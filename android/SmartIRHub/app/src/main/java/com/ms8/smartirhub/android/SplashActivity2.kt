@@ -119,14 +119,20 @@ class SplashActivity2 : AppCompatActivity() {
         val newLayout = ConstraintSet().apply {
             clone(this@SplashActivity2, R.layout.a_splash_show_options)
             constrainHeight(binding.splashLogo.id, 375)
-            constrainHeight(binding.password.id, 1)
-            constrainHeight(binding.passwordConfirm.id, 1)
-            constrainHeight(binding.email.id, 1)
+//            constrainHeight(binding.password.id, 1)
+//            constrainHeight(binding.passwordConfirm.id, 1)
+//            constrainHeight(binding.email.id, 1)
         }
 
         if (bAnimate) TransitionManager.beginDelayedTransition(binding.splashContainer, layoutTransition)
 
         newLayout.applyTo(binding.splashContainer)
+
+
+        binding.password.editText?.isEnabled = false
+        binding.passwordConfirm.editText?.isEnabled = false
+        binding.email.editText?.isEnabled = false
+        binding.selectUsername.editText?.isEnabled = false
     }
 
     private fun showSignUp(bAnimate: Boolean) {
@@ -167,6 +173,12 @@ class SplashActivity2 : AppCompatActivity() {
         } else {
             binding.signInGoogle.alpha = 0f
         }
+
+
+        binding.password.editText?.isEnabled = true
+        binding.passwordConfirm.editText?.isEnabled = true
+        binding.email.editText?.isEnabled = true
+        binding.selectUsername.editText?.isEnabled = false
     }
 
     private fun showSignIn(bAnimate: Boolean) {
@@ -206,6 +218,12 @@ class SplashActivity2 : AppCompatActivity() {
         } else {
             binding.signInGoogle.alpha = 0f
         }
+
+
+        binding.password.editText?.isEnabled = true
+        binding.passwordConfirm.editText?.isEnabled = false
+        binding.email.editText?.isEnabled = true
+        binding.selectUsername.editText?.isEnabled = false
     }
 
     private fun showSplash(bAnimate: Boolean) {
@@ -225,12 +243,11 @@ class SplashActivity2 : AppCompatActivity() {
 
         val newLayout = ConstraintSet().apply {
             clone(this@SplashActivity2, R.layout.a_splash_username)
-            constrainHeight(binding.password.id, 1)
-            constrainHeight(binding.email.id, 1)
         }
 
         if (bAnimate) TransitionManager.beginDelayedTransition(binding.splashContainer, layoutTransition)
         newLayout.applyTo(binding.splashContainer)
+        binding.selectUsername.editText?.isEnabled = true
     }
 
 /* ---------------------------------------------- Show Error Functions ---------------------------------------------- */
