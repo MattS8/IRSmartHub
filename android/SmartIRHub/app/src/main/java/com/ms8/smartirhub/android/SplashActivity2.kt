@@ -396,6 +396,7 @@ class SplashActivity2 : AppCompatActivity() {
         Log.d(TAG, "onSignInSuccess (${FirebaseAuth.getInstance().currentUser?.displayName})")
         FirestoreActions.getUserFromUID()
             .addOnSuccessListener { querySnapshot ->
+                Log.d(TAG, "Success: isEmpty = ${querySnapshot.isEmpty}")
                 when {
                     querySnapshot.isEmpty -> showCreateUsername(true)
                     else -> {
@@ -558,7 +559,8 @@ class SplashActivity2 : AppCompatActivity() {
 
     class UserGroupsListener(var context: Context?) : ObservableMap.OnMapChangedCallback<ObservableArrayMap<String, Group>, String, Group>() {
         override fun onMapChanged(sender: ObservableArrayMap<String, Group>?, key: String?) {
-            if (LocalData.userData != null && LocalData.userData!!.groups.size == LocalData.userGroups.size) {
+            val groupSize = LocalData.userData?.groups?.size ?: -1
+            if (LocalData.userData != null && groupSize == LocalData.userGroups.size) {
                 Log.d(TAG, "Done fetching user groups... (${LocalData.userData!!.groups.size} == ${LocalData.userGroups.size}")
                 context?.startActivity(Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
             }
