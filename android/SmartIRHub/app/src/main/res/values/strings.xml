@@ -66,4 +66,5 @@
     <string name="welcome_sign_up">Enter an your email address and pick a password below.</string>
     <string name="welcome_sign_in">Enter your email address and password below.</string>
     <string name="err_pass_match">Passwords do not match</string>
+    <string name="choose_username">Choose Username</string>
 </resources>

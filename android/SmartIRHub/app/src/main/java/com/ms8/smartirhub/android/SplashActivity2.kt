@@ -238,8 +238,8 @@ class SplashActivity2 : AppCompatActivity() {
         // Disable Inputs
         binding.passwordConfirm.hint = getString(R.string.username)
         binding.passwordConfirm.editText?.setText(splashState.usernameStr)
-        binding.btnSignUp.text = getString(R.string.finish_sign_up)
-        binding.btnSignUp.setOnClickListener { createUser() }
+        binding.btnSignIn.text = getString(R.string.choose_username)
+        binding.btnSignIn.setOnClickListener { createUser() }
 
         val newLayout = ConstraintSet().apply {
             clone(this@SplashActivity2, R.layout.a_splash_username)
