@@ -1,4 +1,5 @@
 
+
 # IRSmartHub
 A project with the goal of creating a solution to the many IR-controlled devices in our home. This project makes those devices "smart", allowing them to be controlled from any android phone (soon to be any device with a browser). This is achieved by creating a device containing an IR receiver/transmitter and ESP8266 wifi board that speaks to a Firebase realtime database backend. In addition, a Firestore database is used to contain all user/device data. This allows for a "serverless" implementation with all commands running through Firebase.
 ## Data Structures
@@ -10,7 +11,15 @@ Contains all information with respect to a specific user using this service.
  - **Groups**: *a list of groups the user is associated with*
 ### Remote Profile
 Contains a collection of pre-programmed actions
- - **Buttons**: a map of actions to remote functions. Remote functions can be static, pre-defined (i.e. VOL UP) or custom
+- **Name**: A custom name given by the creator of the remote profile
+- **Buttons**: a list of remote functions (either *actions* or *commands*). Remote functions can be static, pre-defined (i.e. VOL UP) or custom
+### Command
+Contains raw data for a single IR command
+- **Raw Data**: A string of raw data for the given command
+- **Raw Data Length**: The length of the raw data string. Used by the IR Hub when parsing
+### Action
+Contains data for a specific action. An action consists of one or more *Commands* in succession. An action can also specify a specific IR Hub to target for each command.
+- **Commands**: An ordered list of <Command, IR Hub> pairs. If a command is not associated with an IR Hub, the command is sent to the user's currently selected hub. 
 ### Group
 Contains a collection of users, remote profiles, and associated hubs. This is used for sharing hubs between multiple users. Each group has a group owner and 0 or more users. Other users can be given specific permissions. 
 - **Remote Profiles**: *a collection of profiles shared among the group*
@@ -21,7 +30,7 @@ Contains a collection of users, remote profiles, and associated hubs. This is us
 	- ***Remove Devices***: Allows user to remove hubs from the group
 	- ***Add Users***: Allows user to add other users to the group. Added users can only have the same (or less) permissions as the user who added them.
 	- ***Remove Users***: Allows user to remove other users from the group.
-	- ***Add Remote Profiles***: Allows user to add remote profiles to the group. User can remove added profiles at any time.
+	- ***Add Remote Profiles***: Allows user to add remote profiles to the group. User can remove profiles they have added at any time.
 	- ***Remove Remote Profiles***: Allows user to remove any remote profile shared with the group.
 ## Firebase
 ## Android Application
