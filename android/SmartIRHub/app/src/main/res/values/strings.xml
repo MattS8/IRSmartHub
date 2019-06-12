@@ -16,8 +16,11 @@
     <string name="app_logo">App logo</string>
     <string name="welcome_desc">Please sign in or sign up to get started</string>
     <string name="welcomeTitle">Welcome!</string>
-    <string name="remind_verify_email">Don\'t forget to verify your email by clicking the link in the email sent to </string>
-    <string name="client_id" translatable="false">152988922698-8oq2ogokh7khth08q9h2mtodgmb6k8bg.apps.googleusercontent.com</string>
+    <string name="remind_verify_email">Don\'t forget to verify your email by clicking the link in the email sent to
+    </string>
+    <string name="client_id" translatable="false">
+        152988922698-8oq2ogokh7khth08q9h2mtodgmb6k8bg.apps.googleusercontent.com
+    </string>
     <string name="verify_email">Verify Email Address</string>
     <string name="resend_verification_email">Resend Verification Email</string>
     <string name="err_sign_in_title">Problem Signing In</string>
@@ -55,4 +58,17 @@
     <string name="username">Username</string>
     <string name="title_remotes">Remotes</string>
     <string name="title_actions">Actions</string>
+    <string name="passwordConfirm">Confirm Password</string>
+    <string name="error">Error</string>
+    <string name="err_no_internet">Something went wrong. Check your internet connection and try again. If the problem
+        persists, please report this issue.
+    </string>
+    <string name="welcome_sign_up">Enter an your email address and pick a password below.</string>
+    <string name="welcome_sign_in">Enter your email address and password below.</string>
+    <string name="err_pass_match">Passwords do not match</string>
+    <string name="choose_username">Choose Username</string>
+    <string name="title_activity_main_view">MainViewActivity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
 </resources>

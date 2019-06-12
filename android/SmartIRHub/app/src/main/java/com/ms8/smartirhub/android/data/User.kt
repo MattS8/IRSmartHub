@@ -1,5 +1,14 @@
 package com.ms8.smartirhub.android.data
 
-class User(val uid : String = "", val user_info : Map<String, String> = HashMap()) {
+import androidx.databinding.ObservableArrayList
+import com.google.firebase.firestore.Exclude
 
+class User {
+    var uid : String = ""
+    var connectedDevices : ObservableArrayList<String> = ObservableArrayList()
+    var remoteProfiles : ObservableArrayList<String> = ObservableArrayList()
+    var groups : ObservableArrayList<String> = ObservableArrayList()
+
+    @get:Exclude
+    lateinit var username : String
 }

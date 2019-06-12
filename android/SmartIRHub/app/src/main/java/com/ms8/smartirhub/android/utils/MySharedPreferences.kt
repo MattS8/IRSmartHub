@@ -1,18 +1,14 @@
 package com.ms8.smartirhub.android.utils
 
 import android.content.Context
+import com.google.gson.Gson
+import com.ms8.smartirhub.android.data.User
 
 object MySharedPreferences {
-
-    fun hasUsername(context: Context) : Boolean {
-        return context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE)
-            .getString(USER_NAME, "") != ""
-    }
-
-    fun setUsername(context: Context, username: String?) {
+    fun setUser(context: Context, user : User?) {
         context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE)
             .edit()
-            .putString(USER_NAME, username)
+            .putString(USER_DATA, Gson().toJson(user))
             .apply()
     }
 
@@ -28,7 +24,16 @@ object MySharedPreferences {
             .apply()
     }
 
+    fun removeUser(context: Context) {
+        context.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE)
+            .edit()
+            .remove(USER_NAME)
+            .remove(USER_DATA)
+            .apply()
+    }
+
     private const val SHARED_PREFS = "MY_SHARED_PREFS"
     private const val USER_NAME = "USER_NAME"
+    private const val USER_DATA = "USER_DATA"
     private const val B_SEEN_SPLASH = "B_SEEN_SPLASH"
 }

@@ -3,15 +3,17 @@ package com.ms8.smartirhub.android
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.databinding.DataBindingUtil
+import androidx.databinding.DataBindingUtil
 import android.net.ConnectivityManager
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
 import android.os.Bundle
-import android.support.v4.app.ActivityCompat
-import android.support.v7.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.ms8.smartirhub.android.data.User
 import com.ms8.smartirhub.android.databinding.TestActivityBinding
 import com.ms8.smartirhub.android.firebase.FirebaseAuthActions
 import com.ms8.smartirhub.android.firebase.FirestoreActions
@@ -33,6 +35,18 @@ class TestActivity : AppCompatActivity() {
         binding.btnTestGetUserFromUID.setOnClickListener { testGetUserQuery() }
         binding.btnViewToken.setOnClickListener { printUserToken() }
         binding.btnConnectToIRHub.setOnClickListener { testConnectToIRHub() }
+        binding.btnTestMakeUser.setOnClickListener { testMakeUser() }
+    }
+
+    private fun testMakeUser() {
+        val user = User().apply {
+            uid = FirebaseAuth.getInstance().currentUser!!.uid
+            username = "testUser009"
+        }
+        FirebaseFirestore.getInstance().collection("users").document(user.username).set(user)
+            .addOnCompleteListener {
+                Log.d("T#", "done adding new user... success? ${it.isSuccessful}")
+            }
     }
 
     private fun connectToIRHub() {
