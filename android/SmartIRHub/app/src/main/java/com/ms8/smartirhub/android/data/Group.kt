@@ -1,8 +1,8 @@
 package com.ms8.smartirhub.android.data
 
-import android.databinding.ObservableArrayList
-import android.databinding.ObservableArrayMap
-import android.databinding.ObservableMap
+import androidx.databinding.ObservableArrayList
+import androidx.databinding.ObservableArrayMap
+import androidx.databinding.ObservableMap
 
 class Group(val uid : String, val owner : String) {
     val remoteProfiles : ObservableArrayList<String> = ObservableArrayList()

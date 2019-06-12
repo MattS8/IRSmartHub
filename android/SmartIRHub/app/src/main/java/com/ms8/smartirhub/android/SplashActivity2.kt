@@ -3,13 +3,13 @@ package com.ms8.smartirhub.android
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.databinding.DataBindingUtil
-import android.databinding.ObservableArrayMap
-import android.databinding.ObservableMap
+import androidx.databinding.DataBindingUtil
+import androidx.databinding.ObservableArrayMap
+import androidx.databinding.ObservableMap
 import android.os.Bundle
 import android.os.Handler
-import android.support.constraint.ConstraintSet
-import android.support.v7.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintSet
+import androidx.appcompat.app.AppCompatActivity
 import android.transition.AutoTransition
 import android.transition.TransitionManager
 import android.util.Log
@@ -20,7 +20,6 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.firestore.FirebaseFirestoreException
-import com.google.firebase.firestore.QuerySnapshot
 import com.ms8.smartirhub.android.data.Group
 import com.ms8.smartirhub.android.data.User
 import com.ms8.smartirhub.android.database.LocalData
@@ -72,10 +71,12 @@ class SplashActivity2 : AppCompatActivity() {
         val passwordConfirm = binding.passwordConfirm.editText?.text.toString()
 
         Log.d("TEST", "password = $password")
-        if (isValidEmailAndPassword(email, password) && passwordsMatch(password, passwordConfirm))
+        if (isValidEmailAndPassword(email, password) && passwordsMatch(password, passwordConfirm)) {
+            binding.btnSignIn.onStartLoading()
             FirebaseAuthActions.createAccount(email, password)
                 .addOnSuccessListener { showCreateUsername(true) }
                 .addOnFailureListener { e -> onSignInError(e) }
+        }
     }
 
     private fun signInWithGoogle() {
@@ -85,7 +86,9 @@ class SplashActivity2 : AppCompatActivity() {
     private fun signInWithEmail() {
         val email = binding.email.editText?.text.toString()
         val password = binding.password.editText?.text.toString()
+
         if (isValidEmailAndPassword(email, password)) {
+            binding.btnSignIn.onStartLoading()
             FirebaseAuthActions.signInWithEmail(email, password)
                 .addOnSuccessListener { onSignInSuccess() }
                 .addOnFailureListener { e ->  onSignInError(e) }
@@ -95,6 +98,7 @@ class SplashActivity2 : AppCompatActivity() {
     private fun createUser() {
         val username : String = binding.email.editText?.text.toString()
         if (isValidUsername(username)) {
+            binding.btnSignIn.onStartLoading()
             FirestoreActions.createNewUser(username)
                 .addOnSuccessListener { onSignInSuccess() }
                 .addOnFailureListener { e -> onSignInError(e) }
@@ -107,9 +111,11 @@ class SplashActivity2 : AppCompatActivity() {
         Log.d(TAG, "Showing sign in options (bAnimnate = $bAnimate)")
         splashState.layoutState = LayoutState.SHOW_SIGN_IN_OPTIONS
 
+        binding.btnSignIn.onStopLoading()
+
         binding.welcomeTitle.text = getString(R.string.welcomeTitle)
         binding.welcomeDescription.text = getString(R.string.welcome_desc)
-        binding.btnSignIn.text = getString(R.string.sign_in)
+        binding.btnSignIn.setButtonText(getString(R.string.sign_in))
 
         // Set onClick Listeners
         binding.btnSignIn.setOnClickListener { showSignIn(true) }
@@ -138,13 +144,15 @@ class SplashActivity2 : AppCompatActivity() {
     private fun showSignUp(bAnimate: Boolean) {
         splashState.layoutState = LayoutState.SHOW_SIGN_UP
 
+        binding.btnSignIn.onStopLoading()
+
         // Set Sign In Values
         binding.welcomeTitle.text = getString(R.string.welcomeTitle)
         binding.welcomeDescription.text = getString(R.string.welcome_sign_up)
         binding.email.editText?.setText(splashState.emailStr)
         binding.password.editText?.setText(splashState.passStr)
         binding.passwordConfirm.editText?.setText(splashState.passConfirmStr)
-        binding.btnSignIn.text = getString(R.string.sign_up)
+        binding.btnSignIn.setButtonText(getString(R.string.sign_up))
         binding.passwordConfirm.hint = getString(R.string.passwordConfirm)
         binding.email.error = ""
         binding.password.error = ""
@@ -184,12 +192,14 @@ class SplashActivity2 : AppCompatActivity() {
     private fun showSignIn(bAnimate: Boolean) {
         splashState.layoutState = LayoutState.SHOW_SIGN_IN
 
+        binding.btnSignIn.onStopLoading()
+
         // Set Sign In Values
         binding.welcomeTitle.text = getString(R.string.welcomeTitle)
         binding.welcomeDescription.text = getString(R.string.welcome_sign_in)
         binding.email.editText?.setText(splashState.emailStr)
         binding.password.editText?.setText(splashState.passStr)
-        binding.btnSignIn.text = getString(R.string.sign_in)
+        binding.btnSignIn.setButtonText(getString(R.string.sign_in))
         binding.email.error = ""
         binding.password.error = ""
 
@@ -235,10 +245,14 @@ class SplashActivity2 : AppCompatActivity() {
     }
 
     private fun showCreateUsername(bAnimate: Boolean) {
+        splashState.layoutState = LayoutState.SHOW_USERNAME
+
+        binding.btnSignIn.onStopLoading()
+
         // Disable Inputs
         binding.passwordConfirm.hint = getString(R.string.username)
         binding.passwordConfirm.editText?.setText(splashState.usernameStr)
-        binding.btnSignIn.text = getString(R.string.choose_username)
+        binding.btnSignIn.setButtonText(getString(R.string.choose_username))
         binding.btnSignIn.setOnClickListener { createUser() }
 
         val newLayout = ConstraintSet().apply {
@@ -374,16 +388,16 @@ class SplashActivity2 : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         FirebaseAuth.getInstance().addAuthStateListener(authStateListener)
-        LocalData.userGroups.addOnMapChangedCallback(userGroupsListener.apply { context = this@SplashActivity2 })
+        //LocalData.userGroups.addOnMapChangedCallback(userGroupsListener.apply { context = this@SplashActivity2 })
     }
 
     override fun onPause() {
         super.onPause()
         FirebaseAuth.getInstance().removeAuthStateListener(authStateListener)
-        LocalData.userGroups.removeOnMapChangedCallback(userGroupsListener.apply { context = null })
+        //LocalData.userGroups.removeOnMapChangedCallback(userGroupsListener.apply { context = null })
     }
 
-    override fun onSaveInstanceState(outState: Bundle?) {
+    override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState?.let {
             it.putString(SPLASH_INSTANCE_STATE + "_LAYOUT", splashState.layoutState.getString())
@@ -411,22 +425,28 @@ class SplashActivity2 : AppCompatActivity() {
      */
     private fun onSignInSuccess() {
         Log.d(TAG, "onSignInSuccess (${FirebaseAuth.getInstance().currentUser?.displayName})")
+        binding.btnSignIn.onStartLoading()
         FirestoreActions.getUserFromUID()
             .addOnSuccessListener { querySnapshot ->
                 Log.d(TAG, "Success: isEmpty = ${querySnapshot.isEmpty}")
                 when {
-                    querySnapshot.isEmpty -> showCreateUsername(true)
+                    querySnapshot.isEmpty -> {
+                        binding.btnSignIn.onStopLoading()
+                        showCreateUsername(true)
+                    }
                     else -> {
                         if (querySnapshot.size() > 1)
                             Log.e(TAG, "Received more than one user object from uid:" +
                                     " ${FirebaseAuth.getInstance().currentUser?.uid}")
 
-                        LocalData.setUserData(querySnapshot.toObjects(User::class.java)[0], querySnapshot.documents[0].id)
-                        FirestoreActions.getUserGroups()
+                        LocalData.setupUser(querySnapshot.toObjects(User::class.java)[0], querySnapshot.documents[0].id)
+                        FirestoreActions.listenToUserGroups()
+                        FirestoreActions.listenToRemoteProfiles()
                     }
                 }
             }
             .addOnFailureListener { e ->
+                binding.btnSignIn.onStopLoading()
                 Log.e(SplashActivity.TAG, "Username query failed for user with uid:" +
                         " ${FirebaseAuth.getInstance().currentUser?.uid} ($e)")
                 onSignInError(e)
@@ -576,10 +596,10 @@ class SplashActivity2 : AppCompatActivity() {
 
     class UserGroupsListener(var context: Context?) : ObservableMap.OnMapChangedCallback<ObservableArrayMap<String, Group>, String, Group>() {
         override fun onMapChanged(sender: ObservableArrayMap<String, Group>?, key: String?) {
-            val groupSize = LocalData.userData?.groups?.size ?: -1
-            if (LocalData.userData != null && groupSize == LocalData.userGroups.size) {
-                Log.d(TAG, "Done fetching user groups... (${LocalData.userData!!.groups.size} == ${LocalData.userGroups.size}")
-                context?.startActivity(Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
+            val groupSize = LocalData.user?.groups?.size ?: -1
+            if (LocalData.user != null && groupSize == LocalData.userGroups.size) {
+                Log.d(TAG, "Done fetching user groups... (${LocalData.user!!.groups.size} == ${LocalData.userGroups.size}")
+                context?.startActivity(Intent(context, MainViewActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
             }
         }
     }

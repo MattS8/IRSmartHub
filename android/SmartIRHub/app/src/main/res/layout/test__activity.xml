@@ -2,11 +2,11 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools">
 
-    <android.support.v4.widget.NestedScrollView android:layout_width="match_parent"
-                                                android:layout_height="match_parent"
-                                                android:background="@color/colorPrimaryDark"
-                                                android:id="@+id/nestedScrollView">
-        <android.support.constraint.ConstraintLayout
+    <androidx.core.widget.NestedScrollView android:layout_width="match_parent"
+                                           android:layout_height="match_parent"
+                                           android:background="@color/colorPrimaryDark"
+                                           android:id="@+id/nestedScrollView">
+        <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 tools:background="@color/colorPrimaryDark"
@@ -99,8 +99,8 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintHorizontal_bias="0.5" android:textAllCaps="false"/>
-        </android.support.constraint.ConstraintLayout>
-    </android.support.v4.widget.NestedScrollView>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
 
 </layout>
 

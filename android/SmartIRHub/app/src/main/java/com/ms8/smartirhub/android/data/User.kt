@@ -1,6 +1,6 @@
 package com.ms8.smartirhub.android.data
 
-import android.databinding.ObservableArrayList
+import androidx.databinding.ObservableArrayList
 import com.google.firebase.firestore.Exclude
 
 class User {

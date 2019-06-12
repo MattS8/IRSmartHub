@@ -67,4 +67,8 @@
     <string name="welcome_sign_in">Enter your email address and password below.</string>
     <string name="err_pass_match">Passwords do not match</string>
     <string name="choose_username">Choose Username</string>
+    <string name="title_activity_main_view">MainViewActivity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
 </resources>

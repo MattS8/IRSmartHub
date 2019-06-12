@@ -2,11 +2,11 @@ package com.ms8.smartirhub.android
 
 import android.app.Activity
 import android.content.Intent
-import android.databinding.DataBindingUtil
+import androidx.databinding.DataBindingUtil
 import android.os.Bundle
 import android.os.Handler
-import android.support.constraint.ConstraintSet
-import android.support.v7.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintSet
+import androidx.appcompat.app.AppCompatActivity
 import android.transition.AutoTransition
 import android.transition.TransitionManager
 import android.util.Log
@@ -18,7 +18,6 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.QuerySnapshot
-import com.google.gson.GsonBuilder
 import com.ms8.smartirhub.android.data.User
 import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.databinding.ActivitySplashBinding
@@ -63,7 +62,7 @@ class SplashActivity : AppCompatActivity() {
             splashState.layoutState == LayoutState.SHOW_SPLASH && !bHasSeenSplash ->
                 Handler().postDelayed({showSignIn(true)}, 50)
             // Already signed in and seen splash screen
-            it.currentUser != null && LocalData.userData != null && bHasSeenSplash -> {
+            it.currentUser != null && LocalData.user != null && bHasSeenSplash -> {
                 gotoMainPage()
             }
         }
@@ -130,7 +129,7 @@ class SplashActivity : AppCompatActivity() {
     private fun onUserInfoReceived(querySnapshot: QuerySnapshot) {
         if (querySnapshot.size() > 1)
             Log.e(TAG, "Received more than one user object from uid: ${FirebaseAuth.getInstance().currentUser?.uid}")
-        LocalData.userData = querySnapshot.toObjects(User::class.java)[0]
+        LocalData.user = querySnapshot.toObjects(User::class.java)[0]
 
         gotoMainPage()
     }
@@ -446,7 +445,7 @@ class SplashActivity : AppCompatActivity() {
 
     private fun gotoMainPage() {
         MySharedPreferences.setHasSeenSplash(this,true)
-        startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
+        startActivity(Intent(this, MainViewActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
     }
 
     /**
