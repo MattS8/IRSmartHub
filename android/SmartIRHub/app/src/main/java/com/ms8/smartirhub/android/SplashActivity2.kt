@@ -14,6 +14,8 @@ import android.transition.AutoTransition
 import android.transition.TransitionManager
 import android.util.Log
 import android.view.animation.AccelerateDecelerateInterpolator
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.andrognito.flashbar.Flashbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
@@ -21,12 +23,14 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.ms8.smartirhub.android.data.Group
+import com.ms8.smartirhub.android.data.RemoteProfile
 import com.ms8.smartirhub.android.data.User
 import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.databinding.ASplashBinding
 import com.ms8.smartirhub.android.firebase.FirebaseAuthActions
 import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.utils.SignInUtils
+import com.ms8.smartirhub.android.viewmodels.RemoteProfileViewModel
 
 class SplashActivity2 : AppCompatActivity() {
     private val userGroupsListener = UserGroupsListener(null)
@@ -361,6 +365,10 @@ class SplashActivity2 : AppCompatActivity() {
             LayoutState.SHOW_SIGN_IN_OPTIONS -> showSignInOptions(false)
             else -> showSplash(false)
         }
+        val remoteProfilesViewModel = ViewModelProviders.of(this).get(RemoteProfileViewModel::class.java)
+        remoteProfilesViewModel.getRemoteProfiles().observe(this, Observer<HashMap<String, RemoteProfile>> {
+
+        })
     }
 
     /**
@@ -388,13 +396,13 @@ class SplashActivity2 : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         FirebaseAuth.getInstance().addAuthStateListener(authStateListener)
-        //LocalData.userGroups.addOnMapChangedCallback(userGroupsListener.apply { context = this@SplashActivity2 })
+        LocalData.userGroups.addOnMapChangedCallback(userGroupsListener.apply { context = this@SplashActivity2 })
     }
 
     override fun onPause() {
         super.onPause()
         FirebaseAuth.getInstance().removeAuthStateListener(authStateListener)
-        //LocalData.userGroups.removeOnMapChangedCallback(userGroupsListener.apply { context = null })
+        LocalData.userGroups.removeOnMapChangedCallback(userGroupsListener.apply { context = null })
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
