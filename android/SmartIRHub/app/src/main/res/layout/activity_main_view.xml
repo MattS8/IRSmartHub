@@ -10,6 +10,8 @@
             tools:context=".MainViewActivity"
             android:background="@color/colorPrimaryDark"
     >
+
+<!-- Toolbar -->
         
         <androidx.appcompat.widget.Toolbar
                 android:layout_width="match_parent"
@@ -20,10 +22,35 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintVertical_bias="0"
-        >
+        />
 
+<!-- Fragment View -->
 
-        </androidx.appcompat.widget.Toolbar>
+        <com.google.android.material.circularreveal.CircularRevealFrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:id="@+id/frame_layout"
+                app:layout_constraintTop_toBottomOf="@+id/toolbar"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/nav_view"
+        />
+
+<!-- Floating Page Action Button -->
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/nav_view"
+                app:layout_constraintVertical_bias="1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="1"
+                android:layout_margin="32dp"
+                android:id="@+id/fab"
+        />
+        
+<!-- Bottom Nav -->
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
                 android:id="@+id/nav_view"
@@ -34,7 +61,10 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                app:menu="@menu/bottom_nav"/>
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="1"
+                app:menu="@menu/bottom_nav"
+        />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
     

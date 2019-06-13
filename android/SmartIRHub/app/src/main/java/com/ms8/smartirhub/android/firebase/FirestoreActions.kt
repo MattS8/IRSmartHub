@@ -39,6 +39,9 @@ object FirestoreActions {
         Log.e("T#", "Todo: Report error $errMsg")
     }
 
+
+/* ---------------------------------------------- Listening Functions ---------------------------------------------- */
+
     fun listenToUserData() {
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
         userListener = FirebaseFirestore.getInstance().collection("users")
@@ -77,21 +80,12 @@ object FirestoreActions {
             }
     }
 
-    private fun listsAreEqual(local: ObservableArrayList<String>, remoteProfiles: ObservableArrayList<String>): Boolean {
-        local.forEach {
-            if (!remoteProfiles.contains(it))
-                return false
-        }
-
-        return true
-    }
-
     fun listenToRemoteProfiles() {
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
 
-        if (remoteProfileListener != null){
+        if (remoteProfileListener == null) {
             Log.w("listenToRemoteProfiles", "Tried listening while a listener was already subscribed!")
-            remoteProfileListener?.remove().also { remoteProfileListener = null }
+            return
         }
 
         remoteProfileListener = FirebaseFirestore.getInstance().collection("remoteProfiles")
@@ -140,28 +134,21 @@ object FirestoreActions {
         }
     }
 
-    fun removeAllListeners() {
-        userListener?.remove()
+    private fun listsAreEqual(local: ObservableArrayList<String>, remoteProfiles: ObservableArrayList<String>): Boolean {
+        local.forEach {
+            if (!remoteProfiles.contains(it))
+                return false
+        }
+
+        return true
     }
 
-
-
-    //UNUSED
-//    fun listenToGroups() {
-//        val uid = FirebaseAuth.getInstance().currentUser!!.uid
-//
-//        FirebaseFirestore.getInstance().collection("groups")
-//            .whereArrayContains("users", uid)
-//            .addSnapshotListener{snapshot, e ->
-//                if (e != null) {
-//                    Log.e("listenToGroups", "Error getting group ($e)")
-//                } else {
-//                    for (doc in snapshot!!) {
-//                        val group = doc.toObject(Group::class.java)
-//                        LocalData.userGroups.remove(doc.id)
-//                        LocalData.userGroups[doc.id] = group
-//                    }
-//                }
-//            }
-//    }
+    fun removeAllListeners() {
+        userListener?.remove().also { userListener = null }
+        remoteProfileListener?.remove().also { userListener = null }
+        groupListeners.forEach {
+            it.value.remove()
+            groupListeners.remove(it.key)
+        }
+    }
 }
