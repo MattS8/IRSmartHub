@@ -71,4 +71,9 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
+    <string name="create_remote">Create Remote</string>
+    <string name="remote_name">Remote Name:</string>
+    <string name="pick_button_name">Pick a name for your button</string>
+    <string name="choose_ir_action">Choose IR signal / action to send</string>
+    <string name="pick_button_style">Pick a button style</string>
 </resources>

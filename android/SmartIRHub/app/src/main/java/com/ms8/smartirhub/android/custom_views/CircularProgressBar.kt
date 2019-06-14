@@ -15,7 +15,7 @@ import com.ms8.smartirhub.android.R
 /**
  * Custom View that shows a circular progress bar and some inner text.
  */
-class CircularProgressView(context: Context, attr : AttributeSet) : View(context, attr) {
+class CircularProgressBar(context: Context, attr : AttributeSet) : View(context, attr) {
     /* ----------------------- View Properties ----------------------- */
     var minProgress = 0                                                 // Ratio of completion (minProgress : maxProgress)
     var maxProgress = 100                                               // Ratio of completion (minProgress : maxProgress)
@@ -24,6 +24,10 @@ class CircularProgressView(context: Context, attr : AttributeSet) : View(context
     var backgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG)                  // Paint used for unfilled part circle (technically all of circle)
     var foregroundPaint = Paint(Paint.ANTI_ALIAS_FLAG)                  // Paint used for filled part of circle
     var progress = 0f                                                   // Percentage of bar to fill
+    set(value) {
+        field = value
+        invalidate()
+    }
     var color = Color.DKGRAY                                       // Color of progress bar
         set(value) {
             field = value
@@ -40,13 +44,14 @@ class CircularProgressView(context: Context, attr : AttributeSet) : View(context
             invalidate()
             requestLayout()
         }
+    var animDuration = PROGRESS_ANIM_DURATION
 
     init {
         // Get xml-declared values
         val typedArray = context.theme.obtainStyledAttributes(attr, R.styleable.CircleProgressBar, 0 ,0)
         try {
             lineWidth = typedArray.getDimension(R.styleable.CircleProgressBar_progressBarThickness, lineWidth)
-            progress = typedArray.getFloat(R.styleable.CircleProgressBar_progress, progress)
+            progress = typedArray.getFloat(R.styleable.CircleProgressBar_barProgress, progress)
             color = typedArray.getInt(R.styleable.CircleProgressBar_progressbarColor, color)
             minProgress = typedArray.getInt(R.styleable.CircleProgressBar_min, minProgress)
             maxProgress = typedArray.getInt(R.styleable.CircleProgressBar_max, maxProgress)
@@ -68,7 +73,7 @@ class CircularProgressView(context: Context, attr : AttributeSet) : View(context
 
     fun animateBarProgress(newProgress : Float) =
         ObjectAnimator.ofFloat(this, "progress", newProgress).apply {
-            duration = PROGRESS_ANIM_DURATION
+            duration = animDuration
             interpolator = DecelerateInterpolator()
         }.start()
 
@@ -94,7 +99,7 @@ class CircularProgressView(context: Context, attr : AttributeSet) : View(context
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val mHeight = getDefaultSize(suggestedMinimumHeight, heightMeasureSpec)
         val mWidth = getDefaultSize(suggestedMinimumWidth, widthMeasureSpec)
-        val minVal = Math.min(width, height)
+        val minVal = Math.min(mWidth, mHeight)
         setMeasuredDimension(minVal, minVal)
         rectF.set(lineWidth/2, lineWidth/2, minVal - lineWidth/2, minVal - lineWidth/2)
 

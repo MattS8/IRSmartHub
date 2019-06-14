@@ -455,7 +455,7 @@ class SplashActivity2 : AppCompatActivity() {
             }
             .addOnFailureListener { e ->
                 binding.btnSignIn.onStopLoading()
-                Log.e(SplashActivity.TAG, "Username query failed for user with uid:" +
+                Log.e(TAG, "Username query failed for user with uid:" +
                         " ${FirebaseAuth.getInstance().currentUser?.uid} ($e)")
                 onSignInError(e)
             }
