@@ -74,6 +74,14 @@
     <string name="create_remote">Create Remote</string>
     <string name="remote_name">Remote Name:</string>
     <string name="pick_button_name">Pick a name for your button</string>
-    <string name="choose_ir_action">Choose IR signal / action to send</string>
+    <string name="choose_ir_action">Choose an IR signal / action to send</string>
     <string name="pick_button_style">Pick a button style</string>
+    <string name="pick_name">Pick Name</string>
+    <string name="choose_action">Choose Action</string>
+    <string name="pick_style">Pick Style</string>
+    <string name="add_button">Add Button</string>
+    <string name="wrn_create_button_desc">By going back, the progress on creating your button will be lost.</string>
+    <string name="are_you_sure">Are you sure?</string>
+    <string name="stay">stay</string>
+    <string name="go_back">Go back</string>
 </resources>

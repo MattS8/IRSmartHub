@@ -71,4 +71,7 @@ dependencies {
 
     // Material Components
     implementation 'com.google.android.material:material:1.1.0-alpha07'
+
+    // Bottom Sheet Dialog
+    implementation 'com.github.andrefrsousa:SuperBottomSheet:1.3.0'
 }

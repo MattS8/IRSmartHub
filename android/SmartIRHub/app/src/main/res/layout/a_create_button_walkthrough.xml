@@ -1,10 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/colorPrimaryDark"
     >
+    <!-- Toolbar -->
+        <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
+                                           android:layout_width="match_parent"
+                                           android:layout_height="?attr/actionBarSize"
+                                           app:layout_constraintStart_toStartOf="parent"
+                                           app:layout_constraintEnd_toEndOf="parent"
+                                           app:layout_constraintTop_toTopOf="parent"
+                                           app:layout_constraintBottom_toBottomOf="parent"
+                                           app:layout_constraintVertical_bias="0"
+        />
 
         <com.ms8.smartirhub.android.custom_views.CircularProgressView android:id="@+id/prog1"
                                                                       android:layout_width="wrap_content"
@@ -14,10 +25,11 @@
                                                                       app:progressOnThisStep="true"
                                                                       app:layout_constraintStart_toStartOf="parent"
                                                                       app:layout_constraintEnd_toEndOf="parent"
-                                                                      app:layout_constraintTop_toTopOf="parent"
+                                                                      app:layout_constraintTop_toBottomOf="@id/toolbar"
                                                                       app:layout_constraintHorizontal_bias="0.5"
                                                                       app:barColor="@color/colorPrimary"
-                                                                      app:layout_constraintBottom_toTopOf="@+id/prog2"/>
+                                                                      app:layout_constraintBottom_toTopOf="@+id/prog2"
+                                                                      app:layout_constraintVertical_bias="1.0"/>
 
         <com.ms8.smartirhub.android.custom_views.CircularProgressView android:id="@+id/prog2"
                                                                       android:layout_width="wrap_content"
@@ -54,9 +66,10 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintVertical_bias="1"
                 android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp"
-                android:text="Next Step"
-                app:layout_constraintTop_toBottomOf="@+id/prog3" app:layout_constraintHorizontal_bias="0.5"/>
+                android:layout_marginBottom="8dp"
+                tools:text="Next Step"
+                app:layout_constraintTop_toBottomOf="@+id/prog3" app:layout_constraintHorizontal_bias="0.5"
+                style="@style/AppTheme.Button.SplashSignIn.Colored" android:minWidth="168dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

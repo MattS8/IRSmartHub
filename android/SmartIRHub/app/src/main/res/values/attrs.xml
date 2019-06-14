@@ -17,4 +17,5 @@
         <attr name="animationDuration" format="integer"/>
         <attr name="barThickness" format="dimension"/>
     </declare-styleable>
+    <attr name="superBottomSheet_peekHeight" format="dimension"/>
 </resources>
