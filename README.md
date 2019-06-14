@@ -12,6 +12,7 @@ Contains all information with respect to a specific user using this service.
 ### Remote Profile
 Contains a collection of pre-programmed actions
 - **Name**: A custom name given by the creator of the remote profile
+- **Hub**: The uid of the hub associated with this remote
 - **Buttons**: a list of remote functions (either *actions* or *commands*). Remote functions can be static, pre-defined (i.e. VOL UP) or custom
 ### Command
 Contains raw data for a single IR command
