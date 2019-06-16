@@ -8,6 +8,7 @@ The following describe how data is stored and handled in this project:
 Contains all information with respect to a specific user using this service. 
  - **Unique id**: The uid of the associated user account 
  - **Username**: *used for allowing other users to invite/connect without sharing email*
+ - **Personal Group**: The uid of the user's personal group. No other users can be added to this group.
  - **Groups**: *a list of groups the user is associated with*
 ### Remote Profile
 Contains a collection of pre-programmed actions
