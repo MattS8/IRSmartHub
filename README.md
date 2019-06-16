@@ -15,6 +15,7 @@ Contains a collection of pre-programmed actions
 - **Name**: A custom name given by the creator of the remote profile
 - **Hub**: The uid of the hub associated with this remote
 - **Buttons**: a list of remote functions (either *actions* or *commands*). Remote functions can be static, pre-defined (i.e. VOL UP) or custom
+- **Groups**: a list of groups this remote profile is associated with
 ### Command
 Contains raw data for a single IR command
 - **Raw Data**: A string of raw data for the given command
