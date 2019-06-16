@@ -6,10 +6,10 @@ A project with the goal of creating a solution to the many IR-controlled devices
 The following describe how data is stored and handled in this project:
 ### User
 Contains all information with respect to a specific user using this service. 
- - **Unique id**: The uid of the associated user account 
  - **Username**: *used for allowing other users to invite/connect without sharing email*
- - **Personal Group**: The uid of the user's personal group. No other users can be added to this group.
+ - **Personal Group**: *The uid of the user's personal group. No other users can be added to this group*
  - **Groups**: *a list of groups the user is associated with*
+ - **Group Invitations**: *a list of invitations to groups the user can join. Any user can add their invitation to this list.*
 ### Remote Profile
 Contains a collection of pre-programmed actions
 - **Name**: A custom name given by the creator of the remote profile
