@@ -7,8 +7,8 @@ The following describe how data is stored and handled in this project:
 ### User
 Contains all information with respect to a specific user using this service. 
  - **Username**: *used for allowing other users to invite/connect without sharing email*
- - **Personal Group**: *The uid of the user's personal group. No other users can be added to this group*
  - **Groups**: *a list of groups the user is associated with*
+ 	- **Personal Group**: *The uid of the user's personal group. No other users can be added to this group*
  - **Group Invitations**: *a list of invitations to groups the user can join. Any user can add their invitation to this list.*
 ### Remote Profile
 Contains a collection of pre-programmed actions
@@ -27,6 +27,7 @@ Contains a collection of users, remote profiles, and associated hubs. This is us
 - **Remote Profiles**: *a collection of profiles shared among the group*
 - **Connected Hubs**: *a collection of hubs associated with the group*
 - **Owner**: *uid of the original creator of the group*
+- **Personal Group**: *boolean value that determines whether other users can be added to group*
 - **Users**: *a collection of users with set permissions. Permission types are as follows:*
 	- ***Add Devices***: Allows user to add hubs to the group. Users can only add hubs that they set up.
 	- ***Remove Devices***: Allows user to remove hubs from the group
