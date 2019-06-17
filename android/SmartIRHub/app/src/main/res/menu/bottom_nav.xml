@@ -6,7 +6,7 @@
             android:title="@string/title_remotes"/>
 
     <item
-            android:id="@+id/navigation_app_actions"
+            android:id="@+id/navigation_actions"
             android:icon="@drawable/temp_splash_logo"
             android:title="@string/title_actions"/>
 </menu>
