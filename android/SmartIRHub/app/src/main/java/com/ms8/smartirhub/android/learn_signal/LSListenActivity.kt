@@ -27,6 +27,7 @@ import com.ms8.smartirhub.android.databinding.ALearnSigListenBinding
 import com.ms8.smartirhub.android.firebase.FirebaseConstants
 import com.ms8.smartirhub.android.firebase.FirebaseConstants.IR_ACTION_LISTEN
 import com.ms8.smartirhub.android.firebase.FirestoreActions
+import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
 import com.ms8.smartirhub.android.learn_signal.LSWalkthroughActivity.Companion.LISTENING_HUB
 import java.lang.Exception
 import java.text.SimpleDateFormat
@@ -247,6 +248,7 @@ class LSListenActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.a_learn_sig_listen)
         binding.btnShowAdvancedInfo.setOnClickListener { showAdvancedInfo() }
         binding.btnRetry.setOnClickListener { retry() }
+        binding.btnTestSignal.setOnClickListener { testSignal() }
 
         val len = TempData.tempSignal?.rawLength ?: 0
         Log.d("LEN", "$len")
@@ -263,6 +265,32 @@ class LSListenActivity : AppCompatActivity() {
                 binding.btnStartListening.text = getString(R.string.start_listening)
                 hideLearnedLayout(false)
             }
+        }
+    }
+
+    private fun testSignal() {
+        TempData.tempSignal?.let { irSignal ->
+            binding.btnTestSignal.startAnimation()
+            RealtimeDatabaseFunctions.sendNoneAction(hubUID)
+                .addOnSuccessListener {
+                    RealtimeDatabaseFunctions.sendSignalToHub(hubUID, irSignal)
+                        .addOnSuccessListener {
+                            binding.btnTestSignal.revertAnimation()
+                        }
+                        .addOnFailureListener {
+                            binding.btnTestSignal.revertAnimation()
+                            bottomErrorSheet.sheetTitle = getString(R.string.err_unknown_title)
+                            bottomErrorSheet.description =  getString(R.string.err_unknown_desc)
+                            bottomErrorSheet.show(supportFragmentManager, "Bottom_sheet_error_timeout")
+                        }
+                }
+                .addOnFailureListener {
+                    binding.btnTestSignal.revertAnimation()
+                    bottomErrorSheet.sheetTitle = getString(R.string.err_unknown_title)
+                    bottomErrorSheet.description =  getString(R.string.err_unknown_desc)
+                    bottomErrorSheet.show(supportFragmentManager, "Bottom_sheet_error_timeout")
+                }
+
         }
     }
 

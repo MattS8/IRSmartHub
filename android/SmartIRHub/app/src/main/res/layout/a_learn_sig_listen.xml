@@ -162,7 +162,7 @@
 
 
         <!-- Select Hub Button -->
-        <Button
+        <br.com.simplepass.loadingbutton.customViews.CircularProgressButton
                 android:text="@string/test_signal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -173,8 +173,9 @@
                 android:layout_marginStart="8dp" android:textAllCaps="false"
                 android:paddingStart="16dp" android:paddingEnd="16dp" app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintVertical_chainStyle="packed"
-                app:layout_constraintTop_toBottomOf="@+id/learnedSignalLayout" android:layout_marginTop="32dp"
-                android:alpha="0"/>
+                app:layout_constraintTop_toBottomOf="@+id/learnedSignalLayout" android:layout_marginTop="8dp"
+                style="@style/Widget.AppCompat.Button.Borderless.Colored"
+                android:alpha="1" android:layout_marginBottom="8dp"/>
 
         <!-- Begin Listening Button -->
         <br.com.simplepass.loadingbutton.customViews.CircularProgressButton

@@ -373,30 +373,11 @@ object FirestoreActions {
 
     fun parseHubResult(value: Map<String, Any>?): HubResult? {
 
-        val hubRes = Gson().fromJson(value.toString(), HubResult::class.java)
-        Log.d("parseHubResult", "Gson got: $hubRes")
-        return hubRes
         try {
-            value?.let { res ->
-                val code : Int = res["code"] as Int
-                val timestamp : String = res["timestamp"] as String
-                val hubResult = HubResult(code, timestamp)
-
-                when (code) {
-                // Received IR Signal
-                    IR_RES_RECEIVED_SIG -> {
-                        //hubResult.rawData = res["rawData"] as String
-                        hubResult.rawLen = res["rawLen"] as Long
-                    }
-                // Parsed Error Result
-                    IR_RES_UNKNOWN_ERR, IR_RES_TIMEOUT_ERR, IR_RES_OVERFLOW_ERR -> {}
-                // Unknown Result
-                    else -> { Log.e("parseHUbResult", "unknown result code: $code") }
-                }
-
-                return hubResult
-            }
-        } catch (e : Exception) {Log.e("parseHubResult", "($value) $e")}
+            val hubRes = Gson().fromJson(value.toString(), HubResult::class.java)
+            Log.d("parseHubResult", "Gson got: $hubRes")
+            return hubRes
+        } catch (e : Exception) { Log.e("parseHubResult", "$e")}
 
         return null
     }
