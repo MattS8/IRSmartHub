@@ -6,13 +6,16 @@ A project with the goal of creating a solution to the many IR-controlled devices
 The following describe how data is stored and handled in this project:
 ### User
 Contains all information with respect to a specific user using this service. 
- - **Unique id**: The uid of the associated user account 
  - **Username**: *used for allowing other users to invite/connect without sharing email*
  - **Groups**: *a list of groups the user is associated with*
+ 	- **Personal Group**: *The uid of the user's personal group. No other users can be added to this group*
+ - **Group Invitations**: *a list of invitations to groups the user can join. Any user can add their invitation to this list.*
 ### Remote Profile
 Contains a collection of pre-programmed actions
 - **Name**: A custom name given by the creator of the remote profile
+- **Hub**: The uid of the hub associated with this remote
 - **Buttons**: a list of remote functions (either *actions* or *commands*). Remote functions can be static, pre-defined (i.e. VOL UP) or custom
+- **Groups**: a list of groups this remote profile is associated with
 ### Command
 Contains raw data for a single IR command
 - **Raw Data**: A string of raw data for the given command
@@ -25,6 +28,7 @@ Contains a collection of users, remote profiles, and associated hubs. This is us
 - **Remote Profiles**: *a collection of profiles shared among the group*
 - **Connected Hubs**: *a collection of hubs associated with the group*
 - **Owner**: *uid of the original creator of the group*
+- **Personal Group**: *boolean value that determines whether other users can be added to group*
 - **Users**: *a collection of users with set permissions. Permission types are as follows:*
 	- ***Add Devices***: Allows user to add hubs to the group. Users can only add hubs that they set up.
 	- ***Remove Devices***: Allows user to remove hubs from the group
