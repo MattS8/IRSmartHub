@@ -1,4 +1,4 @@
-package com.ms8.smartirhub.android.create_remote
+package com.ms8.smartirhub.android.create_button
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle

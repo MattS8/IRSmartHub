@@ -1,16 +1,11 @@
-package com.ms8.smartirhub.android.create_remote
+package com.ms8.smartirhub.android.create_button
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import com.andrefrsousa.superbottomsheet.SuperBottomSheetFragment
 import com.ms8.smartirhub.android.R
+import com.ms8.smartirhub.android.custom_views.BackWarningSheet
 import com.ms8.smartirhub.android.data.RemoteProfile
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ACreateButtonWalkthroughBinding
@@ -23,15 +18,11 @@ class CBWalkthroughActivity : AppCompatActivity() {
     override fun onBackPressed() {
         when {
             warningSheet.bWantsToLeave -> {
-                Log.d("TEST", " I WANT TO LEAVE")
+                //Note: TempData is not cleared on exit. It is up to the activity that started the Create Button process to clear TempData
                 super.onBackPressed()
             }
             !warningSheet.bIsShowing -> {
-                Log.d("TEST", "HELLOOO")
                 warningSheet.show(supportFragmentManager, "WarningBottomSheet")
-            }
-            else -> {
-                Log.d("TEST", "HMMM")
             }
         }
     }
@@ -50,7 +41,7 @@ class CBWalkthroughActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
-        supportActionBar?.title = getString(R.string.add_button)
+        supportActionBar?.title = getString(R.string.how_to_add_button)
 
         // Figure out which step we're on
         when {
@@ -59,7 +50,7 @@ class CBWalkthroughActivity : AppCompatActivity() {
                 binding.prog1.bOnThisStep = true
                 binding.prog2.bOnThisStep = false
                 binding.prog3.bOnThisStep = false
-                binding.btnNextStep.text = getString(R.string.pick_name)
+                binding.btnNextStep.text = getString(R.string.pick_a_button_name)
                 binding.btnNextStep.setOnClickListener { getNameActivity() }
                 binding.prog1.setOnClickListener { getNameActivity() }
             }
@@ -67,7 +58,7 @@ class CBWalkthroughActivity : AppCompatActivity() {
                 binding.prog1.bOnThisStep = true
                 binding.prog2.bOnThisStep = true
                 binding.prog3.bOnThisStep = false
-                binding.btnNextStep.text = getString(R.string.choose_action)
+                binding.btnNextStep.text = getString(R.string.choose_a_button_action)
                 binding.btnNextStep.setOnClickListener { getSignalOrAction() }
                 binding.prog1.setOnClickListener { getSignalOrAction() }
             }
@@ -75,7 +66,7 @@ class CBWalkthroughActivity : AppCompatActivity() {
                 binding.prog1.bOnThisStep = true
                 binding.prog2.bOnThisStep = true
                 binding.prog3.bOnThisStep = true
-                binding.btnNextStep.text = getString(R.string.pick_style)
+                binding.btnNextStep.text = getString(R.string.pick_a_button_style)
                 binding.btnNextStep.setOnClickListener { getButtonStyle() }
                 binding.prog1.setOnClickListener { getButtonStyle() }
             }
@@ -92,39 +83,6 @@ class CBWalkthroughActivity : AppCompatActivity() {
 
     fun getNameActivity() {
         startActivityForResult(Intent(this, CBNameActivity::class.java), REQ_NAME)
-    }
-
-    class BackWarningSheet : SuperBottomSheetFragment() {
-        lateinit var binding: com.ms8.smartirhub.android.databinding.DBottomSheetBinding
-        var bWantsToLeave = false
-        var bIsShowing = false
-
-        override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-            super.onCreateView(inflater, container, savedInstanceState)
-            binding = DataBindingUtil.inflate(inflater, R.layout.d_bottom_sheet, container, false)
-            binding.tvTitle.text = context!!.getString(R.string.are_you_sure)
-            binding.tvDescription.text = context!!.getString(R.string.wrn_create_button_desc)
-            binding.btnNeg.text = context!!.getString(R.string.stay)
-            binding.btnNeg.setOnClickListener { dismissWarning() }
-            binding.btnPos.setOnClickListener { leave() }
-            binding.btnPos.text = context!!.getString(R.string.go_back)
-
-            return binding.root
-        }
-
-        override fun getBackgroundColor(): Int {
-            return ContextCompat.getColor(context!!, R.color.colorPrimaryDark)
-        }
-
-        private fun dismissWarning() {
-            bIsShowing = false
-            dismiss()
-        }
-
-        private fun leave() {
-            bWantsToLeave = true
-            activity?.onBackPressed()
-        }
     }
 
     companion object {
