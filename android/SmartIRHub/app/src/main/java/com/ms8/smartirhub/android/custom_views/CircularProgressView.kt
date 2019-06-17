@@ -13,6 +13,11 @@ import com.ms8.smartirhub.android.R
 class CircularProgressView(context: Context, attrs: AttributeSet): ConstraintLayout(context, attrs) {
     /* ----------------------- View Properties ----------------------- */
     var description : String? = ""
+    set(value) {
+        field = value
+        descriptionView.text = value
+        invalidate()
+    }
     var step = 1
     var bOnThisStep = false
     set(value) {

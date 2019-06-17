@@ -21,6 +21,7 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginStart="24dp"
                 android:layout_marginEnd="24dp"
+                  android:layout_marginBottom="42dp"
                 tools:text="@string/wrn_create_button_desc"
                 android:layout_gravity="center"
                 android:textColor="@android:color/white"
@@ -32,26 +33,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="128dp"
                 android:layout_marginBottom="8dp"
-                android:gravity="center_horizontal"
-        >
+                android:gravity="bottom|center_horizontal"
+                android:layout_gravity="bottom" android:foregroundGravity="bottom">
             <Button android:id="@+id/btnNeg"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@style/Widget.AppCompat.Button.Borderless"
-                android:textColor="@color/colorPrimary"
-                android:layout_marginEnd="32dp"
-                tools:text="@string/stay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.AppCompat.Button.Borderless"
+                    android:textColor="@color/colorPrimary"
+                    tools:text="@string/stay"
             />
 
             <Button android:id="@+id/btnPos"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="32dp"
-                style="@style/Widget.AppCompat.Button.Borderless"
-                android:textColor="@android:color/holo_red_dark"
-                tools:text="@string/go_back"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.AppCompat.Button.Borderless"
+                    android:textColor="@android:color/holo_red_dark"
+                    tools:text="@string/go_back"
             />
 
         </LinearLayout>
