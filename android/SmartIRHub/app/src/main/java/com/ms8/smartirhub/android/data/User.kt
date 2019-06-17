@@ -1,14 +1,11 @@
 package com.ms8.smartirhub.android.data
 
+import android.util.Log
 import androidx.databinding.ObservableArrayList
 import com.google.firebase.firestore.Exclude
+import com.google.firebase.firestore.IgnoreExtraProperties
 
-class User {
-    var uid : String = ""
-    var connectedDevices : ObservableArrayList<String> = ObservableArrayList()
-    var remoteProfiles : ObservableArrayList<String> = ObservableArrayList()
+class User(val uid: String, @Exclude val username: String) {
     var groups : ObservableArrayList<String> = ObservableArrayList()
-
-    @get:Exclude
-    lateinit var username : String
+    var irSignals : ObservableArrayList<String> = ObservableArrayList()
 }

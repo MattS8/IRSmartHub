@@ -6,16 +6,24 @@ import androidx.databinding.ObservableArrayList
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.*
-import com.ms8.smartirhub.android.data.Group
-import com.ms8.smartirhub.android.data.RemoteProfile
-import com.ms8.smartirhub.android.data.User
+import com.google.gson.Gson
+import com.ms8.smartirhub.android.data.*
 import com.ms8.smartirhub.android.database.LocalData
+import com.ms8.smartirhub.android.database.TempData
+import com.ms8.smartirhub.android.firebase.FirebaseConstants.IR_RES_OVERFLOW_ERR
+import com.ms8.smartirhub.android.firebase.FirebaseConstants.IR_RES_RECEIVED_SIG
+import com.ms8.smartirhub.android.firebase.FirebaseConstants.IR_RES_TIMEOUT_ERR
+import com.ms8.smartirhub.android.firebase.FirebaseConstants.IR_RES_UNKNOWN_ERR
+import java.lang.Exception
 
 object FirestoreActions {
-    var userListener : ListenerRegistration? = null
-    var groupListeners = ArrayMap<String, ListenerRegistration>()
-    var remoteProfileListener : ListenerRegistration? = null
+    private var userListener : ListenerRegistration? = null
+    private var groupListeners = ArrayMap<String, ListenerRegistration>()
+    private var remoteProfileListeners = ArrayMap<String, ListenerRegistration>()
+    private var hubListeners = ArrayMap<String, ListenerRegistration>()
+    private var irSignalsListener : ListenerRegistration? = null
 
+/* ---------------------------------------------- Retrieval Functions ---------------------------------------------- */
 
     fun getUser(username: String): Task<DocumentSnapshot> {
         return FirebaseFirestore.getInstance().collection("users").document(username).get()
@@ -26,13 +34,6 @@ object FirestoreActions {
             .whereEqualTo("uid", FirebaseAuth.getInstance().currentUser!!.uid).get()
     }
 
-    /**
-     *  Creates an entry in the database for newly created user.
-     */
-    fun createNewUser(username: String) : Task<Void> {
-        return FirebaseFirestore.getInstance().collection("users").document(username)
-            .set(User().apply { FirebaseAuth.getInstance().currentUser!!.uid }, SetOptions.merge())
-    }
 
     fun reportError(errMsg: String) {
         //TODO Report Error
@@ -42,6 +43,7 @@ object FirestoreActions {
 
 /* ---------------------------------------------- Listening Functions ---------------------------------------------- */
 
+    @Suppress("UNCHECKED_CAST")
     fun listenToUserData() {
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
         userListener = FirebaseFirestore.getInstance().collection("users")
@@ -54,57 +56,77 @@ object FirestoreActions {
                         if (snapshot.size() > 1)
                             Log.w("listenToUserData", "Received more than one user object from uid: $uid")
 
-                        val userData = snapshot.documents[0].toObject(User::class.java)
+                        val doc = snapshot.documents[0]
+
+                        val userData = User(uid, doc.id).apply {
+                            groups = ObservableArrayList<String>().apply { addAll(doc["groups"] as ArrayList<String>) }
+                        }
                         if (LocalData.user == null) {
                             Log.d("listToUserData", "Adding all user data")
-                            LocalData.setupUser(userData!!, uid)
+                            LocalData.user = userData
                             return@addSnapshotListener
                         }
-                        // Only update list of remote profiles if changed
-                        if (!listsAreEqual(LocalData.user!!.remoteProfiles, userData!!.remoteProfiles)) {
-                            LocalData.user!!.remoteProfiles.clear()
-                            LocalData.user!!.remoteProfiles.addAll(userData.remoteProfiles)
-                        }
-                        // Only update group list if changed
-                        if (!listsAreEqual(LocalData.user!!.groups, userData.groups)) {
-                            LocalData.user!!.groups.clear()
-                            LocalData.user!!.groups.addAll(userData.groups)
-                        }
-                        // Only update connected devices if changed
-                        if (!listsAreEqual(LocalData.user!!.connectedDevices, userData.connectedDevices)) {
-                            LocalData.user!!.connectedDevices.clear()
-                            LocalData.user!!.connectedDevices.addAll(userData.connectedDevices)
-                        }
                     }
                 }
             }
     }
 
-    fun listenToRemoteProfiles() {
-        val uid = FirebaseAuth.getInstance().currentUser!!.uid
+//    fun listenToRemoteProfiles() {
+//        val uid = FirebaseAuth.getInstance().currentUser!!.uid
+//
+//        if (remoteProfileListener != null) {
+//            Log.w("listenToRemoteProfiles", "Tried listening while a listener was already subscribed!")
+//            return
+//        }
+//
+//        remoteProfileListener = FirebaseFirestore.getInstance().collection("remoteProfiles")
+//            .whereArrayContains("users", uid)
+//            .addSnapshotListener{snapshot, e ->
+//                when {
+//                    e != null -> { Log.e("listenToRemoteProfiles", "$e") }
+//                    else -> {
+//                        Log.d("listenToRemoteProfiles", "Received <${snapshot?.size()}> remoteProfiles from db")
+//                        for (doc in snapshot!!) {
+//                            val remoteProfile = doc.toObject(RemoteProfile::class.java)
+//                            LocalData.remoteProfiles.remove(doc.id)
+//                            LocalData.remoteProfiles[doc.id] = remoteProfile
+//                        }
+//                    }
+//                }
+//            }
+//    }
 
-        if (remoteProfileListener == null) {
-            Log.w("listenToRemoteProfiles", "Tried listening while a listener was already subscribed!")
-            return
+    private fun listenToRemoteProfiles(remotes: ArrayList<String>) {
+        remotes.forEach { uid ->
+            if (!remoteProfileListeners.contains(uid)) {
+                remoteProfileListeners[uid] = FirebaseFirestore.getInstance().collection("hubs").document(uid)
+                    .addSnapshotListener {snapshot, e ->
+                        when {
+                        // Error
+                            e != null -> {
+                                Log.e("listenToHubs", "$snapshot | $e")
+                                snapshot?.let {
+                                    remoteProfileListeners[uid]?.remove()
+                                    remoteProfileListeners.remove(uid)
+                                    LocalData.remoteProfiles.remove(uid)
+                                }
+                            }
+                        // Hub no longer exists
+                            snapshot == null || !snapshot.exists() -> {
+                                snapshot?.let { removeRemoteProfile(snapshot.id) }
+                            }
+                        // Received hub
+                            else -> {
+                                LocalData.remoteProfiles.remove(snapshot.id)
+                                LocalData.remoteProfiles[snapshot.id] = snapshot.toObject(RemoteProfile::class.java)
+                            }
+                        }
+                    }
+            }
         }
-
-        remoteProfileListener = FirebaseFirestore.getInstance().collection("remoteProfiles")
-            .whereArrayContains("users", uid)
-            .addSnapshotListener{snapshot, e ->
-                when {
-                    e != null -> { Log.e("listenToRemoteProfiles", "$e") }
-                    else -> {
-                        Log.d("listenToRemoteProfiles", "Received <${snapshot?.size()}> remoteProfiles from db")
-                        for (doc in snapshot!!) {
-                            val remoteProfile = doc.toObject(RemoteProfile::class.java)
-                            LocalData.remoteProfiles.remove(doc.id)
-                            LocalData.remoteProfiles[doc.id] = remoteProfile
-                        }
-                    }
-                }
-            }
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun listenToUserGroups() {
         val groups = LocalData.user?.groups ?: arrayListOf<String>()
         groups.forEach {
@@ -112,26 +134,232 @@ object FirestoreActions {
                 groupListeners[it] = FirebaseFirestore.getInstance().collection("groups").document(it)
                     .addSnapshotListener {snapshot, e ->
                         when {
-                            // Error
-                            e != null -> Log.e("listenToUserGroups", "$e")
-                            // Group no longer exists
-                            snapshot == null || !snapshot.exists() -> {
-                                Log.d("listenToUserGroups", "User removed from nonexistent group: ${snapshot?.id}")
-                                LocalData.userGroups.remove(snapshot?.id)
+                        // Error
+                            e != null -> {
+                                Log.e("listenToUserGroups", "$e")
+                                snapshot?.let { removeGroup(snapshot) }
                             }
-                            // Received group
+                        // Group no longer exists
+                            snapshot == null || !snapshot.exists() -> {
+                                Log.d("listenToUserGroups", "nonexistent group: ${snapshot?.id}")
+                                // Check all hubs in this group and remove any the user no longer has access to
+                                snapshot?.let { removeGroup(snapshot) }
+                            }
+                        // Received group
                             else -> {
                                 Log.d("listenToUserGroups", "Received Group: ${snapshot.data}")
-                                        LocalData.userGroups.remove(snapshot.id)
-                                LocalData.userGroups[snapshot.id] = Group(snapshot.id, snapshot.data?.get("owner") as String)
+                                val groupId = snapshot.id
+                                LocalData.userGroups.remove(groupId)
+                                LocalData.userGroups[groupId] = Group(snapshot["owner"] as String, snapshot["personalGroup"] as Boolean)
+                                    .apply { uid = groupId }
+                                fetchConnectedDevicesFromGroup(groupId)
+                                fetchRemoteProfiles(groupId)
                             }
                         }
-
                     }
             } else {
                 Log.w("listenToUserGroups", "tried to listen on group <$it> while already subscribed... skipping...")
             }
         }
+    }
+
+    private fun fetchRemoteProfiles(groupId: String) {
+        FirebaseFirestore.getInstance().collection("groups").document(groupId)
+            .collection("remoteProfiles").addSnapshotListener { snap, ex ->
+                when {
+                    // Error
+                    ex != null -> {
+                        Log.e("listenToUserGroup", "Fetching remoteProfiles... $ex")
+                    }
+                    // Empty
+                    snap!!.isEmpty -> {
+                        Log.d("listenToUserGroup", "No remote profiles associated with group $groupId")
+                    }
+                    // Received Remote Profiles
+                    else -> {
+                        val listOfProfiles = ArrayList<String>()
+                        snap.documentChanges.forEach { docChange ->
+                            listOfProfiles.add(docChange.document.id)
+                        }
+                        listenToRemoteProfiles(listOfProfiles)
+                    }
+                }
+            }
+    }
+
+    private fun fetchConnectedDevicesFromGroup(groupId: String) {
+        FirebaseFirestore.getInstance().collection("groups").document(groupId)
+            .collection("connectedDevices").addSnapshotListener { snapshot2, e2 ->
+                when {
+                    // Error
+                    e2 != null -> {
+                        Log.e("listenToUserGroup", "Fetching connectedDevices... $e2")
+                    }
+                    // Empty
+                    snapshot2!!.isEmpty -> {
+                        Log.d("listenToUserGroup", "No devices associated with group $groupId")
+                    }
+                    // Received devices
+                    else -> {
+                        val listOfHubs = ArrayList<String>()
+                        snapshot2.documentChanges.forEach { docChange ->
+                            listOfHubs.add(docChange.document.id)
+                        }
+                        listenToHubs(listOfHubs)
+                    }
+                }
+            }
+    }
+
+    private fun listenToHubs(hubs: ArrayList<String>) {
+        hubs.forEach { uid ->
+            if (!hubListeners.contains(uid)) {
+                hubListeners[uid] = FirebaseFirestore.getInstance().collection("hubs").document(uid)
+                    .addSnapshotListener {snapshot, e ->
+                        when {
+                        // Error
+                            e != null -> {
+                                Log.e("listenToHubs", " ($uid) $e")
+                                snapshot?.let {
+                                    hubListeners[uid]?.remove()
+                                    hubListeners.remove(uid)
+                                    LocalData.hubs.remove(uid)
+                                }
+                            }
+                        // Hub no longer exists
+                            snapshot == null || !snapshot.exists() -> {
+                                snapshot?.let { removeHub(snapshot.id) }
+                            }
+                        // Received hub
+                            else -> {
+                                LocalData.hubs.remove(snapshot.id)
+                                val hub = snapshot.toObject(Hub::class.java)
+                                LocalData.hubs[snapshot.id] = hub.apply { this?.uid = snapshot.id }
+                            }
+                        }
+                    }
+            }
+        }
+    }
+
+    fun listenToIrSignals() {
+        if (irSignalsListener != null) {
+            Log.w("listenToIrSignals", "Tried listening while a listener was already subscribed!")
+            return
+        }
+
+        val username = LocalData.user!!.username
+        irSignalsListener = FirebaseFirestore.getInstance().collection("users").document(username).collection("irSignals")
+            .addSnapshotListener {snapshot, e ->
+                when {
+                // Error
+                    e != null -> {
+                        Log.e("listenToIrSignals", "$e")
+                        snapshot?.let { irSignalsListener?.remove() }
+                    }
+                    snapshot != null -> {
+                        snapshot.documentChanges.forEach {docChange ->
+                            when {
+                            // IR signal was removed
+                                !docChange.document.exists() -> {
+                                    LocalData.irSignals.remove(docChange.document.id)
+                                }
+                            // New IR signal found
+                                else -> {
+                                    val irSignal = docChange.document.toObject(IrSignal::class.java)
+                                    LocalData.irSignals.remove(docChange.document.id)
+                                    LocalData.irSignals[docChange.document.id] = irSignal
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+    }
+
+/* ----------------------------------------------- Storing Functions ----------------------------------------------- */
+
+    fun addIrSignal(): Task<DocumentReference> {
+        val username = LocalData.user!!.username
+        val irSignal = TempData.tempSignal!!
+        return FirebaseFirestore.getInstance().collection("users").document(username).collection("irSignals")
+            .add(irSignal)
+    }
+
+    fun addUser(username: String) : Task<Void> {
+        val uid = FirebaseAuth.getInstance().currentUser!!.uid
+        val user = User(uid, username).apply{ groups.add(uid)}
+        val group = Group(uid, true)
+
+        val root = FirebaseFirestore.getInstance()
+        val writeBatch = FirebaseFirestore.getInstance().batch()
+        writeBatch.set(root.collection("users").document(username), user)
+        writeBatch.set(root.collection("groups").document(uid), group)
+
+        return writeBatch.commit()
+    }
+
+    fun addPersonalGroup(): Task<Void> {
+        val uid = FirebaseAuth.getInstance().currentUser!!.uid
+        val group = Group(uid, true)
+        return FirebaseFirestore.getInstance().collection("groups").document(uid)
+            .set(group)
+    }
+
+/* ----------------------------------------------- Removal Functions ----------------------------------------------- */
+
+    private fun removeHub(uid: String) {
+        hubListeners[uid]?.remove()
+        hubListeners.remove(uid)
+        LocalData.hubs.remove(uid)
+    }
+
+    private fun removeRemoteProfile(uid : String) {
+        remoteProfileListeners[uid]?.remove()
+        remoteProfileListeners.remove(uid)
+        LocalData.remoteProfiles.remove(uid)
+    }
+
+    private fun removeGroup(snapshot: DocumentSnapshot) {
+        LocalData.userGroups[snapshot.id]?.connectedDevices?.forEach { hubUID ->
+            if (!stillHasAccess(hubUID, snapshot.id)) {
+                hubListeners[hubUID]?.remove()
+                hubListeners.remove(hubUID)
+                LocalData.hubs.remove(hubUID)
+            }
+        }
+        LocalData.userGroups.remove(snapshot.id)
+    }
+
+    fun removeAllListeners() {
+        userListener?.remove().also { userListener = null }
+        //remoteProfileListener?.remove().also { userListener = null }
+        hubListeners.forEach {
+            it.value.remove()
+            hubListeners.remove(it.key)
+        }
+        groupListeners.forEach {
+            it.value.remove()
+            groupListeners.remove(it.key)
+        }
+        remoteProfileListeners.forEach {
+            it.value.remove()
+            remoteProfileListeners.remove(it.key)
+        }
+    }
+
+    // Helper Functions
+
+    private fun stillHasAccess(hubUID: String, groupUID: String): Boolean {
+        LocalData.userGroups.keys.forEach { key ->
+            // If a group other than the removed group contains the connected hub, the user still has access
+            if (key != groupUID && LocalData.userGroups[key]?.connectedDevices?.contains(hubUID) == true) {
+                return true
+            }
+        }
+
+        return false
     }
 
     private fun listsAreEqual(local: ObservableArrayList<String>, remoteProfiles: ObservableArrayList<String>): Boolean {
@@ -143,12 +371,33 @@ object FirestoreActions {
         return true
     }
 
-    fun removeAllListeners() {
-        userListener?.remove().also { userListener = null }
-        remoteProfileListener?.remove().also { userListener = null }
-        groupListeners.forEach {
-            it.value.remove()
-            groupListeners.remove(it.key)
-        }
+    fun parseHubResult(value: Map<String, Any>?): HubResult? {
+
+        val hubRes = Gson().fromJson(value.toString(), HubResult::class.java)
+        Log.d("parseHubResult", "Gson got: $hubRes")
+        return hubRes
+        try {
+            value?.let { res ->
+                val code : Int = res["code"] as Int
+                val timestamp : String = res["timestamp"] as String
+                val hubResult = HubResult(code, timestamp)
+
+                when (code) {
+                // Received IR Signal
+                    IR_RES_RECEIVED_SIG -> {
+                        //hubResult.rawData = res["rawData"] as String
+                        hubResult.rawLen = res["rawLen"] as Long
+                    }
+                // Parsed Error Result
+                    IR_RES_UNKNOWN_ERR, IR_RES_TIMEOUT_ERR, IR_RES_OVERFLOW_ERR -> {}
+                // Unknown Result
+                    else -> { Log.e("parseHUbResult", "unknown result code: $code") }
+                }
+
+                return hubResult
+            }
+        } catch (e : Exception) {Log.e("parseHubResult", "($value) $e")}
+
+        return null
     }
 }

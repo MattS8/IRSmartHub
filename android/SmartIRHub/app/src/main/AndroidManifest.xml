@@ -13,18 +13,30 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
-        <activity android:name=".create_remote.CBStyleActivity">
-        </activity>
-        <activity android:name=".create_remote.CBSigActionActivity">
-        </activity>
-        <activity android:name=".create_remote.CBNameActivity">
-        </activity>
-        <activity android:name=".create_remote.CBWalkthroughActivity">
+        <activity android:name=".SplashActivity3">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+        </activity>
+        <activity android:name=".learn_signal.AdvancedSignalInfoActivity">
+        </activity>
+        <activity android:name=".learn_signal.LSNameSignalActivity">
+        </activity>
+        <activity android:name=".learn_signal.LSListenActivity">
+        </activity>
+        <activity android:name=".learn_signal.LSSelectHubActivity">
+        </activity>
+        <activity android:name=".learn_signal.LSWalkthroughActivity">
+        </activity>
+        <activity android:name=".create_button.CBStyleActivity">
+        </activity>
+        <activity android:name=".create_button.CBSigActionActivity">
+        </activity>
+        <activity android:name=".create_button.CBNameActivity">
+        </activity>
+        <activity android:name=".create_button.CBWalkthroughActivity">
         </activity>
         <activity android:name=".TestViewActivity">
         </activity>
@@ -33,6 +45,7 @@
                 android:label="@string/title_activity_main_view">
         </activity>
         <activity android:name=".SplashActivity2">
+
         </activity>
         <activity
                 android:name=".TestActivity"

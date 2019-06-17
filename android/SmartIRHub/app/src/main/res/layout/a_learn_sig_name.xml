@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/primary_dark"
+    >
+
+        <!-- Guidelines -->
+        <androidx.constraintlayout.widget.Guideline
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/guidelineEnd"
+                android:orientation="vertical"
+                app:layout_constraintGuide_end="16dp"
+        />
+
+        <androidx.constraintlayout.widget.Guideline
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/guidelineStart"
+                app:layout_constraintGuide_begin="20dp"
+                android:orientation="vertical"
+                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginStart="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+        />
+
+        <!-- Toolbar -->
+        <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintVertical_bias="0"
+                tools:title="@string/send_signal_title"
+                android:elevation="16dp"
+        />
+
+        <!-- Title -->
+        <TextView
+                android:id="@+id/tvBeginListeningTitle"
+                android:text="@string/need_help_with_a_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="@+id/guidelineStart"
+                android:textAppearance="@style/AppTheme.TextAppearance.SplashHeader" android:layout_marginTop="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/toolbar"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintEnd_toStartOf="@+id/guidelineEnd"
+        />
+        <TextView
+                android:id="@+id/tvTipsTitle"
+                android:text="@string/tips_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="@+id/guidelineStart"
+                android:textAppearance="@style/AppTheme.TextAppearance.SplashHeader" android:layout_marginTop="32dp"
+                app:layout_constraintTop_toBottomOf="@+id/tvHelpNameDesc"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintEnd_toStartOf="@+id/guidelineEnd"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintVertical_bias="0.0"/>
+        <TextView
+                android:id="@+id/tvRemember"
+                android:text="@string/rememberTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="@+id/guidelineStart"
+                android:textAppearance="@style/AppTheme.TextAppearance.SplashHeader" android:layout_marginTop="32dp"
+                app:layout_constraintTop_toBottomOf="@+id/tvTipsDesc2"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintEnd_toStartOf="@+id/guidelineEnd"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintVertical_bias="0.0" android:layout_marginBottom="32dp"/>
+        <TextView
+                android:text="@string/help_name_sig_desc"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvHelpNameDesc" android:textColor="@color/white"
+                android:layout_marginTop="8dp" app:layout_constraintTop_toBottomOf="@+id/tvBeginListeningTitle"
+                app:layout_constraintStart_toStartOf="@+id/guidelineStart"
+                app:layout_constraintEnd_toStartOf="@+id/guidelineEnd" app:layout_constraintHorizontal_bias="0.0"/>
+        <TextView
+                android:text="@string/tips_learn_desc_1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvTipsDesc1" android:textColor="@color/white"
+                app:layout_constraintStart_toStartOf="@+id/guidelineStart"
+                app:layout_constraintEnd_toStartOf="@+id/guidelineEnd" app:layout_constraintHorizontal_bias="0.0"
+                android:layout_marginTop="8dp" app:layout_constraintTop_toBottomOf="@+id/tvTipsTitle"/>
+        <TextView
+                android:text="@string/for_example"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvTipsDescExampleTitle"
+                app:layout_constraintTop_toBottomOf="@+id/tvTipsDesc1"
+                app:layout_constraintStart_toStartOf="@+id/guidelineStart"
+                app:layout_constraintEnd_toStartOf="@+id/guidelineEnd" app:layout_constraintHorizontal_bias="0.0"
+                android:layout_marginTop="8dp" android:textColor="@color/white" android:textStyle="bold"/>
+        <TextView
+                android:text="@string/learn_tips_desc_2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvTipsDesc2"
+                app:layout_constraintTop_toBottomOf="@+id/tvTipsDescExampleTitle"
+                app:layout_constraintStart_toStartOf="@+id/guidelineStart"
+                android:textColor="@color/white"
+                app:layout_constraintEnd_toStartOf="@+id/guidelineEnd"
+                app:layout_constraintHorizontal_bias="0.454"/>
+        <TextView
+                android:text="@string/learn_remember_desc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvRememberDesc" android:layout_marginTop="8dp"
+                app:layout_constraintTop_toBottomOf="@+id/tvRemember"
+                app:layout_constraintStart_toStartOf="@+id/guidelineStart"
+                app:layout_constraintEnd_toStartOf="@+id/guidelineEnd" app:layout_constraintHorizontal_bias="0.0"/>
+
+
+        <!-- Signal Name Input -->
+        <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="@+id/guidelineStart"
+                app:layout_constraintEnd_toStartOf="@+id/guidelineEnd" android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp" android:layout_marginBottom="32dp"
+                app:layout_constraintTop_toBottomOf="@+id/tvRememberDesc" android:id="@+id/txtSignalName"
+                android:layout_marginTop="32dp"
+                app:layout_constraintVertical_bias="1.0" app:layout_constraintBottom_toTopOf="@+id/btnPickName">
+
+            <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/signal_name"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Pick Name Button -->
+        <Button
+                android:text="@string/pick_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/btnPickName" android:layout_marginBottom="16dp"
+                app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toStartOf="@+id/guidelineStart"
+                app:layout_constraintEnd_toStartOf="@+id/guidelineEnd"
+                android:minWidth="168dp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

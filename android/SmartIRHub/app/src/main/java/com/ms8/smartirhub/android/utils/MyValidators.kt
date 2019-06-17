@@ -2,7 +2,7 @@ package com.ms8.smartirhub.android.utils
 
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validator
 
-object SignInUtils {
+object MyValidators {
     fun PasswordValidator(str : String) = str.validator()
         .nonEmpty()
         .atleastOneLowerCase()
@@ -18,4 +18,8 @@ object SignInUtils {
         .noSpecialCharacters()
         .minLength(5)
         .maxLength(15)
+
+    fun SignalNameValidator(str: String) = str.validator()
+        .nonEmpty()
+        .noSpecialCharacters()
 }
