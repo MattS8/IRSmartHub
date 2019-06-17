@@ -97,7 +97,7 @@
                 style="@style/AppTheme.Button.SplashSignIn.Colored"
                 android:minWidth="150dp"
         />
-        <de.mustafagercek.library.LoadingButton
+        <br.com.simplepass.loadingbutton.customViews.CircularProgressButton
                 android:text="@string/sign_in"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

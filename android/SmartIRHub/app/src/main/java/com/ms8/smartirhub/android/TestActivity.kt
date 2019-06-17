@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.databinding.DataBindingUtil
-import android.net.ConnectivityManager
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
 import android.os.Bundle
@@ -39,10 +38,7 @@ class TestActivity : AppCompatActivity() {
     }
 
     private fun testMakeUser() {
-        val user = User().apply {
-            uid = FirebaseAuth.getInstance().currentUser!!.uid
-            username = "testUser009"
-        }
+        val user = User(FirebaseAuth.getInstance().currentUser!!.uid, "testUser009")
         FirebaseFirestore.getInstance().collection("users").document(user.username).set(user)
             .addOnCompleteListener {
                 Log.d("T#", "done adding new user... success? ${it.isSuccessful}")
@@ -50,27 +46,27 @@ class TestActivity : AppCompatActivity() {
     }
 
     private fun connectToIRHub() {
-        val networkSSID = "SMART-IR-DEBUG_001"
-        val conf = WifiConfiguration().apply {
-            SSID = "\"" + networkSSID + "\""
-            allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE)
-        }
-
-        val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-        wifiManager.addNetwork(conf)
-
-
-        wifiManager.configuredNetworks.forEach { network ->
-            network?.SSID.let { SSID ->
-                if (SSID == ("\"" + networkSSID + "\"")) {
-                    wifiManager.disconnect()
-                    wifiManager.enableNetwork(network.networkId, true)
-                    wifiManager.reconnect()
-
-                    return@forEach
-                }
-            }
-        }
+//        val networkSSID = "SMART-IR-DEBUG_001"
+//        val conf = WifiConfiguration().apply {
+//            SSID = "\"" + networkSSID + "\""
+//            allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE)
+//        }
+//
+//        val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+//        wifiManager.addNetwork(conf)
+//
+//
+//        wifiManager.configuredNetworks.forEach { network ->
+//            network?.SSID.let { SSID ->
+//                if (SSID == ("\"" + networkSSID + "\"")) {
+//                    wifiManager.disconnect()
+//                    wifiManager.enableNetwork(network.networkId, true)
+//                    wifiManager.reconnect()
+//
+//                    return@forEach
+//                }
+//            }
+//        }
 
         // TODO something...
     }
@@ -93,7 +89,7 @@ class TestActivity : AppCompatActivity() {
 
     private fun testCreateUserDB() {
         Log.d("TEST####", "Creating user data with username: matts88")
-        FirestoreActions.createNewUser("matts8")
+        FirestoreActions.addUser("matts8")
             .addOnSuccessListener { Log.d("TEST####", "Successfully created new account data!") }
             .addOnFailureListener {e -> Log.d("TEST#####", "Failed to create account data... ${e::class.java}  (${e.message}) ($e)") }
     }
