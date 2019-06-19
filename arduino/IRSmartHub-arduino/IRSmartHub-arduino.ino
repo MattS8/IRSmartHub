@@ -23,7 +23,7 @@ void onSaveConfig()
 	// Set path to initial setup message
 	char* temp = (char*) malloc(75 * sizeof(char));
 	sprintf(temp, "/setups/%s/%lu", wifiManager.getConfigurer().c_str(), 
- 	ESP.getChipId());
+ 		ESP.getChipId());
  	FirebaseFunctions.SetupPath = String(temp);
 	delete[] temp;
 
@@ -101,7 +101,6 @@ void setup()
 
 	// Enable debug statements
 	FirebaseFunctions.setDebug(true);
-	IRFunctions.setDebug(true);
 
 	// Initialize IR hardware
 	IRFunctions.init();
@@ -117,8 +116,10 @@ void loop()
 	#ifdef IR_DEBUG
 	if (Firebase.failed()) {
 		Serial.print("streaming error: ");
+		Serial.print(FirebaseFunctions.SetupPath);
 		Serial.println(Firebase.error());
 		delay(1000);
+		FirebaseFunctions.connect();
 	}
 	#endif
 

@@ -6,6 +6,8 @@
 #include "IRremoteESP8266.h"
 #include "IRutils.h"
 
+#define IR_DEBUG_IR_FUNC 1
+
 #ifndef IR_RECV_PIN
 #define IR_RECV_PIN 14
 #endif
@@ -40,7 +42,6 @@ public:
 private:
 	uint16_t* parseRawDataString(const char* dataStr, uint16_t rawlen);
 
-	bool bDEBUG;
 	IRrecv irReceiver = IRrecv(IR_RECV_PIN, 
 							   IR_RECV_BUFFER_SIZE, 
 							   IR_RECV_MESSAGE_TIMEOUT, 

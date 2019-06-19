@@ -40,13 +40,16 @@ void IRSmartHubDebug::printStartingAutoConnect()
 
 void IRSmartHubDebug::printResults(decode_results* results)
 {
+	Serial.println("Human Readable Basic Info:");
    Serial.println(resultToHumanReadableBasic(results));
 
    // Output RAW timing info of the result.
+   Serial.println("Timing Info:");
    Serial.println(resultToTimingInfo(results));
    yield();
 
    // Output the results as source code
+   Serial.println("Source Code:");
    String resSourceCode = resultToSourceCode(results);
    Serial.println(resSourceCode);
    yield();

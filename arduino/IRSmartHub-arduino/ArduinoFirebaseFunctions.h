@@ -11,6 +11,9 @@
 const String FIREBASE_HOST = "ir-home-hub.firebaseio.com";
 const String FIREBASE_AUTH = "OVupEOIVjxTW1brlm02WISnExnOWRBxc9yhJVyPy";
 
+/* Database Object JSON Strings */
+const char JSON_Recorded_Signal[] = "{\"resultCode\": %d, \"encoding\": \"%s\", \"code\": \"0x%s\", \"timestamp\": \"%lu\", \"rawData\": \"%s\", \"rawLen\": %lu}";
+
 const size_t MAX_RESPONSE_SIZE = 1024;
 
 /* -------------------- Result Codes -------------------- */
@@ -25,19 +28,22 @@ public:
 
 	void connect();
 
-	void sendRecordedSignal(decode_results* results);
+	void sendRecordedSignal(const decode_results* results);
 
 	void sendError(const int errorType);
 
 	void setDebug(bool debug);
 
-	String ActionPath;
-	String ResultPath;
-	String BasePath;
+	String ActionPath = "";
+	String ResultPath = "";
+	String BasePath = "";
 	String SetupPath = "";
 
 private:
-	String rawDataToString(decode_results* results);
+	String rawDataToString(const decode_results* results);
+	String uint64ToString(uint64_t input, uint8_t base = 10);
+	String resultToHexidecimal(const decode_results* result);
+	uint16_t getCorrectedRawLength(const decode_results* results);
 
 	char* responseBuffer = new char[MAX_RESPONSE_SIZE];
 	bool bDEBUG = false;

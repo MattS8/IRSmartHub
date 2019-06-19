@@ -17,15 +17,19 @@ uint16_t* ArduinoIRFunctions::parseRawDataString(const char* dataStr, uint16_t r
 	char* temp = new char[50];
 
 	// Debug statement
-	if (bDEBUG) Serial.print("Parsing: ");
+	#ifdef IR_DEBUG_IR_FUNC
+	Serial.print("Parsing: ");
+	#endif
 
 	// Continue parsing until reach end of dataStr array
-	while (*pointer != '}')
+	while (*pointer != '\0')
 	{
 		// Skip values that aren't numbers
 		if (*pointer < '0' || *pointer > '9') 
 		{
-			if (bDEBUG) { Serial.print("<"); Serial.print(*pointer); Serial.print(">"); }
+			#ifdef IR_DEBUG_IR_FUNC
+			Serial.print("<"); Serial.print(*pointer); Serial.print(">");
+			#endif
 			pointer++;
 			continue;
 		}
@@ -34,24 +38,20 @@ uint16_t* ArduinoIRFunctions::parseRawDataString(const char* dataStr, uint16_t r
 		rawData[rawDataPos++] = strtol(pointer, &pointer, 10);
 
 		// Debug statments that print current progress of parse progress
-		if (bDEBUG) { sprintf(temp, "%lu", rawData[rawDataPos-1]); Serial.print("("); Serial.print(temp); Serial.print(")"); Serial.print(*pointer); }
+		#ifdef IR_DEBUG_IR_FUNC
+		sprintf(temp, "%lu", rawData[rawDataPos-1]); Serial.print("("); Serial.print(temp); Serial.print(")"); Serial.print(*pointer);
+		#endif
 	}
 
 	// Debug statement
-	if (bDEBUG) Serial.println("");
+	#ifdef IR_DEBUG_IR_FUNC
+	Serial.println("");
+	#endif
 
 	// Free debug string
 	delete[] temp;
 
 	return rawData;
-}
-
-/**
- *
- **/
-void ArduinoIRFunctions::setDebug(bool debug)
-{
-	bDEBUG = debug;
 }
 
 /**
@@ -65,7 +65,10 @@ void ArduinoIRFunctions::readNextSignal()
 	// Start listening for IR signals
 	irReceiver.enableIRIn();
 
-	if (bDEBUG) Serial.print("Listeneing for IR Signal");
+	#ifdef IR_DEBUG_IR_FUNC
+	Serial.print("Listeneing for IR Signal");
+	#endif
+
 	long dDelayTimer = millis();
 	
 	// Get current time for checks against timeout 
@@ -77,16 +80,18 @@ void ArduinoIRFunctions::readNextSignal()
 		// Check for timeout
 		if (millis() - timeoutTimer >= IR_READ_TIMEOUT)
 		{
-			if (bDEBUG) Serial.println("timeout!");
-			
+			#ifdef IR_DEBUG_IR_FUNC
+			Serial.println("timeout!");
+			#endif
+
 			FirebaseFunctions.sendError(ERR_TIMEOUT);
 			break;
 		}
 
 		// Debug statment prints "." every second until IR signal has been read
-		
-		if (bDEBUG && millis() - dDelayTimer >= 1000) { dDelayTimer = millis(); Serial.print("."); }
-		
+		#ifdef IR_DEBUG_IR_FUNC
+		if (millis() - dDelayTimer >= 1000) { dDelayTimer = millis(); Serial.print("."); }
+		#endif
 
 		// Check if complete IR signal has been read
 		if (!irReceiver.decode(&results)){
@@ -95,33 +100,44 @@ void ArduinoIRFunctions::readNextSignal()
 		}
 
 		// Debug statment
-		if (bDEBUG) Serial.println("Got results!");
+		#ifdef IR_DEBUG_IR_FUNC
+		Serial.println("Got results!");
+		#endif
 
 		// Check for overflow
 		if (results.overflow) 
 		{
-			if (bDEBUG) Serial.println("Overflow occurred...");
+			#ifdef IR_DEBUG_IR_FUNC
+			Serial.println("Overflow occurred...");
+			#endif
 			FirebaseFunctions.sendError(ERR_OVERFLOW);
 			break;
 		}
 
 		// Debug statement prints signal results
-		#ifdef IR_DEBUG
-		if (bDEBUG) SHDebug.printResults(&results);
+		#ifdef IR_DEBUG_IR_FUNC
+		SHDebug.printResults(&results);
 		#endif
 
 		// Only record non-repeat signals
 		if (!results.repeat)
 		{
-			if (bDEBUG) Serial.println("Sending...");
+			#ifdef IR_DEBUG_IR_FUNC
+			Serial.println("Sending...");
+			#endif
+
 			FirebaseFunctions.sendRecordedSignal(&results);			
 			break;
 		} 
-		else if (bDEBUG) Serial.println("\nIgnoring repeat code...");
+		#ifdef IR_DEBUG_IR_FUNC
+		Serial.println("\nIgnoring repeat code...");
+		#endif
 	}
 
 	// Debug statement
-	if (bDEBUG) Serial.println("Finished listening for IR signal.");
+	#ifdef IR_DEBUG_IR_FUNC
+	Serial.println("Finished listening for IR signal.");
+	#endif
 
 	// Stop listening for IR signals
 	irReceiver.disableIRIn();
