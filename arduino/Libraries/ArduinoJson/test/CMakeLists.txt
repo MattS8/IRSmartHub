@@ -37,7 +37,9 @@ endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 	add_compile_options(
 		-Wstrict-null-sentinel
+		-Wno-vla # Allow VLA in tests
 	)
+	add_definitions(-DHAS_VARIABLE_LENGTH_ARRAY)
 
 	if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.5)
 		add_compile_options(-Wlogical-op) # the flag exists in 4.4 but is buggy
@@ -46,18 +48,17 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 	if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.6)
 		add_compile_options(-Wnoexcept)
 	endif()
-
-	if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.7 AND 
-	   CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
-		# avoid false positive with GCC 4.7
-		add_compile_options(-Wno-maybe-uninitialized)
-	endif()
 endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 	add_compile_options(
 		-Wc++11-compat
 		-Wdeprecated-register
+		-Wno-vla-extension # Allow VLA in tests
+	)
+	add_definitions(
+		-DHAS_VARIABLE_LENGTH_ARRAY
+		-DSUBSCRIPT_CONFLICTS_WITH_BUILTIN_OPERATOR
 	)
 endif()
 
@@ -69,13 +70,19 @@ if(MSVC)
 	)
 endif()
 
-add_subdirectory(DynamicJsonBuffer)
+add_subdirectory(ElementProxy)
 add_subdirectory(IntegrationTests)
 add_subdirectory(JsonArray)
-add_subdirectory(JsonBuffer)
+add_subdirectory(JsonDeserializer)
+add_subdirectory(JsonDocument)
 add_subdirectory(JsonObject)
+add_subdirectory(JsonSerializer)
 add_subdirectory(JsonVariant)
-add_subdirectory(JsonWriter)
+add_subdirectory(MemberProxy)
+add_subdirectory(MemoryPool)
 add_subdirectory(Misc)
-add_subdirectory(Polyfills)
-add_subdirectory(StaticJsonBuffer)
+add_subdirectory(MixedConfiguration)
+add_subdirectory(MsgPackDeserializer)
+add_subdirectory(MsgPackSerializer)
+add_subdirectory(Numbers)
+add_subdirectory(TextFormatter)

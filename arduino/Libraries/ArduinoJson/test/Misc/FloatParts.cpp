@@ -2,10 +2,10 @@
 // Copyright Benoit Blanchon 2014-2019
 // MIT License
 
-#include <ArduinoJson/Serialization/FloatParts.hpp>
+#include <ArduinoJson/Numbers/FloatParts.hpp>
 #include <catch.hpp>
 
-using namespace ArduinoJson::Internals;
+using namespace ARDUINOJSON_NAMESPACE;
 
 TEST_CASE("FloatParts<double>") {
   SECTION("1.7976931348623157E+308") {

@@ -1,14 +1,14 @@
 #include "IRSmartHubDebug.h"
 
-void IRSmartHubDebug::printFirebaseObject(FirebaseObject event)
-{
-	Serial.print("path: ");
-	Serial.println(event.getString("path"));
-	Serial.print("data: ");
-	event.getJsonVariant("data").prettyPrintTo(Serial);
-	Serial.println("");
-	Serial.print("Performing action: ");
-}
+//void IRSmartHubDebug::printFirebaseObject(FirebaseObject event)
+//{
+//	Serial.print("path: ");
+//	Serial.println(event.getString("path"));
+//	Serial.print("data: ");
+//	event.getJsonVariant("data").prettyPrintTo(Serial);
+//	Serial.println("");
+//	Serial.print("Performing action: ");
+//}
 
 void IRSmartHubDebug::printSendAction(const String& irSignal)
 {
@@ -65,6 +65,21 @@ void IRSmartHubDebug::sendTestIRSignal()
 		digitalWrite(12, LOW);
 		delay(300);
 	}
+}
+
+String IRSmartHubDebug::getActionString(int type)
+{
+	switch (type)
+	{ 
+		case IR_ACTION_LEARN:  
+			return "LEARN";
+		case IR_ACTION_SEND:
+			return "SEND";
+		case IR_ACTION_NONE:
+			return "NONE";
+	}
+
+	return "UKNOWN";
 }
 
 void IRSmartHubDebug::init(bool pulseLED)

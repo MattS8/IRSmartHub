@@ -30,6 +30,9 @@
     <ClInclude Include="..\..\..\IRSmartHub-arduino\IRSmartHubDebug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\IRSmartHub-arduino\ArduinoFirebaseFunctionsESP8266.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\IRSmartHub-arduino\ArduinoFirebaseFunctions.ino">
@@ -42,5 +45,8 @@
       <Filter>Source Files</Filter>
     </None>
     <None Include="..\..\..\IRSmartHub-arduino\IRSmartHub-arduino.ino" />
+    <None Include="..\..\..\IRSmartHub-arduino\ArduinoFirebaseFunctionsESP8266.ino">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

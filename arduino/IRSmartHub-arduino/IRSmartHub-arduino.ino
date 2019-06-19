@@ -4,7 +4,7 @@
 int ir_hub_state = STATE_CONFIG_WIFI;
 ArduinoIRFunctions IRFunctions;
 ArduinoFirebaseFunctions FirebaseFunctions;
-WiFiManager wifiManager;
+//WiFiManager wifiManager;
 String WifiAPName;
 
 #ifdef IR_DEBUG
@@ -13,57 +13,56 @@ IRSmartHubDebug SHDebug;
 
 /* --------------------- Wifi Manager Callbacks -------------------- */
 
-void onSaveConfig() 
-{
-	#ifdef IR_DEBUG
-	SHDebug.printOnSaveConfig();
-	ir_hub_state = STATE_CONFIG_FIREBASE;
-	#endif
-
-	// Set path to initial setup message
-	char* temp = (char*) malloc(75 * sizeof(char));
-	sprintf(temp, "/setups/%s/%lu", wifiManager.getConfigurer().c_str(), 
- 		ESP.getChipId());
- 	FirebaseFunctions.SetupPath = String(temp);
-	delete[] temp;
-
-	// Connect to firebase
-	FirebaseFunctions.connect();
-}
-
-void configModeCallback (WiFiManager *myWiFiManager) 
-{
-	#ifdef IR_DEBUG
-	SHDebug.printConfigModeCallback(myWiFiManager);
-	#endif
-}
+//void onSaveConfig() 
+//{
+//	#ifdef IR_DEBUG
+//	SHDebug.printOnSaveConfig();
+//	ir_hub_state = STATE_CONFIG_FIREBASE;
+//	#endif
+//
+//	// Set path to initial setup message
+//	char* temp = (char*) malloc(75 * sizeof(char));
+//	sprintf(temp, "/setups/%s/%lu", wifiManager.getConfigurer().c_str(), 
+// 		ESP.getChipId());
+// 	FirebaseFunctions.SetupPath = String(temp);
+//	delete[] temp;
+//
+//	// Connect to firebase
+//	FirebaseFunctions.connect();
+//}
+//
+//void configModeCallback (WiFiManager *myWiFiManager) 
+//{
+//	#ifdef IR_DEBUG
+//	SHDebug.printConfigModeCallback(myWiFiManager);
+//	#endif
+//}
 
 /* -------------------- Wifi Manager Functions --------------------- */
 
-void connectToWifi() 
-{
-	wifiManager.setBreakAfterConfig(true);
-	wifiManager.setDebugOutput(true);
-	wifiManager.setAPCallback(configModeCallback);
-	wifiManager.setSaveConfigCallback(onSaveConfig);
-
-	#ifdef IR_DEBUG 
-	SHDebug.printStartingAutoConnect(); 
-	#endif
-	if (!wifiManager.autoConnect(WifiAPName.c_str()))
-	{
-		#ifdef IR_DEBUG 
-		Serial.println("Couldn't connect.");
-		#endif
-		wifiManager.startConfigPortal(WifiAPName.c_str());
-	} else {
-		#ifdef IR_DEBUG 
-		Serial.println("Automatically Connected!");
-		#endif
-		FirebaseFunctions.connect();
-
-	}
-}
+//void connectToWifi() 
+//{
+//	wifiManager.setBreakAfterConfig(true);
+//	wifiManager.setDebugOutput(true);
+//	wifiManager.setAPCallback(configModeCallback);
+//	wifiManager.setSaveConfigCallback(onSaveConfig);
+//
+//	#ifdef IR_DEBUG 
+//	SHDebug.printStartingAutoConnect(); 
+//	#endif
+//	if (!wifiManager.autoConnect(WifiAPName.c_str()))
+//	{
+//		#ifdef IR_DEBUG 
+//		Serial.println("Couldn't connect.");
+//		#endif
+//		wifiManager.startConfigPortal(WifiAPName.c_str());
+//	} else {
+//		#ifdef IR_DEBUG 
+//		Serial.println("Automatically Connected!");
+//		#endif
+//		//FirebaseFunctions.connect();
+//	}
+//}
 
 /* ----------------------- Arduino Functions ----------------------- */
 
@@ -92,77 +91,69 @@ void setup()
 
 	delete[] temp;
 
-	#ifdef IR_DEBUG
+#ifdef IR_DEBUG
 	Serial.println("");
 	Serial.print("BasePath = "); Serial.println(FirebaseFunctions.BasePath);
 	Serial.print("ActionPath = "); Serial.println(FirebaseFunctions.ActionPath);
 	Serial.print("ResultPath = "); Serial.println(FirebaseFunctions.ResultPath);
-	#endif
-
-	// Enable debug statements
-	FirebaseFunctions.setDebug(true);
+#endif
 
 	// Initialize IR hardware
 	IRFunctions.init();
 	SHDebug.init(false);
 
 	pinMode(LED_BUILTIN, OUTPUT);
-	connectToWifi();
+	//connectToWifi();
+
+	WiFi.begin("HawkswayBase", "F4d29095dc");
+#ifdef IR_DEBUG
+	Serial.print("Connecting to Wi-Fi");
+#endif // IR_DEBUG
+	while (WiFi.status() != WL_CONNECTED)
+	{
+#ifdef IR_DEBUG
+		Serial.print(".");
+#endif // IR_DEBUG
+		delay(300);
+	}
+#ifdef IR_DEBUG
+	Serial.println();
+	Serial.print("Connected with IP: ");
+	Serial.println(WiFi.localIP());
+	Serial.println();
+#endif // IR_DEBUG
 	digitalWrite(LED_BUILTIN, OFF);
+
+	FirebaseFunctions.connect();
 }
 
 void loop()
 {
-	#ifdef IR_DEBUG
-	if (Firebase.failed()) {
-		Serial.print("streaming error: ");
-		Serial.print(FirebaseFunctions.SetupPath);
-		Serial.println(Firebase.error());
-		delay(1000);
-		FirebaseFunctions.connect();
-	}
-	#endif
 
-	if (Firebase.available())
+	/* NEW FIREBASE IMPLEMENTATION  */
+	FirebaseFunctions.readStreamData();
+
+	FirebaseFunctions.streamTimeout();
+
+	if (FirebaseFunctions.receivedHubAction())
 	{
-		FirebaseObject event = Firebase.readEvent();
-		String type = event.getString("type");
-		type.toLowerCase();
-		if (type == "put") 
+#ifdef IR_DEBUG
+		Serial.println(DEBUG_DIV);
+		Serial.println(F("Stream Data Available..."));
+		Serial.println("STREAM PATH: " + firebaseReadData.streamPath());
+		Serial.println("EVENT PATH: " + firebaseReadData.dataPath());
+		Serial.println("DATA TYPE: " + firebaseReadData.dataType());
+		Serial.println("EVENT TYPE: " + firebaseReadData.eventType());
+		Serial.println(F("HUB ACTION: "));
+		Serial.print("    - Type: "); Serial.print(SHDebug.getActionString(hubAction.type)); Serial.println("");
+		if (hubAction.type == IR_ACTION_SEND)
 		{
-			#ifdef IR_DEBUG
-			SHDebug.printFirebaseObject(event);
-			#endif
-
-			switch (event.getInt("/data/type")) 
-			{
-				case IR_ACTION_NONE: 
-					#ifdef IR_DEBUG
-					Serial.println("ir_action_none");
-					#endif
-					break;
-				case IR_ACTION_SEND:
-					#ifdef IR_DEBUG
-					SHDebug.printSendAction(event.getString("/data/rawData"));
-					#endif
-					IRFunctions.sendSignal(event.getString("/data/rawData"),
-										   (uint16_t) event.getInt("/data/rawLen"),
-										   event.getBool("/data/repeat"));
-					break;
-				case IR_ACTION_LEARN:
-					#ifdef IR_DEBUG
-					Serial.println("ir_action_learn");
-					#endif
-					IRFunctions.readNextSignal();
-					break;
-				default: 
-					#ifdef IR_DEBUG
-					Serial.println("ERROR - Unknown action");
-					#endif
-					break;
-			}
-
-			SHDebug.pulse_LED();
+			Serial.print("    - rawData: "); Serial.print(hubAction.rawData); Serial.println("");
+			Serial.print("    - rawLen: "); Serial.print(hubAction.rawLen); Serial.println("");
 		}
+
+		Serial.println(DEBUG_DIV);
+#endif //IR_DEBUG
 	}
+
 }

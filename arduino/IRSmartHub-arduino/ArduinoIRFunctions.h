@@ -20,10 +20,6 @@ const uint8_t  IR_RECV_MESSAGE_TIMEOUT = 50;
 const uint16_t IR_RECV_BUFFER_SIZE = 1024;
 const uint32_t IR_READ_TIMEOUT = 10000;
 const uint16_t SEND_FREQUENCY = 38;
-/* -------------------- Hub Actions -------------------- */
-const int IR_ACTION_NONE = 0;
-const int IR_ACTION_LEARN = 1;
-const int IR_ACTION_SEND = 2;
 
 class ArduinoIRFunctions {
 public:
