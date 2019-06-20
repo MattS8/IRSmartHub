@@ -166,16 +166,19 @@ This function is meant to be called automatically when first being set up by a u
 Sets the "result" object in FirebaseDB, sending the raw data for the IR signal. If there is a problem sending the signal, an error message is sent with an unknown error code. The sent JSON object structure is as follows:
 
     {
-     "code": <RES_SEND_SIG>, 
+     "resultCode": <RES_SEND_SIG>, 
      "timestamp": "<timestamp value>", 
      "rawData": "<{4999, 9993, 4999, 4333, ... }>",
-     "rawLen": "<size of rawData array>"
+     "rawLen": "<size of rawData array>",
+     "encoding": "<encoding type>",
+     "code": <Hex code for IR signal>,
+     "repeat": <whether or not the signal can repeat>
      }
 
 #### Send Error
 Several error messages can be set based on issues sending responses, failing to get IR input, etc. This is done by setting the "result" object in FirebaseDB. The "code" value will be one of several error codes. The sent JSON object structure is as follows:
 
     {
-     "code": <error_code>,
+     "resultCode": <error_code>,
      "timestamp": <timestamp value> 
     }
