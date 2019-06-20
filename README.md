@@ -6,18 +6,17 @@ A project with the goal of creating a solution to the many IR-controlled devices
 The following describe how data is stored and handled in this project:
 
 ### User
-Contains all information with respect to a specific user using this service. 
- - **Username**: *used for allowing other users to invite/connect without sharing email*
- - **Groups**: *a list of groups the user is associated with*
- 	- **Personal Group**: *The uid of the user's personal group. No other users can be added to this group*
- - **Group Invitations**: *a list of invitations to groups the user can join. Any user can add their invitation to this list.*
+Contains All information with respect to a specific user using this service. 
+ - **uid**: The uid associated with this user. ***NOTE***: Users are keyed by *username*. This field is necessary to link user accounts to their respective username.
+ - **groups**: A list of groups the user is associated with. ***NOTE***: Upon creating a new user, a *personal group* is automatically added. This group is the default location for any created Commands.
+ - **Group Invitations**: A list of invitations to groups the user can join. Any user can add their invitation to this list.
  
 ### Remote Profile
 Contains a collection of pre-programmed actions.
-- **Name**: A custom name given by the creator of the remote profile
-- **Hub**: The uid of the hub associated with this remote
-- **Buttons**: a list of remote functions (either *actions* or *commands*). Remote functions can be static, pre-defined (i.e. VOL UP) or custom
-- **Groups**: a list of groups this remote profile is associated with
+- **name**: A custom name given by the creator of the remote profile.
+- **hub**: The uid of the hub associated with this remote.
+- **buttons**: A list of remote functions (either *actions* or *commands*). Remote functions can be static, pre-defined (i.e. VOL UP) or custom.
+- **groups**: A list of groups this remote profile is associated with.
 
 ### Command
 Contains one or more actions for an IRSmartHub to perform. A command can specify a specific IR Hub to target for each command.
@@ -25,21 +24,21 @@ Contains one or more actions for an IRSmartHub to perform. A command can specify
 
 ### Hub Action
 Contains data for a specific IR signal action. This is what the arduino interprets to know what to do.
-- **rawData**: A string of raw data for the given command
-- **rawLen**: The length of the raw data string. Used by the IR Hub when parsing
-- **sender**: The uid of the user who initiated the action
-- **timestamp**: Date and time the action was sent
-- **repeat**: Whether or not the action is meant to be repeated (IMPLEMENTATION MAY CHANGE)
+- **rawData**: A string of raw data for the given command.
+- **rawLen**: The length of the raw data string. Used by the IR Hub when parsing.
+- **sender**: The uid of the user who initiated the action.
+- **timestamp**: Date and time the action was sent.
+- **repeat**: Whether or not the action is meant to be repeated. (IMPLEMENTATION MAY CHANGE)
 
 ### Group
 Contains a collection of users, remote profiles, and associated hubs. This is used for sharing hubs between multiple users. Each group has a group owner and 0 or more users. Other users can be given specific permissions. 
-- **remoteProfile**: a collection of profiles shared among the group
-- **connectedDevices**: a collection of hubs associated with the group
-- **owner**: uid of the original creator of the group
-- **personalGroup**: boolean value that determines whether other users can be added to group
-- **users**: a collection of users with set permissions. Permission types are as follows:
+- **remoteProfile**: A collection of profiles shared among the group.
+- **connectedDevices**: A collection of hubs associated with the group.
+- **owner**: The uid of the original creator of the group.
+- **personalGroup**: A boolean value that determines whether other users can be added to group.
+- **users**: A collection of users with set permissions. Permission types are as follows:
 	- ***addDevices***: Allows user to add hubs to the group. Users can only add hubs that they set up.
-	- ***removeDevices***: Allows user to remove hubs from the group
+	- ***removeDevices***: Allows user to remove hubs from the group.
 	- ***addUsers***: Allows user to add other users to the group. Added users can only have the same (or less) permissions as the user who added them.
 	- ***removeUsers***: Allows user to remove other users from the group.
 	- ***addRemoteProfiles***: Allows user to add remote profiles to the group. User can remove profiles they have added at any time.
