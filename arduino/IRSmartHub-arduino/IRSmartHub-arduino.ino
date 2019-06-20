@@ -7,8 +7,8 @@ ArduinoFirebaseFunctions FirebaseFunctions;
 //WiFiManager wifiManager;
 String WifiAPName;
 
-#ifdef IR_DEBUG
-IRSmartHubDebug SHDebug;
+#ifdef IRSMARTHUB_UNIT_TESTS
+bool bRanTests = false;
 #endif
 
 /* --------------------- Wifi Manager Callbacks -------------------- */
@@ -100,11 +100,22 @@ void setup()
 
 	// Initialize IR hardware
 	IRFunctions.init();
-	SHDebug.init(false);
 
+	// Initialize Debug
+#ifdef IR_DEBUG
+	SHDebug.init(false);
+#endif
+
+	// Initialize FirebaseFunctions
+	FirebaseFunctions.setup();
+
+	// Set pin mode for onboard LED
 	pinMode(LED_BUILTIN, OUTPUT);
+
+	// Start wifi connection process
 	//connectToWifi();
 
+//TEMP:	TODO - Replace with wifi manager solution
 	WiFi.begin("HawkswayBase", "F4d29095dc");
 #ifdef IR_DEBUG
 	Serial.print("Connecting to Wi-Fi");
@@ -122,36 +133,68 @@ void setup()
 	Serial.println(WiFi.localIP());
 	Serial.println();
 #endif // IR_DEBUG
+//TEMP:
+
+	// Turn onboard LED off
 	digitalWrite(LED_BUILTIN, OFF);
 
+	// Start connection to firebase process
 	FirebaseFunctions.connect();
 }
 
 void loop()
 {
+#ifdef IRSMARTHUB_UNIT_TESTS
+	if (!bRanTests)
+	{
+		UTests.testAll();
+		bRanTests = true;
+	}
+
+	return;
+#endif // IRSMARTHUB_UNIT_TESTS
 
 	/* NEW FIREBASE IMPLEMENTATION  */
+
+	// Poll readData object for any new info
 	FirebaseFunctions.readStreamData();
 
+	// ??? - see examples
 	FirebaseFunctions.streamTimeout();
 
+	// React to new action, if received
 	if (FirebaseFunctions.receivedHubAction())
 	{
+
 #ifdef IR_DEBUG
 		Serial.println(DEBUG_DIV);
-		Serial.println(F("Stream Data Available..."));
-		Serial.println("STREAM PATH: " + firebaseReadData.streamPath());
-		Serial.println("EVENT PATH: " + firebaseReadData.dataPath());
-		Serial.println("DATA TYPE: " + firebaseReadData.dataType());
-		Serial.println("EVENT TYPE: " + firebaseReadData.eventType());
-		Serial.println(F("HUB ACTION: "));
-		Serial.print("    - Type: "); Serial.print(SHDebug.getActionString(hubAction.type)); Serial.println("");
-		if (hubAction.type == IR_ACTION_SEND)
+		SHDebug.printStreamData();
+#endif //IR_DEBUG
+
+		switch (hubAction.type)
 		{
-			Serial.print("    - rawData: "); Serial.print(hubAction.rawData); Serial.println("");
-			Serial.print("    - rawLen: "); Serial.print(hubAction.rawLen); Serial.println("");
+		case IR_ACTION_LEARN:
+			IRFunctions.readNextSignal();
+			break;
+		case IR_ACTION_SEND:
+			IRFunctions.sendSignal(hubAction.rawData, hubAction.rawLen, hubAction.repeat);
+			break;
+		case IR_ACTION_NONE:
+#ifdef IR_DEBUG
+			Serial.println("Doing nothing...");
+#endif //IT_DEBUG
+			break;
+		default:
+#ifdef IR_DEBUG
+			Serial.print("Ignoring unknown action type from sender: "); Serial.println(hubAction.sender);
+#endif //IT_DEBUG
+			break;
 		}
 
+		//// Added delay so readStreamData() isn't being instantly polled
+		//delay(300);
+
+#ifdef IR_DEBUG
 		Serial.println(DEBUG_DIV);
 #endif //IR_DEBUG
 	}

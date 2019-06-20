@@ -84,7 +84,7 @@ void ArduinoIRFunctions::readNextSignal()
 			Serial.println("timeout!");
 			#endif
 
-			// TODO: FirebaseFunctions.sendError(ERR_TIMEOUT);
+			FirebaseFunctions.sendError(ERR_TIMEOUT);
 			break;
 		}
 
@@ -110,7 +110,7 @@ void ArduinoIRFunctions::readNextSignal()
 			#ifdef IR_DEBUG_IR_FUNC
 			Serial.println("Overflow occurred...");
 			#endif
-			//TODO: FirebaseFunctions.sendError(ERR_OVERFLOW);
+			FirebaseFunctions.sendError(ERR_OVERFLOW);
 			break;
 		}
 
@@ -126,7 +126,7 @@ void ArduinoIRFunctions::readNextSignal()
 			Serial.println("Sending...");
 			#endif
 
-			//TODO: FirebaseFunctions.sendRecordedSignal(&results);			
+			FirebaseFunctions.sendRecordedSignal(&results);			
 			break;
 		} 
 		#ifdef IR_DEBUG_IR_FUNC

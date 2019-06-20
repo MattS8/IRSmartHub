@@ -10,6 +10,23 @@
 //	Serial.print("Performing action: ");
 //}
 
+
+void IRSmartHubDebug::printStreamData()
+{
+	Serial.println(F("Stream Data Available..."));
+	Serial.println("STREAM PATH: " + firebaseReadData.streamPath());
+	Serial.println("EVENT PATH: " + firebaseReadData.dataPath());
+	Serial.println("DATA TYPE: " + firebaseReadData.dataType());
+	Serial.println("EVENT TYPE: " + firebaseReadData.eventType());
+	Serial.println(F("HUB ACTION: "));
+	Serial.print("    - Type: "); Serial.print(SHDebug.getActionString(hubAction.type)); Serial.println("");
+	if (hubAction.type == IR_ACTION_SEND)
+	{
+		Serial.print("    - rawData: "); Serial.print(hubAction.rawData); Serial.println("");
+		Serial.print("    - rawLen: "); Serial.print(hubAction.rawLen); Serial.println("");
+	}
+}
+
 void IRSmartHubDebug::printSendAction(const String& irSignal)
 {
 	Serial.print("ir_action_send (");

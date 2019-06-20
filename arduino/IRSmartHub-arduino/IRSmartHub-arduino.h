@@ -1,7 +1,14 @@
 #ifndef IRSMART_HUB_ARDUINO
 #define IRSMART_HUB_ARDUINO
 
-#define IR_DEBUG 1
+//#define IR_DEBUG_IR_FUNC 1
+//#define IR_DEBUG 1
+#define AFF_DEBUG 1
+//#define IRSMARTHUB_UNIT_TESTS 1
+
+#ifdef IRSMARTHUB_UNIT_TESTS
+#include "UnitTests.h"
+#endif
 
 //#include "FirebaseArduino.h"					// https://github.com/FirebaseExtended/firebase-arduino
 #include "ArduinoFirebaseFunctionsESP8266.h"

@@ -112,6 +112,7 @@
     <ClInclude Include="..\..\..\IRSmartHub-arduino\ArduinoIRFunctions.h" />
     <ClInclude Include="..\..\..\IRSmartHub-arduino\IRSmartHub-arduino.h" />
     <ClInclude Include="..\..\..\IRSmartHub-arduino\IRSmartHubDebug.h" />
+    <ClInclude Include="..\..\..\IRSmartHub-arduino\UnitTests.h" />
     <ClInclude Include="__vm\.IRSmartHub-arduino.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
@@ -120,6 +121,7 @@
     <None Include="..\..\..\IRSmartHub-arduino\ArduinoIRFunctions.ino" />
     <None Include="..\..\..\IRSmartHub-arduino\IRSmartHub-arduino.ino" />
     <None Include="..\..\..\IRSmartHub-arduino\IRSmartHubDebug.ino" />
+    <None Include="..\..\..\IRSmartHub-arduino\UnitTests.ino" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

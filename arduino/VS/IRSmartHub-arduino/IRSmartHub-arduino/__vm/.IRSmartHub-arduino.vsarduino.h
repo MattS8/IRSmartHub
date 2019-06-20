@@ -121,5 +121,6 @@ typedef long __PTRDIFF_TYPE__;
 #include "ArduinoFirebaseFunctionsESP8266.ino"
 #include "ArduinoIRFunctions.ino"
 #include "IRSmartHubDebug.ino"
+#include "UnitTests.ino"
 #endif
 #endif

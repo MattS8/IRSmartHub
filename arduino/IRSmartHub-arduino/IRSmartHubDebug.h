@@ -19,6 +19,9 @@ public:
 	void printResults(decode_results* results);
 	String getActionString(int type);
 
+	// Firebase Debug
+	void printStreamData();
+
 	void sendTestIRSignal();
 
 	void init(bool pulseLED);
@@ -28,5 +31,7 @@ private:
 	bool bPulseLED = false;
 	const String dWifiManager = "WiFiManager: ";
 };
+
+IRSmartHubDebug SHDebug;
 
 #endif

@@ -6,7 +6,11 @@
 #include "IRremoteESP8266.h"
 #include "IRutils.h"
 
-#define IR_DEBUG_IR_FUNC 1
+
+
+#ifdef IR_DEBUG_IR_FUNC
+#include "IRSmartHubDebug.h"
+#endif // IR_DEBUG_IR_FUNC
 
 #ifndef IR_RECV_PIN
 #define IR_RECV_PIN 14
@@ -30,8 +34,6 @@ public:
 	void readNextSignal();
 
 	void sendSignal(const String& rawDataStr, uint16_t rawlen, bool bRepeat);
-
-	void setDebug(bool debug);
 
 	void init();
 
