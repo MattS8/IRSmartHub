@@ -139,31 +139,38 @@ void ArduinoFirebaseFunctions::sendError(const int errorType)
 /**
  *
  **/
-void ArduinoFirebaseFunctions::sendRecordedSignal(const decode_results* results)
+void ArduinoFirebaseFunctions::sendRecordedSignal(const decode_results& results)
 {
 #ifdef AFF_DEBUG
 	String output = rawDataToString(results);
 	uint16_t len = getCorrectedRawLength(results);
+	Serial.println("Setting up hubResult...");
 #endif // AFF_DEBUG
 
 	initializeHubResult();
 	hubResult.resultCode = RES_SEND_SIG;
-	hubResult.encoding = typeToString(results->decode_type, results->repeat);
+	hubResult.encoding = String(results.decode_type); //typeToString(results.decode_type, results.repeat);
 	hubResult.code = "0x" + resultToHexidecimal(results);
 	hubResult.timestamp = String(millis());
 	
 #ifdef AFF_DEBUG
 	hubResult.rawData = output;
 	hubResult.rawLen = len;
+	Serial.println("done!");
+	Serial.println("Sending object as: ");
+	Serial.println(parseHubResultToJson());
+	Serial.print("to ");
+	Serial.println(ResultPath);
 #else
 	hubResult.rawData = rawDataToString(results);
 	hubResult.rawLen = getCorrectedRawLength(results);
 #endif // AFF_DEBUG
 
-	if (!Firebase.setJSON(firebaseWriteData, ResultPath, parseHubResultToJson()))
+	if (!Firebase.setJSON(firebaseWriteData, ResultPath, "{test: \"Hello World!\"}"))
 	{
 #ifdef AFF_DEBUG
 		Serial.println("Failed to send recorded signal...");
+		Serial.println(firebaseWriteData.errorReason());
 #endif // AFF_DEBUG
 	}
 }
@@ -174,22 +181,22 @@ void ArduinoFirebaseFunctions::sendRecordedSignal(const decode_results* results)
 /** 
  *	Convert the result's value/state to simple hexadecimal. (Function logic from IRutils: https://github.com/markszabo/IRremoteESP8266) 
 **/
-String ArduinoFirebaseFunctions::resultToHexidecimal(const decode_results* result)
+String ArduinoFirebaseFunctions::resultToHexidecimal(const decode_results& result)
 {
 	String output = "";
-	if (hasACState(result->decode_type)) 
-	{
-#if DECODE_AC
-		for (uint16_t i = 0; result->bits > i * 8; i++) {
-			if (result->state[i] < 0x10) output += '0';  // Zero pad
-			output += uint64ToString(result->state[i], 16);
-		}
-#endif
-	}
-	else 
-	{
-		output += uint64ToString(result->value, 16);
-	}
+//	if (hasACState(result.decode_type)) 
+//	{
+//#if DECODE_AC
+//		for (uint16_t i = 0; result.bits > i * 8; i++) {
+//			if (result.state[i] < 0x10) output += '0';  // Zero pad
+//			output += uint64ToString(result.state[i], 16);
+//		}
+//#endif
+//	}
+//	else 
+	//{
+		output += uint64ToString(result.value, 16);
+	//}
 
 	return output;
 }
@@ -198,12 +205,12 @@ String ArduinoFirebaseFunctions::resultToHexidecimal(const decode_results* resul
  *	Return the corrected length of a 'raw' format array structure after over-large values are
  *	converted into multiple entries. (Function logic from IRutils: https://github.com/markszabo/IRremoteESP8266)
 **/
-uint16_t ArduinoFirebaseFunctions::getCorrectedRawLength(const decode_results* results) 
+uint16_t ArduinoFirebaseFunctions::getCorrectedRawLength(const decode_results& results) 
 {
-	uint16_t extended_length = results->rawlen - 1;
-	for (uint16_t i = 0; i < results->rawlen - 1; i++) 
+	uint16_t extended_length = results.rawlen - 1;
+	for (uint16_t i = 0; i < results.rawlen - 1; i++) 
 	{
-		uint32_t usecs = results->rawbuf[i] * kRawTick;
+		uint32_t usecs = results.rawbuf[i] * kRawTick;
 		// Add two extra entries for multiple larger than UINT16_MAX it is.
 		extended_length += (usecs / (UINT16_MAX + 1)) * 2;
 	}
@@ -238,14 +245,14 @@ String ArduinoFirebaseFunctions::uint64ToString(uint64_t input, uint8_t base)
  *	Converts the raw data from results to a string. Used
  *  to store in Firebase. (Function logic from IRutils: https://github.com/markszabo/IRremoteESP8266)
  **/
-String ArduinoFirebaseFunctions::rawDataToString(const decode_results* results)
+String ArduinoFirebaseFunctions::rawDataToString(const decode_results& results)
 {
 	String output = "";
 	// Dump data
-	for (uint16_t i = 1; i < results->rawlen; i++) 
+	for (uint16_t i = 1; i < results.rawlen; i++) 
 	{
 		uint32_t usecs;
-		for (usecs = results->rawbuf[i] * kRawTick; usecs > UINT16_MAX; usecs -= UINT16_MAX) 
+		for (usecs = results.rawbuf[i] * kRawTick; usecs > UINT16_MAX; usecs -= UINT16_MAX) 
 		{
 			output += uint64ToString(UINT16_MAX);
 			if (i % 2)
@@ -254,7 +261,7 @@ String ArduinoFirebaseFunctions::rawDataToString(const decode_results* results)
 			output += F(",  0, ");
 		}
 		output += uint64ToString(usecs, 10);
-		if (i < results->rawlen - 1)
+		if (i < results.rawlen - 1)
 			output += F(", ");						// ',' not needed on the last one
 		if (i % 2 == 0) 
 			output += ' ';							// Extra if it was even.
@@ -397,17 +404,14 @@ String ArduinoFirebaseFunctions::parseHubActionToJson()
 
 String ArduinoFirebaseFunctions::parseHubResultToJson()
 {
+	String repeat = (hubResult.repeat) ? "1}" : "0}";
 	String retStr = HR_STR_RES_CODE 
 		+ String(hubResult.resultCode) + HR_STR_CODE
 		+ hubResult.code + "\", \"timestamp\": \""
 		+ hubResult.timestamp + "\", \"encoding\": \""
 		+ hubResult.encoding + "\", \"rawData\": \""
 		+ hubResult.rawData + "\", \"rawLen\": "
-		+ String(hubResult.rawLen) + ", \"repeat\": ";
-	if (hubResult.repeat)
-		retStr += "1}";
-	else
-		retStr += "0}";
+		+ String(hubResult.rawLen) + ", \"repeat\": " + repeat;
 
 	return retStr;
 }

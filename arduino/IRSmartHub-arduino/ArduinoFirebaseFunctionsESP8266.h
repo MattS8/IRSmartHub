@@ -1,8 +1,9 @@
 #ifndef ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 #define ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 
+
 #include <FirebaseESP8266.h>
-#include <ESP8266WiFi.h>          		// ESP8266 Core WiFi Library
+#include <ESP8266WiFi.h>
 #include "IRrecv.h"						// Used to send IR data from decode_results
 
 #ifndef OUT
@@ -69,7 +70,7 @@ public:
 	void setHubName(const String& name);
 
 	void sendError(const int errCode);
-	void sendRecordedSignal(const decode_results* results);
+	void sendRecordedSignal(const decode_results& results);
 
 
 	bool readStreamData();
@@ -89,16 +90,16 @@ public:
 #endif
 
 private:
-	String resultToHexidecimal(const decode_results* result);
-	uint16_t getCorrectedRawLength(const decode_results* results);
+	String resultToHexidecimal(const decode_results& result);
+	uint16_t getCorrectedRawLength(const decode_results& results);
 	String uint64ToString(uint64_t input, uint8_t base = 10);
-	String rawDataToString(const decode_results* results);
+	String rawDataToString(const decode_results& results);
 
 	String parseHubResultToJson();
 	String parseHubActionToJson();
 	void parseJsonToHubAction(const String jsonStr);
 	void getNextWord(const char* &startWord, const char* &endWord, int& startWordPos, int& endWordPos);
-	void getNextNumber(const char*& startWord, const char*& endWord, int& startWordPos, int& endWordPos);
+	void getNextNumber(const char* &startWord, const char*& endWord, int& startWordPos, int& endWordPos);
 
 	void initializeHubAction();
 	void initializeHubResult();

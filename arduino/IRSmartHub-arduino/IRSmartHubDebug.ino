@@ -55,6 +55,7 @@ void IRSmartHubDebug::printStartingAutoConnect()
 	Serial.println("Starting autoConnect...");
 }
 
+#ifdef IR_DEBUG 1
 void IRSmartHubDebug::printResults(decode_results* results)
 {
 	Serial.println("Human Readable Basic Info:");
@@ -71,6 +72,7 @@ void IRSmartHubDebug::printResults(decode_results* results)
    Serial.println(resSourceCode);
    yield();
 }
+#endif
 
 void IRSmartHubDebug::sendTestIRSignal()
 {
