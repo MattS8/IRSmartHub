@@ -4,66 +4,65 @@
 int ir_hub_state = STATE_CONFIG_WIFI;
 ArduinoIRFunctions IRFunctions;
 ArduinoFirebaseFunctions FirebaseFunctions;
-WiFiManager wifiManager;
+//WiFiManager wifiManager;
 String WifiAPName;
 
-#ifdef IR_DEBUG
-IRSmartHubDebug SHDebug;
+#ifdef IRSMARTHUB_UNIT_TESTS
+bool bRanTests = false;
 #endif
 
 /* --------------------- Wifi Manager Callbacks -------------------- */
 
-void onSaveConfig() 
-{
-	#ifdef IR_DEBUG
-	SHDebug.printOnSaveConfig();
-	ir_hub_state = STATE_CONFIG_FIREBASE;
-	#endif
-
-	// Set path to initial setup message
-	char* temp = (char*) malloc(75 * sizeof(char));
-	sprintf(temp, "/setups/%s/%lu", wifiManager.getConfigurer().c_str(), 
- 		ESP.getChipId());
- 	FirebaseFunctions.SetupPath = String(temp);
-	delete[] temp;
-
-	// Connect to firebase
-	FirebaseFunctions.connect();
-}
-
-void configModeCallback (WiFiManager *myWiFiManager) 
-{
-	#ifdef IR_DEBUG
-	SHDebug.printConfigModeCallback(myWiFiManager);
-	#endif
-}
+//void onSaveConfig() 
+//{
+//	#ifdef IR_DEBUG
+//	SHDebug.printOnSaveConfig();
+//	ir_hub_state = STATE_CONFIG_FIREBASE;
+//	#endif
+//
+//	// Set path to initial setup message
+//	char* temp = (char*) malloc(75 * sizeof(char));
+//	sprintf(temp, "/setups/%s/%lu", wifiManager.getConfigurer().c_str(), 
+// 		ESP.getChipId());
+// 	FirebaseFunctions.SetupPath = String(temp);
+//	delete[] temp;
+//
+//	// Connect to firebase
+//	FirebaseFunctions.connect();
+//}
+//
+//void configModeCallback (WiFiManager *myWiFiManager) 
+//{
+//	#ifdef IR_DEBUG
+//	SHDebug.printConfigModeCallback(myWiFiManager);
+//	#endif
+//}
 
 /* -------------------- Wifi Manager Functions --------------------- */
 
-void connectToWifi() 
-{
-	wifiManager.setBreakAfterConfig(true);
-	wifiManager.setDebugOutput(true);
-	wifiManager.setAPCallback(configModeCallback);
-	wifiManager.setSaveConfigCallback(onSaveConfig);
-
-	#ifdef IR_DEBUG 
-	SHDebug.printStartingAutoConnect(); 
-	#endif
-	if (!wifiManager.autoConnect(WifiAPName.c_str()))
-	{
-		#ifdef IR_DEBUG 
-		Serial.println("Couldn't connect.");
-		#endif
-		wifiManager.startConfigPortal(WifiAPName.c_str());
-	} else {
-		#ifdef IR_DEBUG 
-		Serial.println("Automatically Connected!");
-		#endif
-		FirebaseFunctions.connect();
-
-	}
-}
+//void connectToWifi() 
+//{
+//	wifiManager.setBreakAfterConfig(true);
+//	wifiManager.setDebugOutput(true);
+//	wifiManager.setAPCallback(configModeCallback);
+//	wifiManager.setSaveConfigCallback(onSaveConfig);
+//
+//	#ifdef IR_DEBUG 
+//	SHDebug.printStartingAutoConnect(); 
+//	#endif
+//	if (!wifiManager.autoConnect(WifiAPName.c_str()))
+//	{
+//		#ifdef IR_DEBUG 
+//		Serial.println("Couldn't connect.");
+//		#endif
+//		wifiManager.startConfigPortal(WifiAPName.c_str());
+//	} else {
+//		#ifdef IR_DEBUG 
+//		Serial.println("Automatically Connected!");
+//		#endif
+//		//FirebaseFunctions.connect();
+//	}
+//}
 
 /* ----------------------- Arduino Functions ----------------------- */
 
@@ -92,77 +91,112 @@ void setup()
 
 	delete[] temp;
 
-	#ifdef IR_DEBUG
+#ifdef IR_DEBUG
 	Serial.println("");
 	Serial.print("BasePath = "); Serial.println(FirebaseFunctions.BasePath);
 	Serial.print("ActionPath = "); Serial.println(FirebaseFunctions.ActionPath);
 	Serial.print("ResultPath = "); Serial.println(FirebaseFunctions.ResultPath);
-	#endif
-
-	// Enable debug statements
-	FirebaseFunctions.setDebug(true);
+#endif
 
 	// Initialize IR hardware
 	IRFunctions.init();
-	SHDebug.init(false);
 
+	// Initialize Debug
+#ifdef IR_DEBUG
+	SHDebug.init(false);
+#endif
+
+	// Initialize FirebaseFunctions
+	FirebaseFunctions.setup();
+
+	// Set pin mode for onboard LED
 	pinMode(LED_BUILTIN, OUTPUT);
-	connectToWifi();
+
+	// Start wifi connection process
+	//connectToWifi();
+
+//TEMP:	TODO - Replace with wifi manager solution
+	WiFi.begin("HawkswayBase", "F4d29095dc");
+#ifdef IR_DEBUG
+	Serial.print("Connecting to Wi-Fi");
+#endif // IR_DEBUG
+	while (WiFi.status() != WL_CONNECTED)
+	{
+#ifdef IR_DEBUG
+		Serial.print(".");
+#endif // IR_DEBUG
+		delay(300);
+	}
+#ifdef IR_DEBUG
+	Serial.println();
+	Serial.print("Connected with IP: ");
+	Serial.println(WiFi.localIP());
+	Serial.println();
+#endif // IR_DEBUG
+//TEMP:
+
+	// Turn onboard LED off
 	digitalWrite(LED_BUILTIN, OFF);
+
+	// Start connection to firebase process
+	FirebaseFunctions.connect();
 }
 
 void loop()
 {
-	#ifdef IR_DEBUG
-	if (Firebase.failed()) {
-		Serial.print("streaming error: ");
-		Serial.print(FirebaseFunctions.SetupPath);
-		Serial.println(Firebase.error());
-		delay(1000);
-		FirebaseFunctions.connect();
-	}
-	#endif
-
-	if (Firebase.available())
+#ifdef IRSMARTHUB_UNIT_TESTS
+	if (!bRanTests)
 	{
-		FirebaseObject event = Firebase.readEvent();
-		String type = event.getString("type");
-		type.toLowerCase();
-		if (type == "put") 
-		{
-			#ifdef IR_DEBUG
-			SHDebug.printFirebaseObject(event);
-			#endif
-
-			switch (event.getInt("/data/type")) 
-			{
-				case IR_ACTION_NONE: 
-					#ifdef IR_DEBUG
-					Serial.println("ir_action_none");
-					#endif
-					break;
-				case IR_ACTION_SEND:
-					#ifdef IR_DEBUG
-					SHDebug.printSendAction(event.getString("/data/rawData"));
-					#endif
-					IRFunctions.sendSignal(event.getString("/data/rawData"),
-										   (uint16_t) event.getInt("/data/rawLen"),
-										   event.getBool("/data/repeat"));
-					break;
-				case IR_ACTION_LEARN:
-					#ifdef IR_DEBUG
-					Serial.println("ir_action_learn");
-					#endif
-					IRFunctions.readNextSignal();
-					break;
-				default: 
-					#ifdef IR_DEBUG
-					Serial.println("ERROR - Unknown action");
-					#endif
-					break;
-			}
-
-			SHDebug.pulse_LED();
-		}
+		UTests.testAll();
+		bRanTests = true;
 	}
+
+	return;
+#endif // IRSMARTHUB_UNIT_TESTS
+
+	/* NEW FIREBASE IMPLEMENTATION  */
+
+	// Poll readData object for any new info
+	FirebaseFunctions.readStreamData();
+
+	// ??? - see examples
+	FirebaseFunctions.streamTimeout();
+
+	// React to new action, if received
+	if (FirebaseFunctions.receivedHubAction())
+	{
+
+#ifdef IR_DEBUG
+		Serial.println(DEBUG_DIV);
+		SHDebug.printStreamData();
+#endif //IR_DEBUG
+
+		switch (hubAction.type)
+		{
+		case IR_ACTION_LEARN:
+			IRFunctions.readNextSignal();
+			break;
+		case IR_ACTION_SEND:
+			IRFunctions.sendSignal(hubAction.rawData, hubAction.rawLen, hubAction.repeat);
+			break;
+		case IR_ACTION_NONE:
+#ifdef IR_DEBUG
+			Serial.println("Doing nothing...");
+#endif //IT_DEBUG
+			break;
+		default:
+#ifdef IR_DEBUG
+			Serial.print("Ignoring unknown action type from sender: "); Serial.println(hubAction.sender);
+#endif //IT_DEBUG
+			break;
+		}
+
+		//// Added delay so readStreamData() isn't being instantly polled
+		//delay(300);
+
+#ifdef IR_DEBUG
+		Serial.println(DEBUG_DIV);
+#endif //IR_DEBUG
+	}
+
 }

@@ -5,10 +5,11 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/colorPrimaryDark"
+            android:clipChildren="false"
     >
-    <!-- Toolbar -->
+        <!-- Toolbar -->
         <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
-                                           android:layout_width="match_parent"
+                                           android:layout_width="0dp"
                                            android:layout_height="?attr/actionBarSize"
                                            app:layout_constraintStart_toStartOf="parent"
                                            app:layout_constraintEnd_toEndOf="parent"
@@ -16,47 +17,56 @@
                                            app:layout_constraintBottom_toBottomOf="parent"
                                            app:layout_constraintVertical_bias="0"
                                            tools:title="@string/how_to_add_button"
+                                           app:titleTextAppearance="@style/AppTheme.TextAppearance.SubHeader"
         />
 
-        <com.ms8.smartirhub.android.custom_views.CircularProgressView android:id="@+id/prog1"
-                                                                      android:layout_width="wrap_content"
-                                                                      android:layout_height="wrap_content"
-                                                                      app:progressStep="1"
-                                                                      app:progressDescription="@string/pick_button_name"
-                                                                      app:progressOnThisStep="true"
-                                                                      app:layout_constraintStart_toStartOf="parent"
-                                                                      app:layout_constraintEnd_toEndOf="parent"
-                                                                      app:layout_constraintTop_toBottomOf="@id/toolbar"
-                                                                      app:layout_constraintHorizontal_bias="0.5"
-                                                                      app:barColor="@color/colorPrimary"
-                                                                      app:layout_constraintBottom_toTopOf="@+id/prog2"
-                                                                      app:layout_constraintVertical_bias="1.0"/>
 
-        <com.ms8.smartirhub.android.custom_views.CircularProgressView android:id="@+id/prog2"
-                                                                      android:layout_width="wrap_content"
-                                                                      android:layout_height="wrap_content"
-                                                                      app:progressStep="2"
-                                                                      app:progressDescription="@string/choose_ir_action"
-                                                                      app:progressOnThisStep="false"
-                                                                      app:layout_constraintStart_toStartOf="parent"
-                                                                      app:layout_constraintEnd_toEndOf="parent"
-                                                                      app:layout_constraintTop_toBottomOf="@+id/prog1"
-                                                                      app:layout_constraintHorizontal_bias="0.5"
-                                                                      app:barColor="@color/colorPrimary"
-                                                                      app:layout_constraintBottom_toTopOf="@+id/prog3"/>
+        <!--<com.ms8.smartirhub.android.custom_views.CircularProgressView android:id="@+id/prog1"-->
+        <!--android:layout_width="0dp"-->
+        <!--tools:layout_height="50dp"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--app:progressStep="1"-->
+        <!--app:progressDescription="@string/pick_button_name"-->
+        <!--app:progressOnThisStep="true"-->
+        <!--app:layout_constraintStart_toStartOf="@+id/guidelineStart"-->
+        <!--app:layout_constraintHorizontal_bias="0.5"-->
+        <!--app:layout_constraintEnd_toStartOf="@+id/guidelineEnd"-->
+        <!--app:barColor="@color/colorPrimary"-->
+        <!--app:layout_constraintTop_toBottomOf="@+id/toolbar"-->
+        <!--android:layout_marginTop="8dp"-->
+        <!--android:layout_marginBottom="8dp"-->
+        <!--app:layout_constraintBottom_toTopOf="@+id/prog3"-->
+        <!--app:layout_constraintVertical_chainStyle="spread"/>-->
 
-        <com.ms8.smartirhub.android.custom_views.CircularProgressView android:id="@+id/prog3"
-                                                                      android:layout_width="wrap_content"
-                                                                      android:layout_height="wrap_content"
-                                                                      app:progressStep="3"
-                                                                      app:progressDescription="@string/pick_button_style"
-                                                                      app:progressOnThisStep="false"
-                                                                      app:layout_constraintStart_toStartOf="parent"
-                                                                      app:layout_constraintEnd_toEndOf="parent"
-                                                                      app:layout_constraintTop_toBottomOf="@+id/prog2"
-                                                                      app:layout_constraintHorizontal_bias="0.5"
-                                                                      app:barColor="@color/colorPrimary"
-                                                                      app:layout_constraintBottom_toTopOf="@+id/btnNextStep"/>
+        <!--<com.ms8.smartirhub.android.custom_views.CircularProgressView android:id="@+id/prog2"-->
+        <!--android:layout_width="0dp"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--tools:layout_height="50dp"-->
+        <!--app:progressStep="2"-->
+        <!--app:progressDescription="@string/choose_ir_action"-->
+        <!--app:progressOnThisStep="false"-->
+        <!--app:barColor="@color/colorPrimary"-->
+
+        <!--app:layout_constraintStart_toStartOf="@+id/guidelineStart"-->
+        <!--app:layout_constraintHorizontal_bias="0.5"-->
+        <!--app:layout_constraintEnd_toStartOf="@+id/guidelineEnd"-->
+        <!--app:layout_constraintTop_toBottomOf="@+id/prog3"-->
+        <!--app:layout_constraintBottom_toTopOf="@+id/btnNextStep"-->
+        <!--android:layout_marginTop="8dp"/>-->
+
+        <!--<com.ms8.smartirhub.android.custom_views.CircularProgressView android:id="@+id/prog3"-->
+        <!--android:layout_width="0dp"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--tools:layout_height="50dp"-->
+        <!--app:progressStep="3"-->
+        <!--app:progressDescription="@string/pick_button_style"-->
+        <!--app:progressOnThisStep="false"-->
+        <!--app:barColor="@color/colorPrimary"-->
+        <!--app:layout_constraintStart_toStartOf="@+id/guidelineStart"-->
+        <!--app:layout_constraintHorizontal_bias="0.5"-->
+        <!--app:layout_constraintEnd_toStartOf="@+id/guidelineEnd"-->
+        <!--app:layout_constraintTop_toBottomOf="@+id/prog1"-->
+        <!--app:layout_constraintBottom_toTopOf="@+id/prog2"/>-->
 
         <Button
                 android:id="@+id/btnNextStep"
@@ -69,6 +79,43 @@
                 app:layout_constraintHorizontal_bias="0.5"
                 style="@style/AppTheme.Button.SplashSignIn.Colored" android:minWidth="168dp"
                 android:layout_marginBottom="16dp"/>
+        <androidx.constraintlayout.widget.Guideline android:layout_width="wrap_content"
+                                                    android:layout_height="wrap_content"
+                                                    android:id="@+id/guidelineStart"
+                                                    app:layout_constraintGuide_begin="24dp"
+                                                    android:orientation="vertical"
+                                                    app:layout_constraintStart_toStartOf="parent"
+        />
+        <androidx.constraintlayout.widget.Guideline android:layout_width="wrap_content"
+                                                    android:layout_height="wrap_content" android:id="@+id/guidelineEnd"
+                                                    app:layout_constraintGuide_end="24dp"
+                                                    app:layout_constraintStart_toEndOf="parent"
+                                                    android:orientation="vertical"/>
+        <com.ms8.smartirhub.android.custom_views.CircularProgressView
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                app:progressStep="1"
+                android:id="@+id/prog1" app:layout_constraintStart_toStartOf="@+id/guidelineStart"
+                app:layout_constraintEnd_toStartOf="@+id/guidelineEnd" android:layout_marginTop="8dp"
+                app:layout_constraintTop_toBottomOf="@+id/toolbar" app:layout_constraintBottom_toTopOf="@+id/prog2"
+                app:layout_constraintHorizontal_bias="0.5"
+        android:clipChildren="false"/>
+        <com.ms8.smartirhub.android.custom_views.CircularProgressView
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                app:progressStep="2"
+                android:id="@+id/prog2" app:layout_constraintStart_toStartOf="@+id/guidelineStart"
+                app:layout_constraintEnd_toStartOf="@+id/guidelineEnd" android:layout_marginTop="8dp"
+                app:layout_constraintTop_toBottomOf="@+id/prog1" app:layout_constraintBottom_toTopOf="@+id/prog3"
+                app:layout_constraintHorizontal_bias="0.5"/>
+        <com.ms8.smartirhub.android.custom_views.CircularProgressView
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                app:progressStep="3"
+                android:id="@+id/prog3" app:layout_constraintStart_toStartOf="@+id/guidelineStart"
+                app:layout_constraintEnd_toStartOf="@+id/guidelineEnd" android:layout_marginTop="8dp"
+                app:layout_constraintTop_toBottomOf="@+id/prog2"
+                app:layout_constraintBottom_toTopOf="@+id/btnNextStep" app:layout_constraintHorizontal_bias="0.5"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

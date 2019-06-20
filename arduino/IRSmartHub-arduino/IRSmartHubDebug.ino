@@ -1,13 +1,30 @@
 #include "IRSmartHubDebug.h"
 
-void IRSmartHubDebug::printFirebaseObject(FirebaseObject event)
+//void IRSmartHubDebug::printFirebaseObject(FirebaseObject event)
+//{
+//	Serial.print("path: ");
+//	Serial.println(event.getString("path"));
+//	Serial.print("data: ");
+//	event.getJsonVariant("data").prettyPrintTo(Serial);
+//	Serial.println("");
+//	Serial.print("Performing action: ");
+//}
+
+
+void IRSmartHubDebug::printStreamData()
 {
-	Serial.print("path: ");
-	Serial.println(event.getString("path"));
-	Serial.print("data: ");
-	event.getJsonVariant("data").prettyPrintTo(Serial);
-	Serial.println("");
-	Serial.print("Performing action: ");
+	Serial.println(F("Stream Data Available..."));
+	Serial.println("STREAM PATH: " + firebaseReadData.streamPath());
+	Serial.println("EVENT PATH: " + firebaseReadData.dataPath());
+	Serial.println("DATA TYPE: " + firebaseReadData.dataType());
+	Serial.println("EVENT TYPE: " + firebaseReadData.eventType());
+	Serial.println(F("HUB ACTION: "));
+	Serial.print("    - Type: "); Serial.print(SHDebug.getActionString(hubAction.type)); Serial.println("");
+	if (hubAction.type == IR_ACTION_SEND)
+	{
+		Serial.print("    - rawData: "); Serial.print(hubAction.rawData); Serial.println("");
+		Serial.print("    - rawLen: "); Serial.print(hubAction.rawLen); Serial.println("");
+	}
 }
 
 void IRSmartHubDebug::printSendAction(const String& irSignal)
@@ -65,6 +82,21 @@ void IRSmartHubDebug::sendTestIRSignal()
 		digitalWrite(12, LOW);
 		delay(300);
 	}
+}
+
+String IRSmartHubDebug::getActionString(int type)
+{
+	switch (type)
+	{ 
+		case IR_ACTION_LEARN:  
+			return "LEARN";
+		case IR_ACTION_SEND:
+			return "SEND";
+		case IR_ACTION_NONE:
+			return "NONE";
+	}
+
+	return "UKNOWN";
 }
 
 void IRSmartHubDebug::init(bool pulseLED)

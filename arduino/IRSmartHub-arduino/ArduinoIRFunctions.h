@@ -6,7 +6,11 @@
 #include "IRremoteESP8266.h"
 #include "IRutils.h"
 
-#define IR_DEBUG_IR_FUNC 1
+
+
+#ifdef IR_DEBUG_IR_FUNC
+#include "IRSmartHubDebug.h"
+#endif // IR_DEBUG_IR_FUNC
 
 #ifndef IR_RECV_PIN
 #define IR_RECV_PIN 14
@@ -20,10 +24,6 @@ const uint8_t  IR_RECV_MESSAGE_TIMEOUT = 50;
 const uint16_t IR_RECV_BUFFER_SIZE = 1024;
 const uint32_t IR_READ_TIMEOUT = 10000;
 const uint16_t SEND_FREQUENCY = 38;
-/* -------------------- Hub Actions -------------------- */
-const int IR_ACTION_NONE = 0;
-const int IR_ACTION_LEARN = 1;
-const int IR_ACTION_SEND = 2;
 
 class ArduinoIRFunctions {
 public:
@@ -34,8 +34,6 @@ public:
 	void readNextSignal();
 
 	void sendSignal(const String& rawDataStr, uint16_t rawlen, bool bRepeat);
-
-	void setDebug(bool debug);
 
 	void init();
 

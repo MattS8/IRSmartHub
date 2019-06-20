@@ -77,7 +77,7 @@ class SplashActivity3 : AppCompatActivity() {
                     else -> Log.w("TEST####", "Result no ok... $resultCode")
                 }
             }
-            else -> Log.w(TAG, "Unknown request code ($requestCode)")
+            else -> Log.w(TAG, "Unknown request resultCode ($requestCode)")
         }
     }
 

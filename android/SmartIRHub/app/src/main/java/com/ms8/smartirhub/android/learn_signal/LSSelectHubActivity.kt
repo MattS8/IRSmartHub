@@ -1,18 +1,23 @@
 package com.ms8.smartirhub.android.learn_signal
 
+import android.animation.AnimatorSet
 import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.ArrayAdapter
+import androidx.core.app.ActivityOptionsCompat
+import androidx.core.view.isInvisible
 import androidx.databinding.*
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.custom_views.BottomErrorSheet
 import com.ms8.smartirhub.android.data.Hub
 import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.databinding.ALearnSigGetHubBinding
+import com.ms8.smartirhub.android.exts.*
 import com.ms8.smartirhub.android.learn_signal.LSWalkthroughActivity.Companion.LISTENING_HUB
+import kotlin.math.hypot
 
 class LSSelectHubActivity : AppCompatActivity() {
     lateinit var binding: ALearnSigGetHubBinding
@@ -37,12 +42,44 @@ class LSSelectHubActivity : AppCompatActivity() {
         return true
     }
 
+    private fun performCircularReveal() {
+        if (!hasSourceBounds) {
+            binding.root.isInvisible = false
+        } else {
+            sourceBounds { sourceBounds ->
+                binding.root.run {
+                    screenBounds { rootLayoutBounds ->
+                        // Verify if sourceBounds is valid
+                        if (rootLayoutBounds.contains(sourceBounds)) {
+                            val circle = createCircularReveal(
+                                centerX = sourceBounds.centerX() - rootLayoutBounds.left,
+                                centerY = sourceBounds.centerY() - rootLayoutBounds.top,
+                                startRadius = (minOf(sourceBounds.width(), sourceBounds.height()) * 0.2).toFloat(),
+                                endRadius = hypot(binding.root.width.toFloat(), binding.root.height.toFloat())
+                            ).apply {
+                                isInvisible = false
+                                duration = 500L
+                            }
+                            AnimatorSet()
+                                .apply { playTogether(circle) }
+                                .start()
+                        } else {
+                            isInvisible = false
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        preAnimationSetup()
         super.onCreate(savedInstanceState)
         errorSheet.sheetTitle = getString(R.string.err_no_hub_selected_title)
         errorSheet.description = getString(R.string.err_no_hub_selected_desc)
-
         binding = DataBindingUtil.setContentView(this, R.layout.a_learn_sig_get_hub)
+        performCircularReveal()
+
 
 //        binding.toolbar.title = getString(R.string.select_listening_hub_title)
 //        setSupportActionBar(binding.toolbar)
