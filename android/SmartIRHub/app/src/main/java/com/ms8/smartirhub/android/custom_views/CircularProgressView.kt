@@ -9,6 +9,7 @@ import android.view.animation.DecelerateInterpolator
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.ms8.smartirhub.android.R
+import kotlinx.android.synthetic.main.v_circular_progress.view.*
 
 class CircularProgressView(context: Context, attrs: AttributeSet): ConstraintLayout(context, attrs) {
     /* ----------------------- View Properties ----------------------- */
@@ -73,11 +74,22 @@ class CircularProgressView(context: Context, attrs: AttributeSet): ConstraintLay
 
     private fun animateViews(onStep: Boolean) {
         val alphaVal = if (onStep) 1f else 0.3f
+        val scaleVal = if (onStep) 1.1f else 1f
+
         ObjectAnimator.ofFloat(numberView, "alpha", alphaVal).apply {
             duration = this@CircularProgressView.duration.toLong()
             interpolator = DecelerateInterpolator()
         }.start()
         ObjectAnimator.ofFloat(descriptionView, "alpha", alphaVal).apply {
+            duration = this@CircularProgressView.duration.toLong()
+            interpolator = DecelerateInterpolator()
+        }.start()
+
+        ObjectAnimator.ofFloat(progContainter, "scaleY", scaleVal).apply {
+            duration = this@CircularProgressView.duration.toLong()
+            interpolator = DecelerateInterpolator()
+        }.start()
+        ObjectAnimator.ofFloat(progContainter, "scaleX", scaleVal).apply {
             duration = this@CircularProgressView.duration.toLong()
             interpolator = DecelerateInterpolator()
         }.start()

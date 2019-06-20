@@ -93,13 +93,13 @@
     <string name="choose_a_button_action">Choose a button action</string>
     <string name="pick_a_button_style">Pick a button style</string>
     <string name="button_name_hint">Button Name:</string>
-    <string name="how_to_add_button">How to Add a Button:</string>
-    <string name="learn_ir_title">How to Learn a New IR Signal:</string>
+    <string name="how_to_add_button">Add Button:</string>
+    <string name="learn_ir_title">Learn New IR Signal:</string>
     <string name="select_ir_hub">Select Hub</string>
     <string name="send_ir_signal">Send IR Signal</string>
-    <string name="select_ir_hub_desc">Select the hub to listen for a signal</string>
-    <string name="send_ir_signal_desc">Send the signal to the hub</string>
-    <string name="name_learned_signal_desc">Name the learned signal</string>
+    <string name="select_ir_hub_desc">Select a hub to listen for a signal</string>
+    <string name="send_ir_signal_desc">Send a signal to the hub</string>
+    <string name="name_learned_signal_desc">Name the newly learned signal</string>
     <string name="dont_see_hub_title">Don\'t see your hub listed below?</string>
     <string name="dont_see_hub_desc">Make sure the hub is properly set up and ensure the owner has given you permission
         to use it. If you still don\'t see it, try setting the hub up again.
@@ -133,8 +133,8 @@
     <string name="err_overflow_desc">There was a problem reading the IR signal. This usually occurs when the remote
         button is held down too long. Try again by only taping the button you wish to learn.
     </string>
-    <string name="err_overflow_title">Error (Code: 802)</string>
-    <string name="err_timeout_title">Error (Code: 801)</string>
+    <string name="err_overflow_title">Error: Malformed Signal (Code: 802)</string>
+    <string name="err_timeout_title">Error: Timeout (Code: 801)</string>
     <string name="err_timeout_desc">The hub didn\'t recognize any valid IR signals. Ensure that you selected the correct
         hub and please try again.
     </string>
@@ -168,4 +168,7 @@
     <string name="err_no_response_title">Error (No Response)</string>
     <string name="err_no_response_desc">We didn\'t hear anything back from the hub. Check your internet and try again.
     </string>
+    <string name="next">Next</string>
+    <string name="selected_hub_title">Selected Hub:</string>
+    <string name="signal_information">Signal Information:</string>
 </resources>

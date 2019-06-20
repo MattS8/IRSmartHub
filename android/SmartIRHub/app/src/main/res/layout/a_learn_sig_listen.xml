@@ -18,10 +18,9 @@
         <androidx.constraintlayout.widget.Guideline
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:id="@+id/guidelineStart"
-                app:layout_constraintGuide_begin="20dp"
+                app:layout_constraintGuide_begin="16dp"
                 android:orientation="vertical"
                 app:layout_constraintStart_toStartOf="parent"
-                android:layout_marginStart="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
         />
 
@@ -36,6 +35,8 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintVertical_bias="0"
                 tools:title="@string/send_signal_title"
+
+                app:titleTextAppearance="@style/AppTheme.TextAppearance.SubHeader"
                 android:elevation="16dp"
         />
 
@@ -182,7 +183,7 @@
                 android:text="@string/start_listening"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/btnStartListening" android:layout_marginBottom="16dp"
+                android:id="@+id/btnStartListening" android:layout_marginBottom="24dp"
                 style="@style/AppTheme.Button.SplashSignIn.Colored"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/guidelineEnd"

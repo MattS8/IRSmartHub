@@ -19,20 +19,15 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.custom_views.BottomErrorSheet
-import com.ms8.smartirhub.android.data.HubAction
 import com.ms8.smartirhub.android.data.HubResult
 import com.ms8.smartirhub.android.data.IrSignal
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ALearnSigListenBinding
 import com.ms8.smartirhub.android.firebase.FirebaseConstants
-import com.ms8.smartirhub.android.firebase.FirebaseConstants.IR_ACTION_LISTEN
 import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
 import com.ms8.smartirhub.android.learn_signal.LSWalkthroughActivity.Companion.LISTENING_HUB
 import java.lang.Exception
-import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.collections.HashMap
 
 class LSListenActivity : AppCompatActivity() {
     lateinit var binding: ALearnSigListenBinding
@@ -54,10 +49,6 @@ class LSListenActivity : AppCompatActivity() {
         }
 
         override fun onDataChange(dataSnapshot: DataSnapshot) {
-            binding.btnStartListening.revertAnimation()
-            isListening = false
-            FirebaseDatabase.getInstance().reference.child("devices").child(hubUID).child("result").removeEventListener(this)
-
             Log.d("LSListenActivity", "datasnapshot = $dataSnapshot")
             var hubResult : HubResult? = null
             try {
@@ -65,34 +56,30 @@ class LSListenActivity : AppCompatActivity() {
                 hubResult = FirestoreActions.parseHubResult(dataSnapshot.value as Map<String, Any>?)
             } catch (e : Exception) { Log.e("LSListenActivity", "$e") }
 
-            if (hubResult == null) {
-                Log.e("LSListenActivity", "result listener hub result was NULL... ${dataSnapshot.value}")
-                bottomErrorSheet.sheetTitle = getString(R.string.err_unknown_title)
-                bottomErrorSheet.description = getString(R.string.err_unknown_desc)
-                bottomErrorSheet.show(supportFragmentManager, "Bottom_sheet_error_unknown")
-                return
-            }
-            when (hubResult.code) {
+            // Possibly first time call
+            if (hubResult == null) { return }
+
+            // Stop loading button and clean up listener data
+            binding.btnStartListening.revertAnimation()
+            isListening = false
+            RealtimeDatabaseFunctions.getHubRef(hubUID).removeEventListener(this)
+
+            // Display proper response
+            when (hubResult.resultCode) {
             // Overflow Error
                 FirebaseConstants.IR_RES_OVERFLOW_ERR -> {
                     Log.e("LSListenActivity", "result listener result: Overflow")
-                    bottomErrorSheet.sheetTitle = getString(R.string.err_overflow_title)
-                    bottomErrorSheet.description = getString(R.string.err_overflow_desc)
-                    bottomErrorSheet.show(supportFragmentManager, "Bottom_sheet_error_overflow")
+                    showOverflowError()
                 }
             // Timeout Error
                 FirebaseConstants.IR_RES_TIMEOUT_ERR -> {
                     Log.e("LSListenActivity", "result listener result: Timeout")
-                    bottomErrorSheet.sheetTitle = getString(R.string.err_timeout_title)
-                    bottomErrorSheet.description =  getString(R.string.err_timeout_desc)
-                    bottomErrorSheet.show(supportFragmentManager, "Bottom_sheet_error_timeout")
+                    showTimeoutError()
                 }
             // Unknown Error
                 FirebaseConstants.IR_RES_UNKNOWN_ERR -> {
                     Log.e("LSListenActivity", "result listener result: Unknown Error")
-                    bottomErrorSheet.sheetTitle = getString(R.string.err_unknown_title)
-                    bottomErrorSheet.description =  getString(R.string.err_unknown_desc)
-                    bottomErrorSheet.show(supportFragmentManager, "Bottom_sheet_error_unknown")
+                    showUnknownError(null)
                 }
             // Received an IR Signal
                 FirebaseConstants.IR_RES_RECEIVED_SIG -> {
@@ -106,65 +93,13 @@ class LSListenActivity : AppCompatActivity() {
                 }
             // Unexpected IR result
                 else -> {
-                    Log.e("LSListenActivity", "result listener result: unexpected result (${hubResult.code})")
-                    bottomErrorSheet.sheetTitle = getString(R.string.err_unknown_title)
-                    bottomErrorSheet.description = getString(R.string.err_unknown_desc)
-                    bottomErrorSheet.show(supportFragmentManager, "Bottom_sheet_error_unknown")
+                    Log.e("LSListenActivity", "result listener result: unexpected result (${hubResult.resultCode})")
+                    showUnknownError(null)
                 }
             }
+
+            RealtimeDatabaseFunctions.clearResult(hubUID)
         }
-    }
-
-    private fun retry() {
-        TempData.tempSignal?.rawData = ""
-        TempData.tempSignal?.rawLength = 0
-
-        beginListeningProcess()
-    }
-
-
-    private fun beginListeningProcess() {
-        binding.btnStartListening.startAnimation()
-        FirebaseDatabase.getInstance().reference.child("devices").child(hubUID).child("action").child("sender")
-            .addListenerForSingleValueEvent(object: ValueEventListener {
-                override fun onCancelled(p0: DatabaseError) {
-                    Log.w("LSListenActivity", "Lock Check cancelled $p0")
-                    binding.btnStartListening.revertAnimation()
-                }
-
-                override fun onDataChange(dataSnapshot: DataSnapshot) {
-                    val sender = dataSnapshot.getValue(String::class.java)
-                    val uid = FirebaseAuth.getInstance().currentUser?.uid
-                    if (sender != "" && sender != uid) {
-                        binding.btnStartListening.revertAnimation()
-                        if (!bottomErrorSheet.bIsShowing) {
-                            bottomErrorSheet.sheetTitle = getString(R.string.err_hub_busy_title)
-                            bottomErrorSheet.description = getString(R.string.err_hub_busy_desc)
-                            bottomErrorSheet.show(supportFragmentManager, "Bottom_error_frag")
-                        }
-                    } else {
-                        sendListenAction()
-                    }
-                }
-            })
-    }
-
-    /**
-     * Attempts to send a "Listen for IR Signal" action to the
-     * IR hub. If successful, the app will wait for a result
-     * response from the hub (or timeout).
-     */
-    @SuppressLint("SimpleDateFormat")
-    private fun sendListenAction() {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-        FirebaseDatabase.getInstance().reference.child("devices").child(hubUID).child("action")
-            .setValue(HubAction(IR_ACTION_LISTEN, uid, SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().time)))
-            .addOnFailureListener {
-                Log.e("SendListenAction", "$it")
-            }
-            .addOnSuccessListener {
-                listenForResult()
-            }
     }
 
 /* ------------------------------------------- Layout Transition Functions ------------------------------------------ */
@@ -268,32 +203,6 @@ class LSListenActivity : AppCompatActivity() {
         }
     }
 
-    private fun testSignal() {
-        TempData.tempSignal?.let { irSignal ->
-            binding.btnTestSignal.startAnimation()
-            RealtimeDatabaseFunctions.sendNoneAction(hubUID)
-                .addOnSuccessListener {
-                    RealtimeDatabaseFunctions.sendSignalToHub(hubUID, irSignal)
-                        .addOnSuccessListener {
-                            binding.btnTestSignal.revertAnimation()
-                        }
-                        .addOnFailureListener {
-                            binding.btnTestSignal.revertAnimation()
-                            bottomErrorSheet.sheetTitle = getString(R.string.err_unknown_title)
-                            bottomErrorSheet.description =  getString(R.string.err_unknown_desc)
-                            bottomErrorSheet.show(supportFragmentManager, "Bottom_sheet_error_timeout")
-                        }
-                }
-                .addOnFailureListener {
-                    binding.btnTestSignal.revertAnimation()
-                    bottomErrorSheet.sheetTitle = getString(R.string.err_unknown_title)
-                    bottomErrorSheet.description =  getString(R.string.err_unknown_desc)
-                    bottomErrorSheet.show(supportFragmentManager, "Bottom_sheet_error_timeout")
-                }
-
-        }
-    }
-
     override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
         super.onSaveInstanceState(outState, outPersistentState)
         outState.putBoolean(IS_LISTENING, isListening)
@@ -308,7 +217,60 @@ class LSListenActivity : AppCompatActivity() {
         }
     }
 
+    private fun retry() {
+        TempData.tempSignal?.rawData = ""
+        TempData.tempSignal?.rawLength = 0
 
+        beginListeningProcess()
+    }
+
+/* ------------------------------------------- Listening Process Functions ------------------------------------------- */
+
+    private fun beginListeningProcess() {
+        binding.btnStartListening.startAnimation()
+        FirebaseDatabase.getInstance().reference.child("devices").child(hubUID).child("action").child("sender")
+            .addListenerForSingleValueEvent(object: ValueEventListener {
+                override fun onCancelled(p0: DatabaseError) {
+                    Log.w("LSListenActivity", "Lock Check cancelled $p0")
+                    binding.btnStartListening.revertAnimation()
+                }
+
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val sender = dataSnapshot.getValue(String::class.java)
+                    Log.d("onDataChange", "Sender: $sender")
+                    val uid = FirebaseAuth.getInstance().currentUser?.uid
+                    if (sender != "_none_" && sender != uid) {
+                        binding.btnStartListening.revertAnimation()
+                        if (!bottomErrorSheet.bIsShowing) { showHubBusyError() }
+                    } else {
+                        sendListenAction()
+                    }
+                }
+            })
+    }
+
+    /**
+     * Attempts to send a "Listen for IR Signal" action to the
+     * IR hub. If successful, the app will wait for a result
+     * response from the hub (or timeout).
+     */
+    @SuppressLint("SimpleDateFormat")
+    private fun sendListenAction() {
+        // Clear result before listening
+        RealtimeDatabaseFunctions.clearResult(hubUID)
+            .addOnFailureListener {e -> Log.w("LSListenActivity", "Failure while clearing results: $e")}
+            .addOnSuccessListener {
+                // Clear Action before sending listen action
+                RealtimeDatabaseFunctions.sendNoneAction(hubUID)
+                    .addOnFailureListener {e -> showUnknownError(e) }
+                    .addOnSuccessListener {
+                        // Send listen action
+                        RealtimeDatabaseFunctions.sendListenAction(hubUID)
+                            .addOnFailureListener { Log.e("SendListenAction", "$it") }
+                            .addOnSuccessListener { listenForResult() }
+                    }
+            }
+    }
 
     private fun listenForResult() {
         isListening = true
@@ -317,12 +279,25 @@ class LSListenActivity : AppCompatActivity() {
         Handler().postDelayed({timedOut()}, TIMEOUT_DURATION.toLong())
     }
 
+/* ------------------------------------------------ OnClick Functions ------------------------------------------------ */
+
     private fun timedOut() {
         if (isListening) {
             Log.e("LSListenActivity", "Never heard back from the Hub...")
-            bottomErrorSheet.sheetTitle = getString(R.string.err_no_response_title)
-            bottomErrorSheet.description =  getString(R.string.err_no_response_desc)
-            bottomErrorSheet.show(supportFragmentManager, "Bottom_sheet_error_timeout")
+            showNoResponseError()
+        }
+    }
+
+    private fun testSignal() {
+        TempData.tempSignal?.let { irSignal ->
+            binding.btnTestSignal.startAnimation()
+            RealtimeDatabaseFunctions.sendNoneAction(hubUID)
+                .addOnFailureListener {e -> showUnknownError(e) }
+                .addOnSuccessListener {
+                    RealtimeDatabaseFunctions.sendSignalToHub(hubUID, irSignal)
+                        .addOnSuccessListener { binding.btnTestSignal.revertAnimation() }
+                        .addOnFailureListener {e -> showUnknownError(e) }
+                }
         }
     }
 
@@ -330,7 +305,6 @@ class LSListenActivity : AppCompatActivity() {
         setResult(Activity.RESULT_OK)
         finish()
     }
-
 
     private fun showAdvancedInfo() {
         startActivity(Intent(this, AdvancedSignalInfoActivity::class.java))
@@ -341,4 +315,40 @@ class LSListenActivity : AppCompatActivity() {
         const val TIMEOUT_DURATION = 15000
         const val IS_LISTENING = "IS_LISTENING"
     }
+}
+
+/* --------------------------------------------- Display Error Functions --------------------------------------------- */
+private fun LSListenActivity.showUnknownError(e: Exception?) {
+    binding.btnTestSignal.revertAnimation()
+    bottomErrorSheet.sheetTitle = getString(R.string.err_unknown_title)
+    bottomErrorSheet.description = getString(R.string.err_unknown_desc)
+    bottomErrorSheet.show(supportFragmentManager, "Bottom_sheet_error_timeout")
+
+    e?.let { Log.e("LSListenActivity", "Unknown Error: $it") }
+
+}
+
+private fun LSListenActivity.showNoResponseError() {
+    binding.btnStartListening.revertAnimation()
+    bottomErrorSheet.sheetTitle = getString(R.string.err_no_response_title)
+    bottomErrorSheet.description = getString(R.string.err_no_response_desc)
+    bottomErrorSheet.show(supportFragmentManager, "Bottom_sheet_error_timeout")
+}
+private fun LSListenActivity.showHubBusyError() {
+    binding.btnStartListening.revertAnimation()
+    bottomErrorSheet.sheetTitle = getString(R.string.err_hub_busy_title)
+    bottomErrorSheet.description = getString(R.string.err_hub_busy_desc)
+    bottomErrorSheet.show(supportFragmentManager, "Bottom_error_frag")
+}
+private fun LSListenActivity.showOverflowError() {
+    binding.btnStartListening.revertAnimation()
+    bottomErrorSheet.sheetTitle = getString(R.string.err_overflow_title)
+    bottomErrorSheet.description = getString(R.string.err_overflow_desc)
+    bottomErrorSheet.show(supportFragmentManager, "Bottom_sheet_error_overflow")
+}
+private fun LSListenActivity.showTimeoutError() {
+    binding.btnStartListening.revertAnimation()
+    bottomErrorSheet.sheetTitle = getString(R.string.err_timeout_title)
+    bottomErrorSheet.description = getString(R.string.err_timeout_desc)
+    bottomErrorSheet.show(supportFragmentManager, "Bottom_sheet_error_timeout")
 }
