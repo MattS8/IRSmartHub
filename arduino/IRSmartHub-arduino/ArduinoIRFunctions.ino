@@ -126,7 +126,7 @@ void ArduinoIRFunctions::readNextSignal()
 			Serial.println("Sending...");
 			#endif
 
-			FirebaseFunctions.sendRecordedSignal(&results);			
+			FirebaseFunctions.sendRecordedSignal(results OUT);			
 			break;
 		} 
 		#ifdef IR_DEBUG_IR_FUNC
