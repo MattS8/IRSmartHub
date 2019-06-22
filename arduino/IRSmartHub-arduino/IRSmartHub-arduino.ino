@@ -2,8 +2,14 @@
 
 /* ------------------------ Global Variables ----------------------- */
 int ir_hub_state = STATE_CONFIG_WIFI;
+
+#ifdef ARDUINO_IR_FUNCTIONS_H
 ArduinoIRFunctions IRFunctions;
+#endif 
+
+#ifdef ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 ArduinoFirebaseFunctions FirebaseFunctions;
+#endif
 //WiFiManager wifiManager;
 String WifiAPName;
 
@@ -69,9 +75,9 @@ bool bRanTests = false;
 void setup() 
 {
 	Serial.begin(SMART_HUB_BAUD_RATE);
-
+#ifdef ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 	// Setup dynamic string variables
-	char* temp = (char*) malloc(50 * sizeof(char));
+	char* temp = (char*)malloc(50 * sizeof(char));
 
 	// Set base path
 	sprintf(temp, "/devices/%lu", ESP.getChipId());
@@ -98,16 +104,22 @@ void setup()
 	Serial.print("ResultPath = "); Serial.println(FirebaseFunctions.ResultPath);
 #endif
 
+#endif // ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
+
 	// Initialize IR hardware
+#ifdef ARDUINO_IR_FUNCTIONS_H
 	IRFunctions.init();
+#endif // ARDUINO_IR_FUNCTIONS_H
 
 	// Initialize Debug
 #ifdef IR_DEBUG
 	SHDebug.init(false);
 #endif
 
+#ifdef ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 	// Initialize FirebaseFunctions
 	FirebaseFunctions.setup();
+#endif // ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 
 	// Set pin mode for onboard LED
 	pinMode(LED_BUILTIN, OUTPUT);
@@ -115,6 +127,7 @@ void setup()
 	// Start wifi connection process
 	//connectToWifi();
 
+#ifdef ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 //TEMP:	TODO - Replace with wifi manager solution
 	WiFi.begin("HawkswayBase", "F4d29095dc");
 #ifdef IR_DEBUG
@@ -133,13 +146,16 @@ void setup()
 	Serial.println(WiFi.localIP());
 	Serial.println();
 #endif // IR_DEBUG
-//TEMP:
+	//TEMP:
+#endif // ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 
 	// Turn onboard LED off
 	digitalWrite(LED_BUILTIN, OFF);
 
+#ifdef ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 	// Start connection to firebase process
 	FirebaseFunctions.connect();
+#endif // ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 }
 
 void loop()
@@ -155,7 +171,8 @@ void loop()
 #endif // IRSMARTHUB_UNIT_TESTS
 
 	/* NEW FIREBASE IMPLEMENTATION  */
-
+#ifdef ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
+#ifdef ARDUINO_IR_FUNCTIONS_H
 	// Poll readData object for any new info
 	FirebaseFunctions.readStreamData();
 
@@ -198,5 +215,6 @@ void loop()
 		Serial.println(DEBUG_DIV);
 #endif //IR_DEBUG
 	}
-
+#endif // ARDUINO_IR_FUNCTIONS_H
+#endif // ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 }

@@ -4,12 +4,9 @@
 #include "IRsend.h"
 #include "IRrecv.h"
 #include "IRremoteESP8266.h"
-#include "IRutils.h"
-
-
 
 #ifdef IR_DEBUG_IR_FUNC
-#include "IRSmartHubDebug.h"
+#include "IRutils.h"
 #endif // IR_DEBUG_IR_FUNC
 
 #ifndef IR_RECV_PIN
@@ -36,6 +33,10 @@ public:
 	void sendSignal(const String& rawDataStr, uint16_t rawlen, bool bRepeat);
 
 	void init();
+
+#ifdef IR_DEBUG_IR_FUNC
+	void printResults(decode_results* results);
+#endif // IR_DEBUG_IR_FUNC
 
 private:
 	uint16_t* parseRawDataString(const char* dataStr, uint16_t rawlen);

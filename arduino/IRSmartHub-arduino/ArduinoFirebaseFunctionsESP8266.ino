@@ -1,7 +1,5 @@
 // Copyright 2019 Matthew Steinhardt
-
-#include "ArduinoFirebaseFunctionsESP8266.h"
-
+#ifdef ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 /** Initializes global data objects. **/
 void ArduinoFirebaseFunctions::setup()
 {
@@ -30,6 +28,40 @@ void ArduinoFirebaseFunctions::connect()
 #endif // AFF_DEBUG
 	}
 
+	//delay(2000);
+	//hubAction.rawData = "rawData3";
+	//hubAction.rawLen = 3;
+	//hubAction.sender = "ME3";
+	//hubAction.timestamp = "3-3-3";
+	//Firebase.setJSON(firebaseWriteData, ResultPath, "{\"resultCode\": 700, \"code\": \"0xE0E040BF\", \"timestamp\": \"44534\", \"encoding\": \"7\", \"rawData\": \"4480, 4492, 574, 1660, 576, 1658, 600, 1636, 594, 532, 602, 526, 574, 598, 536, 592, 530, 558, 576, 1658, 576, 1656, 580, 1658, 598, 528, 596, 532, 604, 526, 576, 594, 532, 556, 578, 552, 572, 1660, 572, 558, 576, 594, 532, 556, 576, 554, 596, 532, 570, 558, 602, 1632, 572, 558, 574, 1700, 532, 1660, 570, 1702, 536, 1696, 532, 1660, 602, 1632, 574, 46606, 4518, 4476, 596, 1634, 602, 1630, 604, 1630, 576, 594, 530, 558, 602, 526, 578, 554, 576, 594, 534, 1658, 604, 1628, 604, 1630, 576, 552, 578, 550, 574, 598, 534, 554, 572, 556, 572, 556, 578, 1696, 532, 556, 576, 552, 604, 526, 574, 554, 578, 552, 578, 552, 574, 1700, 536, 552, 576, 1698, 536, 1698, 532, 1660, 602, 1628, 580, 1696, 538, 1656, 600\", \"rawLen\": 135, \"repeat\": 0}");
+
+	//delay(2000);
+	//hubAction.rawData = "rawData4";
+	//hubAction.rawLen = 4;
+	//hubAction.sender = "ME4";
+	//hubAction.timestamp = "4-4-4";
+	//Firebase.setJSON(firebaseWriteData, ActionPath, parseHubActionToJson());
+
+	//delay(2000);
+	//hubAction.rawData = "rawData5";
+	//hubAction.rawLen = 5;
+	//hubAction.sender = "ME5";
+	//hubAction.timestamp = "5-5-5";
+	//Firebase.setJSON(firebaseWriteData, ActionPath, parseHubActionToJson());
+
+	//delay(2000);
+	//hubResult.rawData = "4516, ,  602, 1634,  602, 528,  600, 530,  600, 528,  602, 526,  598, 534,  600, 1632,  600, 1634,  596, 1636,  598, 532,  598, 532,  598, 530,  600, 530,  600, 530,  598, 530,  596, 1636,  598, 532,  600, 530,  596, 532,  598, 532,  598, 530,  598, 532,  596, 1636,  596, 532,  600, 1632,  598, 1636,  600, 1632,  600, 1634,  600, 1632,  598, 1634,  602, 46586,  4518, 4472,  604, 1628,  598, 1634,  600, 1634,  602, 528,  600, 530,  598, 530,  600, 530,  602, 528,  598, 1634,  596, 1636,  598, 1678,  556, 530,  598, 530,  600, 532,  596, 532,  598, 532,  598, 530,  598, 1634,  600, 530,  602, 528,  600, 530,  600, 530,  600, 528,  600, 530,  598, 1636,  598, 530,  598, 1634,  596, 1640,  598, 1632,  596, 1636,  602, 1632,  602, 1628,  602";
+	//hubResult.rawLen = 135;
+	//hubResult.encoding = "7";
+	//hubResult.timestamp = "24881";
+	//hubResult.resultCode = RES_SEND_SIG;
+	//hubResult.code = "0xE0E040BF";
+	//Firebase.setJSON(firebaseWriteData, ResultPath, parseHubResultToJson());
+
+	//Firebase.setJSON(firebaseWriteData, ResultPath, "{\"resultCode\": 700, \"code\": \"0xE0E040BF\", \"timestamp\": \"44534\", \"encoding\": \"7\", \"rawData\": \"4480, 4492, 574, 1660, 576, 1658, 600, 1636, 594, 532, 602, 526, 574, 598, 536, 592, 530, 558, 576, 1658, 576, 1656, 580, 1658, 598, 528, 596, 532, 604, 526, 576, 594, 532, 556, 578, 552, 572, 1660, 572, 558, 576, 594, 532, 556, 576, 554, 596, 532, 570, 558, 602, 1632, 572, 558, 574, 1700, 532, 1660, 570, 1702, 536, 1696, 532, 1660, 602, 1632, 574, 46606, 4518, 4476, 596, 1634, 602, 1630, 604, 1630, 576, 594, 530, 558, 602, 526, 578, 554, 576, 594, 534, 1658, 604, 1628, 604, 1630, 576, 552, 578, 550, 574, 598, 534, 554, 572, 556, 572, 556, 578, 1696, 532, 556, 576, 552, 604, 526, 574, 554, 578, 552, 578, 552, 574, 1700, 536, 552, 576, 1698, 536, 1698, 532, 1660, 602, 1628, 580, 1696, 538, 1656, 600\", \"rawLen\": 135, \"repeat\": 0}");
+	//delay(2000);
+
+
 	if (!Firebase.beginStream(firebaseReadData, ActionPath))
 	{
 #ifdef AFF_DEBUG
@@ -40,6 +72,23 @@ void ArduinoFirebaseFunctions::connect()
 #endif // AFF_DEBUG
 		ESP.reset();
 	}
+
+	//delay(4000);
+	//Serial.println("here we go...");
+	//hubResult.rawData = "";
+	////hubResult.rawData = "4516, 4470,  602, 1632,  602, 1630,  600, 1634,  602, 528,  600, 530,  600, 528,  602, 526,  598, 534,  600, 1632,  600, 1634,  596, 1636,  598, 532,  598, 532,  598, 530,  600, 530,  600, 530,  598, 530,  596, 1636,  598, 532,  600, 530,  596, 532,  598, 532,  598, 530,  598, 532,  596, 1636,  596, 532,  600, 1632,  598, 1636,  600, 1632,  600, 1634,  600, 1632,  598, 1634,  602, 46586,  4518, 4472,  604, 1628,  598, 1634,  600, 1634,  602, 528,  600, 530,  598, 530,  600, 530,  602, 528,  598, 1634,  596, 1636,  598, 1678,  556, 530,  598, 530,  600, 532,  596, 532,  598, 532,  598, 530,  598, 1634,  600, 530,  602, 528,  600, 530,  600, 530,  600, 528,  600, 530,  598, 1636,  598, 530,  598, 1634,  596, 1640,  598, 1632,  596, 1636,  602, 1632,  602, 1628,  602";
+	//hubResult.rawLen = 135;
+	//hubResult.encoding = "7";
+	//hubResult.timestamp = "24881";
+	//hubResult.resultCode = RES_SEND_SIG;
+	//hubResult.code = "0xE0E040BF";
+	//String temp = "{resultCode: 700, code: 0xE0E040BF, timestamp: 44534, encoding: 7, rawData: 5, rawLen: 135, repeat: 0}";
+	//Serial.println(temp);
+	//if (!Firebase.setJSON(firebaseWriteData, ResultPath, temp))//"{\"resultCode\": 700, \"code\": \"0xE0E040BF\", \"timestamp\": \"44534\", \"encoding\": \"7\", \"rawData\": \"4480, 4492, 574, 1660, 576, 1658, 600, 1636, 594, 532, 602, 526, 574, 598, 536, 592, 530, 558, 576, 1658, 576, 1656, 580, 1658, 598, 528, 596, 532, 604, 526, 576, 594, 532, 556, 578, 552, 572, 1660, 572, 558, 576, 594, 532, 556, 576, 554, 596, 532, 570, 558, 602, 1632, 572, 558, 574, 1700, 532, 1660, 570, 1702, 536, 1696, 532, 1660, 602, 1632, 574, 46606, 4518, 4476, 596, 1634, 602, 1630, 604, 1630, 576, 594, 530, 558, 602, 526, 578, 554, 576, 594, 534, 1658, 604, 1628, 604, 1630, 576, 552, 578, 550, 574, 598, 534, 554, 572, 556, 572, 556, 578, 1696, 532, 556, 576, 552, 604, 526, 574, 554, 578, 552, 578, 552, 574, 1700, 536, 552, 576, 1698, 536, 1698, 532, 1660, 602, 1628, 580, 1696, 538, 1656, 600\", \"rawLen\": 135, \"repeat\": 0}"))
+	//{
+	//	Serial.println(firebaseWriteData.errorReason());
+	//}
+	
 }
 
 /**
@@ -113,7 +162,7 @@ bool ArduinoFirebaseFunctions::receivedHubAction()
 		}
 		else {
 #ifdef AFF_DEBUG
-			Serial.print(F("firebaseReadData was not a JSON object but of type"));
+			Serial.print(F("firebaseReadData was not a JSON object but of type: "));
 			Serial.println(firebaseReadData.dataType());
 #endif //AFF_DEBUG
 		}
@@ -142,8 +191,6 @@ void ArduinoFirebaseFunctions::sendError(const int errorType)
 void ArduinoFirebaseFunctions::sendRecordedSignal(const decode_results& results)
 {
 #ifdef AFF_DEBUG
-	String output = rawDataToString(results);
-	uint16_t len = getCorrectedRawLength(results);
 	Serial.println("Setting up hubResult...");
 #endif // AFF_DEBUG
 
@@ -152,21 +199,17 @@ void ArduinoFirebaseFunctions::sendRecordedSignal(const decode_results& results)
 	hubResult.encoding = String(results.decode_type); //typeToString(results.decode_type, results.repeat);
 	hubResult.code = "0x" + resultToHexidecimal(results);
 	hubResult.timestamp = String(millis());
-	
-#ifdef AFF_DEBUG
-	hubResult.rawData = output;
-	hubResult.rawLen = len;
-	Serial.println("done!");
-	Serial.println("Sending object as: ");
-	Serial.println(parseHubResultToJson());
-	Serial.print("to ");
-	Serial.println(ResultPath);
-#else
 	hubResult.rawData = rawDataToString(results);
 	hubResult.rawLen = getCorrectedRawLength(results);
+	String resStr = parseHubResultToJson();
+
+#ifdef AFF_DEBUG
+	Serial.println(resStr);
+	Serial.print("to ");
+	Serial.println(ResultPath);
 #endif // AFF_DEBUG
 
-	if (!Firebase.setJSON(firebaseWriteData, ResultPath, "{test: \"Hello World!\"}"))
+	if (!Firebase.setJSON(firebaseWriteData, ResultPath, parseHubResultToJson()))
 	{
 #ifdef AFF_DEBUG
 		Serial.println("Failed to send recorded signal...");
@@ -314,7 +357,7 @@ void ArduinoFirebaseFunctions::parseJsonToHubAction(const String jsonStr)
 		startWord = endWord + 1;
 		startWordPos = endWordPos + 1;
 
-		if (key == "repeat")
+		if (key == F("repeat"))
 		{
 			getNextNumber(startWord OUT, endWord OUT, startWordPos OUT, endWordPos OUT);
 			intValue = jsonStr.substring(startWordPos, endWordPos).toInt();
@@ -325,7 +368,7 @@ void ArduinoFirebaseFunctions::parseJsonToHubAction(const String jsonStr)
 			startWord = ++endWord;
 			startWordPos = ++endWordPos;
 		}
-		if (key == "timestamp")
+		if (key == F("timestamp"))
 		{
 			getNextWord(startWord OUT, endWord OUT, startWordPos OUT, endWordPos OUT);
 			strValue = jsonStr.substring(startWordPos, endWordPos);
@@ -336,7 +379,7 @@ void ArduinoFirebaseFunctions::parseJsonToHubAction(const String jsonStr)
 			startWord = ++endWord;
 			startWordPos = ++endWordPos;
 		}
-		else if (key == "sender")
+		else if (key == F("sender"))
 		{
 			getNextWord(startWord OUT, endWord OUT, startWordPos OUT, endWordPos OUT);
 			strValue = jsonStr.substring(startWordPos, endWordPos);
@@ -347,7 +390,7 @@ void ArduinoFirebaseFunctions::parseJsonToHubAction(const String jsonStr)
 			startWord = ++endWord;
 			startWordPos = ++endWordPos;
 		}
-		else if (key == "rawData")
+		else if (key == F("rawData"))
 		{
 			getNextWord(startWord OUT, endWord OUT, startWordPos OUT, endWordPos OUT);
 			strValue = jsonStr.substring(startWordPos, endWordPos);
@@ -358,7 +401,7 @@ void ArduinoFirebaseFunctions::parseJsonToHubAction(const String jsonStr)
 			startWord = ++endWord;
 			startWordPos = ++endWordPos;
 		}
-		else if (key == "rawLen")
+		else if (key == F("rawLen"))
 		{
 			getNextNumber(startWord OUT, endWord OUT, startWordPos OUT, endWordPos OUT);
 			longValue = atol(jsonStr.substring(startWordPos, endWordPos).c_str());
@@ -369,7 +412,7 @@ void ArduinoFirebaseFunctions::parseJsonToHubAction(const String jsonStr)
 			startWord = ++endWord;
 			startWordPos = ++endWordPos;
 		}
-		else if (key == "type")
+		else if (key == F("type"))
 		{
 			getNextNumber(startWord OUT, endWord OUT, startWordPos OUT, endWordPos OUT);
 			intValue = jsonStr.substring(startWordPos, endWordPos).toInt();
@@ -388,30 +431,31 @@ void ArduinoFirebaseFunctions::parseJsonToHubAction(const String jsonStr)
 
 String ArduinoFirebaseFunctions::parseHubActionToJson()
 {
-	String retStr = "{\"sender\": \""
-		+ hubAction.sender + "\", \"timestamp\": \""
-		+ hubAction.timestamp + "\", \"type\": "
-		+ hubAction.type + ", \"rawData\": \""
-		+ hubAction.rawData + "\", \"rawLen\": "
-		+ hubAction.rawLen + ", \"repeat\": ";
+	//String repeat = (hubResult.repeat) ? F("1}") : F("0}");
+	String retStr = F("{") +  HR_STR_SENDER
+		+ hubAction.sender + HR_STR_TIMESTAMP
+		+ hubAction.timestamp + HR_STR_TYPE
+		+ hubAction.type + HR_STR_RAW_DATA
+		+ hubAction.rawData + HR_STR_RAW_LEN
+		+ hubAction.rawLen + HR_STR_REPEAT;
 	if (hubAction.repeat)
-		retStr += "1}";
+		retStr += F("1}");
 	else
-		retStr += "0}";
+		retStr += F("0}");
 
 	return retStr;
 }
 
 String ArduinoFirebaseFunctions::parseHubResultToJson()
 {
-	String repeat = (hubResult.repeat) ? "1}" : "0}";
+	String repeat = (hubResult.repeat) ? F("1}") : F("0}");
 	String retStr = HR_STR_RES_CODE 
 		+ String(hubResult.resultCode) + HR_STR_CODE
-		+ hubResult.code + "\", \"timestamp\": \""
-		+ hubResult.timestamp + "\", \"encoding\": \""
-		+ hubResult.encoding + "\", \"rawData\": \""
-		+ hubResult.rawData + "\", \"rawLen\": "
-		+ String(hubResult.rawLen) + ", \"repeat\": " + repeat;
+		+ hubResult.code + HR_STR_TIMESTAMP
+		+ hubResult.timestamp + HR_STR_ENCODING
+		+ hubResult.encoding + "\"" + HR_STR_RAW_DATA
+		+ hubResult.rawData + HR_STR_RAW_LEN
+		+ hubResult.rawLen + HR_STR_REPEAT + repeat;
 
 	return retStr;
 }
@@ -442,6 +486,8 @@ void ArduinoFirebaseFunctions::initializeHubResult()
 	hubResult.resultCode = 0;
 	hubResult.repeat = false;
 }
+
+/* ------------------ Unit Tests ------------------ */
 
 #ifdef IRSMARTHUB_UNIT_TESTS
 int ArduinoFirebaseFunctions::test_parseHubResultToJson()
@@ -565,3 +611,4 @@ int ArduinoFirebaseFunctions::test_parseJsonToHubAction()
 	return numFailed;
 }
 #endif
+#endif // ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H

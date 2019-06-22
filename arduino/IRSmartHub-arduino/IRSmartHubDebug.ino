@@ -10,7 +10,8 @@
 //	Serial.print("Performing action: ");
 //}
 
-
+#ifdef AFF_DEBUG
+#ifdef IR_DEBUG_IR_FUNC
 void IRSmartHubDebug::printStreamData()
 {
 	Serial.println(F("Stream Data Available..."));
@@ -26,6 +27,10 @@ void IRSmartHubDebug::printStreamData()
 		Serial.print("    - rawLen: "); Serial.print(hubAction.rawLen); Serial.println("");
 	}
 }
+#endif // IR_DEBUG_IR_FUNC
+#endif // AFF_DEBUG
+
+
 
 void IRSmartHubDebug::printSendAction(const String& irSignal)
 {
@@ -40,39 +45,20 @@ void IRSmartHubDebug::printOnSaveConfig()
 	Serial.println("Saving SSID and password info...");
 }
 
-void IRSmartHubDebug::printConfigModeCallback(WiFiManager* myWiFiManager)
-{
-	Serial.print(dWifiManager);
-	Serial.println("Entered config mode");
-	Serial.println(WiFi.softAPIP());
-	Serial.println("-----");
-	Serial.println(myWiFiManager->getConfigPortalSSID());
-}
+//void IRSmartHubDebug::printConfigModeCallback(WiFiManager* myWiFiManager)
+//{
+//	Serial.print(dWifiManager);
+//	Serial.println("Entered config mode");
+//	Serial.println(WiFi.softAPIP());
+//	Serial.println("-----");
+//	Serial.println(myWiFiManager->getConfigPortalSSID());
+//}
 
-void IRSmartHubDebug::printStartingAutoConnect()
-{
-	Serial.print(dWifiManager);
-	Serial.println("Starting autoConnect...");
-}
-
-#ifdef IR_DEBUG 1
-void IRSmartHubDebug::printResults(decode_results* results)
-{
-	Serial.println("Human Readable Basic Info:");
-   Serial.println(resultToHumanReadableBasic(results));
-
-   // Output RAW timing info of the result.
-   Serial.println("Timing Info:");
-   Serial.println(resultToTimingInfo(results));
-   yield();
-
-   // Output the results as source code
-   Serial.println("Source Code:");
-   String resSourceCode = resultToSourceCode(results);
-   Serial.println(resSourceCode);
-   yield();
-}
-#endif
+//void IRSmartHubDebug::printStartingAutoConnect()
+//{
+//	Serial.print(dWifiManager);
+//	Serial.println("Starting autoConnect...");
+//}
 
 void IRSmartHubDebug::sendTestIRSignal()
 {
@@ -86,20 +72,24 @@ void IRSmartHubDebug::sendTestIRSignal()
 	}
 }
 
+#ifdef IR_DEBUG_IR_FUNC
 String IRSmartHubDebug::getActionString(int type)
 {
 	switch (type)
-	{ 
-		case IR_ACTION_LEARN:  
-			return "LEARN";
-		case IR_ACTION_SEND:
-			return "SEND";
-		case IR_ACTION_NONE:
-			return "NONE";
+	{
+	case IR_ACTION_LEARN:
+		return "LEARN";
+	case IR_ACTION_SEND:
+		return "SEND";
+	case IR_ACTION_NONE:
+		return "NONE";
 	}
 
 	return "UKNOWN";
 }
+#endif // IR_DEBUG_IR_FUNC
+
+
 
 void IRSmartHubDebug::init(bool pulseLED)
 {

@@ -1,5 +1,4 @@
-#include "ArduinoIRFunctions.h"
-
+#ifdef ARDUINO_IR_FUNCTIONS_H
 /**
  *
  **/
@@ -84,7 +83,10 @@ void ArduinoIRFunctions::readNextSignal()
 			Serial.println("timeout!");
 			#endif
 
+#ifdef ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 			FirebaseFunctions.sendError(ERR_TIMEOUT);
+#endif // ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
+			
 			break;
 		}
 
@@ -110,13 +112,17 @@ void ArduinoIRFunctions::readNextSignal()
 			#ifdef IR_DEBUG_IR_FUNC
 			Serial.println("Overflow occurred...");
 			#endif
+#ifdef ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 			FirebaseFunctions.sendError(ERR_OVERFLOW);
+#endif // ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
+
+			
 			break;
 		}
 
 		// Debug statement prints signal results
 		#ifdef IR_DEBUG_IR_FUNC
-		SHDebug.printResults(&results);
+		printResults(&results);
 		#endif
 
 		// Only record non-repeat signals
@@ -126,7 +132,11 @@ void ArduinoIRFunctions::readNextSignal()
 			Serial.println("Sending...");
 			#endif
 
-			FirebaseFunctions.sendRecordedSignal(results OUT);			
+#ifdef ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
+			FirebaseFunctions.sendRecordedSignal(results OUT);
+#endif // ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
+
+					
 			break;
 		} 
 		#ifdef IR_DEBUG_IR_FUNC
@@ -158,3 +168,25 @@ void ArduinoIRFunctions::init()
 {
 	irSender.begin();
 }
+
+/* ---------- Debugging Functions ---------- */ 
+
+#ifdef IR_DEBUG_IR_FUNC
+void ArduinoIRFunctions::printResults(decode_results* results)
+{
+	Serial.println("Human Readable Basic Info:");
+	Serial.println(resultToHumanReadableBasic(results));
+
+	// Output RAW timing info of the result.
+	Serial.println("Timing Info:");
+	Serial.println(resultToTimingInfo(results));
+	yield();
+
+	// Output the results as source code
+	Serial.println("Source Code:");
+	String resSourceCode = resultToSourceCode(results);
+	Serial.println(resSourceCode);
+	yield();
+}
+#endif // IR_DEBUG_IR_FUNC
+#endif // ARDUINO_IR_FUNCTIONS_H

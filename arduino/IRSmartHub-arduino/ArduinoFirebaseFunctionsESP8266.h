@@ -6,10 +6,6 @@
 #include <ESP8266WiFi.h>
 #include "IRrecv.h"						// Used to send IR data from decode_results
 
-#ifndef OUT
-#define OUT 
-#endif // !OUT
-
 #ifdef AFF_DEBUG
 #include "IRSmartHubDebug.h"
 #endif // AFF_DEBUG
@@ -34,28 +30,32 @@ typedef struct HubResult {
 	bool repeat;
 } HubResult;
 
-const String FIREBASE_HOST = "ir-home-hub.firebaseio.com";
-const String FIREBASE_AUTH = "OVupEOIVjxTW1brlm02WISnExnOWRBxc9yhJVyPy";
+static const String FIREBASE_HOST = F("ir-home-hub.firebaseio.com");
+static const String FIREBASE_AUTH = F("OVupEOIVjxTW1brlm02WISnExnOWRBxc9yhJVyPy");
 
 /* Database Object JSON Strings */
-//const char JSON_Recorded_Signal[] = "{\"resultCode\": %d, \"encoding\": \"%s\", \"code\": \"0x%s\", \"timestamp\": \"%lu\", \"rawData\": \"%s\", \"rawLen\": %lu}";
 
-/* -------------- HubResult Const Strings --------------- */
-const String HR_STR_RES_CODE = F("{\"resultCode\": ");
-const String HR_STR_CODE = F(", \"code\": \"");
-
-const size_t MAX_RESPONSE_SIZE = 1024;
+/* --------- HubResult/HubAction Const Strings ---------- */
+static const String HR_STR_RES_CODE		= F("{\"resultCode\": ");
+static const String HR_STR_CODE			= F(", \"code\": \"");
+static const String HR_STR_SENDER		= F("\"sender\": \"");
+static const String HR_STR_TIMESTAMP	= F("\", \"timestamp\": \"");
+static const String HR_STR_TYPE			= F("\", \"type\": ");
+static const String HR_STR_RAW_DATA		= F(", \"rawData\": \"");
+static const String HR_STR_ENCODING		= F("\", \"encoding\": \"");
+static const String HR_STR_RAW_LEN		= F("\", \"rawLen\": ");
+static const String HR_STR_REPEAT		= F(", \"repeat\": ");
 
 /* -------------------- Result Codes -------------------- */
-const int RES_SEND_SIG	= 700;
-const int ERR_UNKNOWN	= 800;
-const int ERR_TIMEOUT	= 801;
-const int ERR_OVERFLOW	= 802;
+static const int RES_SEND_SIG	= 700;
+static const int ERR_UNKNOWN	= 800;
+static const int ERR_TIMEOUT	= 801;
+static const int ERR_OVERFLOW	= 802;
 
 /* -------------------- Hub Actions -------------------- */
-const int IR_ACTION_NONE = 0;
-const int IR_ACTION_LEARN = 1;
-const int IR_ACTION_SEND = 2;
+static const int IR_ACTION_NONE	 = 0;
+static const int IR_ACTION_LEARN = 1;
+static const int IR_ACTION_SEND	 = 2;
 
 FirebaseData firebaseReadData;
 FirebaseData firebaseWriteData;

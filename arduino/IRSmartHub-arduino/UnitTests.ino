@@ -1,6 +1,4 @@
-#ifdef IRSMARTHUB_UNIT_TESTS
-#include "UnitTests.h"
-
+#ifdef IRSMARTHUB_UNIT_TESTS_H
 #ifndef IRSMART_HUB_DEBUG_H
 static const String DEBUG_DIV = "------------------------------------";
 #endif // !IRSMART_HUB_DEBUG_H
@@ -22,10 +20,16 @@ void IRS_UnitTests::testFirebaseFunctions()
 
 	// Test parseHubResultToJson
 	numFailed = 0;
-	totalNumTests = 5;
+	totalNumTests = 0;
+
+#ifdef ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 	numFailed += FirebaseFunctions.test_parseHubResultToJson();
+	totalNumTests += 2;
 	numFailed += FirebaseFunctions.test_parseJsonToHubAction();
+	totalNumTests += 1;
 	numFailed += FirebaseFunctions.test_parseHubActionToJson();
+	totalNumTests += 2;
+#endif //ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 
 	totalStr = "Passed (" + String(totalNumTests - numFailed) + "/" + String(totalNumTests) + ")";
 	Serial.println(totalStr);
