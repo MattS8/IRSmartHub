@@ -30,6 +30,16 @@ Contains data for a specific IR signal action. This is what the arduino interpre
 - **timestamp**: Date and time the action was sent.
 - **repeat**: Whether or not the action is meant to be repeated. (IMPLEMENTATION MAY CHANGE)
 
+### Hub Result
+Contains data for a result object from an IRSmartHub. This can be either a learned signal or an error message.
+- **resultCode**: The status of the result. Either an error code or result type indicator.
+- **code**: The ir code learned from a learn action.
+- **timestamp**: Time (in milliseconds) the IRSmartHub has been on.
+- **encoding**: The type of encoding for the learned signal (i.e. SAMSUNG, etc.).
+- **rawData**: An array of uint16_t representing the recorded signal.
+- **rawLen**: The length of rawData.
+- **repeat**: Determines whether the learned signal is a repeat. (IMPLEMENTATION MAY CHANGE)
+
 ### Group
 Contains a collection of users, remote profiles, and associated hubs. This is used for sharing hubs between multiple users. Each group has a group owner and 0 or more users. Other users can be given specific permissions. 
 - **remoteProfile**: A collection of profiles shared among the group.
@@ -156,16 +166,19 @@ This function is meant to be called automatically when first being set up by a u
 Sets the "result" object in FirebaseDB, sending the raw data for the IR signal. If there is a problem sending the signal, an error message is sent with an unknown error code. The sent JSON object structure is as follows:
 
     {
-     "code": <RES_SEND_SIG>, 
+     "resultCode": <RES_SEND_SIG>, 
      "timestamp": "<timestamp value>", 
      "rawData": "<{4999, 9993, 4999, 4333, ... }>",
-     "rawLen": "<size of rawData array>"
+     "rawLen": "<size of rawData array>",
+     "encoding": "<encoding type>",
+     "code": <Hex code for IR signal>,
+     "repeat": <whether or not the signal can repeat>
      }
 
 #### Send Error
 Several error messages can be set based on issues sending responses, failing to get IR input, etc. This is done by setting the "result" object in FirebaseDB. The "code" value will be one of several error codes. The sent JSON object structure is as follows:
 
     {
-     "code": <error_code>,
+     "resultCode": <error_code>,
      "timestamp": <timestamp value> 
     }
