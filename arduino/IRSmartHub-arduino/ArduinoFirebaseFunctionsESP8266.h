@@ -2,7 +2,7 @@
 #define ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 
 
-#include <FirebaseESP8266.h>
+#include <FirebaseArduino.h>
 #include <ESP8266WiFi.h>
 #include "IRrecv.h"						// Used to send IR data from decode_results
 
@@ -30,21 +30,22 @@ typedef struct HubResult {
 	bool repeat;
 } HubResult;
 
-static const String FIREBASE_HOST = F("ir-home-hub.firebaseio.com");
-static const String FIREBASE_AUTH = F("OVupEOIVjxTW1brlm02WISnExnOWRBxc9yhJVyPy");
+static const String FIREBASE_HOST = "ir-home-hub.firebaseio.com";
+static const String FIREBASE_AUTH = "OVupEOIVjxTW1brlm02WISnExnOWRBxc9yhJVyPy";
 
 /* Database Object JSON Strings */
 
 /* --------- HubResult/HubAction Const Strings ---------- */
-static const String HR_STR_RES_CODE		= F("{\"resultCode\": ");
-static const String HR_STR_CODE			= F(", \"code\": \"");
-static const String HR_STR_SENDER		= F("\"sender\": \"");
-static const String HR_STR_TIMESTAMP	= F("\", \"timestamp\": \"");
-static const String HR_STR_TYPE			= F("\", \"type\": ");
-static const String HR_STR_RAW_DATA		= F(", \"rawData\": \"");
-static const String HR_STR_ENCODING		= F("\", \"encoding\": \"");
-static const String HR_STR_RAW_LEN		= F("\", \"rawLen\": ");
-static const String HR_STR_REPEAT		= F(", \"repeat\": ");
+static const String HR_STR_RES_CODE		= "{\"resultCode\": ";
+static const String HR_STR_CODE			= ", \"code\": \"";
+static const String HR_STR_SENDER		= "\"sender\": \"";
+static const String HR_STR_TIMESTAMP	= "\", \"timestamp\": \"";
+static const String HR_STR_TYPE			= "\", \"type\": ";
+static const String HR_STR_RAW_DATA		= ", \"rawData\": \"";
+static const String HR_STR_ENCODING		= "\", \"encoding\": \"";
+static const String HR_STR_RAW_LEN		= "\", \"rawLen\": ";
+static const String HR_STR_DATA_CHUNKS	= ", \"numDataChunks\": ";
+static const String HR_STR_REPEAT		= ", \"repeat\": ";
 
 /* -------------------- Result Codes -------------------- */
 static const int RES_SEND_SIG	= 700;
@@ -57,8 +58,9 @@ static const int IR_ACTION_NONE	 = 0;
 static const int IR_ACTION_LEARN = 1;
 static const int IR_ACTION_SEND	 = 2;
 
-FirebaseData firebaseReadData;
-FirebaseData firebaseWriteData;
+static const int DEFAULT_MAX_RETRIES = 4;
+static const int CHUNK_SIZE = 50;
+static const uint16_t FAILED_DELAY = 150;
 
 HubAction hubAction;
 HubResult hubResult;
@@ -72,6 +74,7 @@ public:
 	void sendError(const int errCode);
 	void sendRecordedSignal(const decode_results& results);
 
+	int maxRetries = DEFAULT_MAX_RETRIES;
 
 	bool readStreamData();
 	bool streamTimeout();
@@ -90,10 +93,14 @@ public:
 #endif
 
 private:
+	void sendToFirebase(const String& path, const JsonVariant& obj);
+	void sendStringToFirebase(const String& path, const String& message);
+	void sendRawData(const decode_results& results);
+
 	String resultToHexidecimal(const decode_results& result);
 	uint16_t getCorrectedRawLength(const decode_results& results);
 	String uint64ToString(uint64_t input, uint8_t base = 10);
-	String rawDataToString(const decode_results& results);
+	String rawDataToString(const decode_results& results, uint16_t startPos);
 
 	String parseHubResultToJson();
 	String parseHubActionToJson();
@@ -104,5 +111,7 @@ private:
 	void initializeHubAction();
 	void initializeHubResult();
 };
+
+	static uint16_t getCorrectedChunkCount(uint16_t rawLen);
 
 #endif

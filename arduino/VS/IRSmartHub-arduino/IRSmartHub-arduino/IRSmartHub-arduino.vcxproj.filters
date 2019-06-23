@@ -13,44 +13,64 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Firebase">
+      <UniqueIdentifier>{9e3b2898-2859-4ae3-9bc0-8d3aa522f09c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\IR Functions">
+      <UniqueIdentifier>{b8c92c3b-a686-4a25-bcd9-aa16d7b6dd05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Debug">
+      <UniqueIdentifier>{b37b72e9-94f2-4fa1-b4a1-01577e4459c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Firebase">
+      <UniqueIdentifier>{c7690b03-d563-4dc0-bb70-6c9207a91153}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\IR Functions">
+      <UniqueIdentifier>{5b374f44-99f1-41cd-a146-5432470e45ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Debug">
+      <UniqueIdentifier>{72e6a2e5-8838-427e-bc33-d33d7cba9466}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.IRSmartHub-arduino.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\IRSmartHub-arduino\ArduinoFirebaseFunctions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\IRSmartHub-arduino\ArduinoIRFunctions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\IRSmartHub-arduino\IRSmartHub-arduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\IRSmartHub-arduino\IRSmartHubDebug.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\..\IRSmartHub-arduino\ArduinoIRFunctions.h">
+      <Filter>Header Files\IR Functions</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\IRSmartHub-arduino\ArduinoFirebaseFunctionsESP8266.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\..\IRSmartHub-arduino\ArduinoFirebaseFunctions.h">
+      <Filter>Header Files\Firebase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IRSmartHub-arduino\IRSmartHubDebug.h">
+      <Filter>Header Files\Debug</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\IRSmartHub-arduino\UnitTests.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\IRSmartHub-arduino\ArduinoFirebaseFunctionsESP8266.h">
+      <Filter>Header Files\Firebase</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\IRSmartHub-arduino\IRSmartHub-arduino.ino" />
     <None Include="..\..\..\IRSmartHub-arduino\ArduinoFirebaseFunctions.ino">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Firebase</Filter>
     </None>
     <None Include="..\..\..\IRSmartHub-arduino\ArduinoIRFunctions.ino">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\IR Functions</Filter>
     </None>
     <None Include="..\..\..\IRSmartHub-arduino\IRSmartHubDebug.ino">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Debug</Filter>
     </None>
-    <None Include="..\..\..\IRSmartHub-arduino\IRSmartHub-arduino.ino" />
+    <None Include="..\..\..\IRSmartHub-arduino\UnitTests.ino">
+      <Filter>Source Files\Debug</Filter>
+    </None>
     <None Include="..\..\..\IRSmartHub-arduino\ArduinoFirebaseFunctionsESP8266.ino">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Firebase</Filter>
     </None>
-    <None Include="..\..\..\IRSmartHub-arduino\UnitTests.ino" />
   </ItemGroup>
 </Project>

@@ -46,8 +46,8 @@ bool bRanTests = false;
 
 /* -------------------- Wifi Manager Functions --------------------- */
 
-//void connectToWifi() 
-//{
+void connectToWifi() 
+{
 //	wifiManager.setBreakAfterConfig(true);
 //	wifiManager.setDebugOutput(true);
 //	wifiManager.setAPCallback(configModeCallback);
@@ -68,7 +68,30 @@ bool bRanTests = false;
 //		#endif
 //		//FirebaseFunctions.connect();
 //	}
-//}
+
+	//TEMP:	TODO - Replace with wifi manager solution
+	WiFi.begin("HawkswayBase", "F4d29095dc");
+#ifdef IR_DEBUG
+	Serial.print("Connecting to Wi-Fi");
+#endif // IR_DEBUG
+	long timeoutStart = millis();
+	while (WiFi.status() != WL_CONNECTED)
+	{
+#ifdef IR_DEBUG
+		Serial.print(".");
+#endif // IR_DEBUG
+		delay(300);
+		if (millis() - timeoutStart > 8000)
+			ESP.restart();
+	}
+#ifdef IR_DEBUG
+	Serial.println();
+	Serial.print("Connected with IP: ");
+	Serial.println(WiFi.localIP());
+	Serial.println();
+#endif // IR_DEBUG
+	//TEMP:
+}
 
 /* ----------------------- Arduino Functions ----------------------- */
 
@@ -111,11 +134,6 @@ void setup()
 	IRFunctions.init();
 #endif // ARDUINO_IR_FUNCTIONS_H
 
-	// Initialize Debug
-#ifdef IR_DEBUG
-	SHDebug.init(false);
-#endif
-
 #ifdef ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 	// Initialize FirebaseFunctions
 	FirebaseFunctions.setup();
@@ -124,29 +142,10 @@ void setup()
 	// Set pin mode for onboard LED
 	pinMode(LED_BUILTIN, OUTPUT);
 
-	// Start wifi connection process
-	//connectToWifi();
-
 #ifdef ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
-//TEMP:	TODO - Replace with wifi manager solution
-	WiFi.begin("HawkswayBase", "F4d29095dc");
-#ifdef IR_DEBUG
-	Serial.print("Connecting to Wi-Fi");
-#endif // IR_DEBUG
-	while (WiFi.status() != WL_CONNECTED)
-	{
-#ifdef IR_DEBUG
-		Serial.print(".");
-#endif // IR_DEBUG
-		delay(300);
-	}
-#ifdef IR_DEBUG
-	Serial.println();
-	Serial.print("Connected with IP: ");
-	Serial.println(WiFi.localIP());
-	Serial.println();
-#endif // IR_DEBUG
-	//TEMP:
+	// Start wifi connection process
+	connectToWifi();
+	
 #endif // ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 
 	// Turn onboard LED off
@@ -160,6 +159,7 @@ void setup()
 
 void loop()
 {
+
 #ifdef IRSMARTHUB_UNIT_TESTS
 	if (!bRanTests)
 	{
@@ -173,47 +173,41 @@ void loop()
 	/* NEW FIREBASE IMPLEMENTATION  */
 #ifdef ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 #ifdef ARDUINO_IR_FUNCTIONS_H
-	// Poll readData object for any new info
-	FirebaseFunctions.readStreamData();
-
-	// ??? - see examples
-	FirebaseFunctions.streamTimeout();
-
 	// React to new action, if received
 	if (FirebaseFunctions.receivedHubAction())
 	{
-
 #ifdef IR_DEBUG
-		Serial.println(DEBUG_DIV);
-		SHDebug.printStreamData();
-#endif //IR_DEBUG
+		Serial.print("Action: ");
+#endif // IR_DEBUG
 
 		switch (hubAction.type)
 		{
 		case IR_ACTION_LEARN:
+#ifdef IR_DEBUG
+			Serial.println("LEARN");
+#endif //IT_DEBUG
 			IRFunctions.readNextSignal();
 			break;
 		case IR_ACTION_SEND:
+#ifdef IR_DEBUG
+			Serial.println("SEND");
+#endif //IT_DEBUG
 			IRFunctions.sendSignal(hubAction.rawData, hubAction.rawLen, hubAction.repeat);
 			break;
 		case IR_ACTION_NONE:
 #ifdef IR_DEBUG
-			Serial.println("Doing nothing...");
+			Serial.println("NONE");
 #endif //IT_DEBUG
 			break;
 		default:
 #ifdef IR_DEBUG
-			Serial.print("Ignoring unknown action type from sender: "); Serial.println(hubAction.sender);
+			Serial.print("UNKNOWN - "); Serial.println(hubAction.sender);
 #endif //IT_DEBUG
 			break;
 		}
 
 		//// Added delay so readStreamData() isn't being instantly polled
 		//delay(300);
-
-#ifdef IR_DEBUG
-		Serial.println(DEBUG_DIV);
-#endif //IR_DEBUG
 	}
 #endif // ARDUINO_IR_FUNCTIONS_H
 #endif // ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H

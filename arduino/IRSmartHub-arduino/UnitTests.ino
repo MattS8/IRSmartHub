@@ -24,7 +24,7 @@ void IRS_UnitTests::testFirebaseFunctions()
 
 #ifdef ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 	numFailed += FirebaseFunctions.test_parseHubResultToJson();
-	totalNumTests += 2;
+	totalNumTests += 3;
 	numFailed += FirebaseFunctions.test_parseJsonToHubAction();
 	totalNumTests += 1;
 	numFailed += FirebaseFunctions.test_parseHubActionToJson();
