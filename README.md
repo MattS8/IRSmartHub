@@ -11,6 +11,12 @@ Contains All information with respect to a specific user using this service.
  - **groups**: A list of groups the user is associated with. ***NOTE***: Upon creating a new user, a *personal group* is automatically added. This group is the default location for any created Commands.
  - **Group Invitations**: A list of invitations to groups the user can join. Any user can add their invitation to this list.
  
+ ### Hub
+ Information about a hub that has been set up and is ready to use. Hubs are keyed by their MAC address (which is conisderd their uid for this project).
+ - **name**: Name given by user who initially set up device. This is used to help users distinguish between different hubs
+ - **owner**: The uid of the user who initially set up this device.
+ - **ownerUsername**: The username of the user who initially set up this device.
+ 
 ### Remote Profile
 Contains a collection of pre-programmed actions.
 - **name**: A custom name given by the creator of the remote profile.
@@ -45,6 +51,7 @@ Contains a collection of users, remote profiles, and associated hubs. This is us
 - **remoteProfile**: A collection of profiles shared among the group.
 - **connectedDevices**: A collection of hubs associated with the group.
 - **owner**: The uid of the original creator of the group.
+- **ownerUsername**: The username of the original creator of the group.
 - **personalGroup**: A boolean value that determines whether other users can be added to group.
 - **users**: A collection of users with set permissions. Permission types are as follows:
 	- ***addDevices***: Allows user to add hubs to the group. Users can only add hubs that they set up.
