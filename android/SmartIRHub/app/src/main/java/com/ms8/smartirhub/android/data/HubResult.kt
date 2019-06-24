@@ -1,10 +1,12 @@
 package com.ms8.smartirhub.android.data
 
-class HubResult(val resultCode: Int, val timestamp: String) {
-    var rawData = ""
-    var rawLen : Long = 0
+import android.annotation.SuppressLint
 
-    var encoding = ""
+class HubResult(val resultCode: Int, val timestamp: String) {
+    @SuppressLint("UseSparseArrays")
+    var rawLen : Int = 0
+
+    var encoding = 0
     var code = ""
 
 }

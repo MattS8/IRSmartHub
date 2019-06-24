@@ -7,7 +7,6 @@ class RemoteProfile {
     var name = ""
 
     class Button(var id : Int) {
-        val actions = ArrayMap<Int, Action>()
         var name = ""
         var style = ""
     }

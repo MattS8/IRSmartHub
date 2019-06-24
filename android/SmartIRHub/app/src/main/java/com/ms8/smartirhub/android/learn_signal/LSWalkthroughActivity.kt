@@ -102,7 +102,7 @@ class LSWalkthroughActivity : AppCompatActivity() {
                 binding.btnNextStep.setOnClickListener { getHubActivity() }
                 binding.prog1.setOnClickListener { getHubActivity() }
             }
-            TempData.tempSignal == null || TempData.tempSignal?.rawData == "" -> {
+            TempData.tempSignal == null || TempData.tempSignal?.rawData?.size == 0 -> {
                 Log.d("###TEST", "Starting on prog 2")
                 binding.prog1.bOnThisStep = false
                 binding.prog2.bOnThisStep = true

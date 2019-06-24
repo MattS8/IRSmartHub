@@ -171,4 +171,10 @@
     <string name="next">Next</string>
     <string name="selected_hub_title">Selected Hub:</string>
     <string name="signal_information">Signal Information:</string>
+    <string name="encoding">Encoding:</string>
+    <string name="code">Code:</string>
+    <string name="raw_data">Raw Data:</string>
+    <string name="raw_length">Raw Length:</string>
+    <string name="repeat">Repeat:</string>
+    <string name="signal_code">Signal Code:</string>
 </resources>

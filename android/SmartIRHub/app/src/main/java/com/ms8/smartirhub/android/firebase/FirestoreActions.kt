@@ -371,14 +371,5 @@ object FirestoreActions {
         return true
     }
 
-    fun parseHubResult(value: Map<String, Any>?): HubResult? {
 
-        try {
-            val hubRes = Gson().fromJson(value.toString(), HubResult::class.java)
-            Log.d("parseHubResult", "Gson got: $hubRes")
-            return hubRes
-        } catch (e : Exception) { Log.e("parseHubResult", "$e")}
-
-        return null
-    }
 }

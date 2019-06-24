@@ -76,6 +76,6 @@ dependencies {
     // Bottom Sheet Dialog
     implementation 'com.github.andrefrsousa:SuperBottomSheet:1.3.0'
 
-    // Spinner Library (DopDown view)
-    implementation 'com.asksira.android:dropdownview:1.0.3'
+    // Potential Remote Buttons
+    implementation 'com.github.armcha:ElasticView:0.2.0'
 }

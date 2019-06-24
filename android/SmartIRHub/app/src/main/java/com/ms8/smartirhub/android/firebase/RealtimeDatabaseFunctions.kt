@@ -1,27 +1,40 @@
 package com.ms8.smartirhub.android.firebase
 
 import android.annotation.SuppressLint
+import android.util.Log
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.gson.Gson
 import com.ms8.smartirhub.android.data.HubAction
+import com.ms8.smartirhub.android.data.HubResult
 import com.ms8.smartirhub.android.data.IrSignal
+import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.firebase.FirebaseConstants.IR_ACTION_NONE
 import com.ms8.smartirhub.android.firebase.FirebaseConstants.IR_ACTION_SEND
+import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
+import kotlin.math.sign
 
 object RealtimeDatabaseFunctions {
 
     @SuppressLint("SimpleDateFormat")
     fun sendSignalToHub(hubUID: String, irSignal: IrSignal): Task<Void> {
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
+        val tempMap = HashMap<String, String>()
+        irSignal.rawData.keys.forEach { key ->
+            tempMap[key.toString()] = irSignal.rawData[key] ?: ""
+        }
+        FirebaseDatabase.getInstance().reference.child("devices").child(hubUID).child("rawData")
+            .setValue(tempMap)
         return FirebaseDatabase.getInstance().reference.child("devices").child(hubUID).child("action")
             .setValue(HubAction(IR_ACTION_SEND, uid,
                 SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().time))
                 .apply {
-                    rawData = irSignal.rawData
                     rawLen = irSignal.rawLength
                 })
     }
@@ -49,4 +62,70 @@ object RealtimeDatabaseFunctions {
     fun getHubRef(hubUID: String): DatabaseReference {
         return FirebaseDatabase.getInstance().reference.child("devices").child(hubUID).child("result")
     }
+
+    fun getHubResults(hubUID: String): DatabaseReference {
+        return FirebaseDatabase.getInstance().reference.child("devices").child(hubUID).child("result")
+    }
+
+    /**
+     * Queries for rawData from designated hub. Uses rawLen to calculate how many chunks of
+     * data to query for.
+     */
+    fun getRawData(hubUID: String): DatabaseReference {
+        return FirebaseDatabase.getInstance().reference.child("devices").child(hubUID).child("rawData")
+    }
+
+    @SuppressLint("UseSparseArrays")
+    @Suppress("UNCHECKED_CAST")
+    fun parseRawData(value: Any?): HashMap<Int, String>? {
+        try {
+            val tempMap = value as HashMap<Any, Any>
+            tempMap.remove("numChunks")
+            return tempMap as HashMap<Int, String>?
+        } catch (e : Exception) { Log.e("parseRawData", "$e")}
+
+        try {
+            val arrayList = value as ArrayList<String>
+            val map = HashMap<Int, String>()
+            for (i in 0 until arrayList.size) {
+                map[i] = arrayList[i]
+            }
+
+            return map
+        }
+        catch (e : Exception) { Log.e("parseRawData", "$e")}
+
+        return null
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun parseHubResult(value: Any?): HubResult? {
+        try {
+            val mapVal = value as Map<String, Any?>?
+            val resultCode = mapVal?.get("resultCode") as Number? ?: return null
+            val timestamp = mapVal?.get("timestamp") as String? ?: ""
+            val encoding = mapVal?.get("encoding") as Number? ?: 0
+            val rawLen = mapVal?.get("rawLen") as Number? ?: 0
+            val code = mapVal?.get("code") as String? ?: ""
+            //val repeat = value?.get("repeat") as Boolean? ?: false
+
+            val hubResult = HubResult(resultCode.toInt(), timestamp).apply {
+                this.encoding = encoding.toInt()
+                this.rawLen = rawLen.toInt()
+                this.code = code
+            }
+            Log.d("parseHubResult", "Gson got: $hubResult")
+            return hubResult
+        } catch (e : Exception) { Log.e("parseHubResult", "$e")}
+
+        return null
+    }
+
+    fun calculateNumChunks(rawLength: Int): Int {
+        val numChunks : Int = (rawLength / CHUNK_SIZE)
+        Log.d("calculateNumChunks", "rawLen = $rawLength, CHUNK_SIZE = $CHUNK_SIZE, numChunks = $numChunks")
+        return if (numChunks * CHUNK_SIZE < rawLength) numChunks+1 else numChunks
+    }
+
+    const val CHUNK_SIZE = 50
 }

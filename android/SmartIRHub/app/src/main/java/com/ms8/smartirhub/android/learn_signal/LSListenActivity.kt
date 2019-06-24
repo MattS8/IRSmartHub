@@ -33,7 +33,52 @@ class LSListenActivity : AppCompatActivity() {
     lateinit var binding: ALearnSigListenBinding
     lateinit var hubUID: String
     val bottomErrorSheet = BottomErrorSheet()
-    var isListening = false
+    var isListeningForResult = false
+    var isListeningForRawData = false
+
+    /**
+     * This listener is set whenever a hubResult is successfully parsed and a
+     * resultCode of IR_RES_RECEIVED_SIG is returned. It connects and reports
+     * changes to the rawData backend tree. Whenever all the rawData is read,
+     * the listener stops listening and sets the temporary IrSignal's rawData
+     * accordingly.
+     *
+     * This listener concludes the entire listening process.
+     */
+    private val rawDataListener = object : ValueEventListener {
+        override fun onCancelled(p0: DatabaseError) {
+            binding.btnStartListening.revertAnimation()
+            isListeningForResult = false
+        }
+
+        override fun onDataChange(dataSnapshot: DataSnapshot) {
+            RealtimeDatabaseFunctions.getHubRef(hubUID).removeEventListener(this)
+
+            val rawData = RealtimeDatabaseFunctions.parseRawData(dataSnapshot.value) ?: return
+            val numChunks = RealtimeDatabaseFunctions.calculateNumChunks(TempData.tempSignal?.rawLength ?: 0)
+
+            if (rawData.size == numChunks) {
+                // Stop listening for rawData changes
+                RealtimeDatabaseFunctions.getRawData(hubUID).removeEventListener(this)
+
+                // Set data array for tempSignal
+                TempData.tempSignal?.rawData = rawData
+
+                // Stop loading button and clean up listener data
+                binding.btnStartListening.revertAnimation()
+                isListeningForResult = false
+
+                // Remove rawData from hub's endpoint
+                RealtimeDatabaseFunctions.getRawData(hubUID).removeValue()
+
+                // Show recorded signal info
+                showLearnedLayout(true)
+            } else {
+                Log.w("rawDataListener", "Mismatch in chunk list size: expected $numChunks but actually ${rawData.size}")
+            }
+        }
+
+    }
 
     /**
      * This listener is set whenever the user clicks on "start listening".
@@ -41,28 +86,17 @@ class LSListenActivity : AppCompatActivity() {
      * IR hub. This listener must only be added AFTER it is deemed safe
      * to listen to the IR hub. (see [sendListenAction])
      */
-    val resultListener = object : ValueEventListener {
+    private val resultListener = object : ValueEventListener {
         override fun onCancelled(dbError: DatabaseError) {
             binding.btnStartListening.revertAnimation()
-            isListening = false
+            isListeningForResult = false
             Log.e("LSListenActivity", "result listener error: $dbError")
         }
 
         override fun onDataChange(dataSnapshot: DataSnapshot) {
             Log.d("LSListenActivity", "datasnapshot = $dataSnapshot")
-            var hubResult : HubResult? = null
-            try {
-                @Suppress("UNCHECKED_CAST")
-                hubResult = FirestoreActions.parseHubResult(dataSnapshot.value as Map<String, Any>?)
-            } catch (e : Exception) { Log.e("LSListenActivity", "$e") }
-
-            // Possibly first time call
-            if (hubResult == null) { return }
-
-            // Stop loading button and clean up listener data
-            binding.btnStartListening.revertAnimation()
-            isListening = false
-            RealtimeDatabaseFunctions.getHubRef(hubUID).removeEventListener(this)
+            // Could be null of first call
+            val hubResult : HubResult = RealtimeDatabaseFunctions.parseHubResult(dataSnapshot.value) ?: return
 
             // Display proper response
             when (hubResult.resultCode) {
@@ -84,12 +118,15 @@ class LSListenActivity : AppCompatActivity() {
             // Received an IR Signal
                 FirebaseConstants.IR_RES_RECEIVED_SIG -> {
                     Log.d("LSListenActivity", "Received signal")
-                    TempData.tempSignal = IrSignal().apply {
-                        rawData = hubResult.rawData
-                        rawLength = hubResult.rawLen
-                        //signalType = hubResult.protocol
-                    }
-                    showLearnedLayout(true)
+                    TempData.tempSignal = IrSignal()
+                        .apply {
+                            rawLength = hubResult.rawLen
+                            encodingType = hubResult.encoding
+                            code = hubResult.code
+                            repeat = false //TODO determine if this is needed at all
+                         }
+                    RealtimeDatabaseFunctions.getHubResults(hubUID).removeEventListener(this)
+                    listenForRawData()
                 }
             // Unexpected IR result
                 else -> {
@@ -98,7 +135,7 @@ class LSListenActivity : AppCompatActivity() {
                 }
             }
 
-            RealtimeDatabaseFunctions.clearResult(hubUID)
+            RealtimeDatabaseFunctions.getHubResults(hubUID).removeValue()
         }
     }
 
@@ -106,7 +143,10 @@ class LSListenActivity : AppCompatActivity() {
 
     private fun showLearnedLayout(animate: Boolean) {
         // Set data text
-        TempData.tempSignal?.let {irSignal -> binding.tvSigType.text = irSignal.signalType }
+        TempData.tempSignal?.let { irSignal ->
+            binding.tvSigType.text = irSignal.encodingType.toString()
+            binding.tvSigCode.text = irSignal.code
+        }
         // Set Listening Button to Save
         binding.btnStartListening.text = (getString(R.string.save))
         binding.btnStartListening.setOnClickListener { saveRecordedSignal() }
@@ -169,11 +209,16 @@ class LSListenActivity : AppCompatActivity() {
         }
     }
 
-/* ---------------------------------------------- Overridden Functions ---------------------------------------------- */
+/*
+    ----------------------------------------------
+        Overridden Functions
+    ----------------------------------------------
+*/
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        isListening = savedInstanceState?.getBoolean(IS_LISTENING) ?: false
+        isListeningForResult = savedInstanceState?.getBoolean(IS_LISTENING) ?: false
 
         hubUID = intent.getStringExtra(LISTENING_HUB) ?: ""
 
@@ -205,24 +250,25 @@ class LSListenActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
         super.onSaveInstanceState(outState, outPersistentState)
-        outState.putBoolean(IS_LISTENING, isListening)
+        outState.putBoolean(IS_LISTENING, isListeningForResult)
     }
 
     override fun onPause() {
         super.onPause()
-        if (isListening) {
-            isListening = false
-            FirebaseDatabase.getInstance().reference.child("devices").child(hubUID).child("result").removeEventListener(resultListener)
+        if (isListeningForResult) {
+            isListeningForResult = false
+            RealtimeDatabaseFunctions.getHubResults(hubUID).removeEventListener(resultListener)
+            binding.btnStartListening.revertAnimation()
+        }
+
+        if (isListeningForRawData) {
+            isListeningForRawData = false
+            RealtimeDatabaseFunctions.getRawData(hubUID).removeEventListener(rawDataListener)
             binding.btnStartListening.revertAnimation()
         }
     }
 
-    private fun retry() {
-        TempData.tempSignal?.rawData = ""
-        TempData.tempSignal?.rawLength = 0
 
-        beginListeningProcess()
-    }
 
 /* ------------------------------------------- Listening Process Functions ------------------------------------------- */
 
@@ -273,16 +319,29 @@ class LSListenActivity : AppCompatActivity() {
     }
 
     private fun listenForResult() {
-        isListening = true
-        FirebaseDatabase.getInstance().reference.child("devices").child(hubUID).child("result")
+        isListeningForResult = true
+        RealtimeDatabaseFunctions.getHubResults(hubUID)
             .addValueEventListener(resultListener)
         Handler().postDelayed({timedOut()}, TIMEOUT_DURATION.toLong())
     }
 
+    private fun listenForRawData() {
+        isListeningForRawData = true
+        RealtimeDatabaseFunctions.getRawData(hubUID)
+            .addValueEventListener(rawDataListener)
+    }
+
 /* ------------------------------------------------ OnClick Functions ------------------------------------------------ */
 
+    private fun retry() {
+        TempData.tempSignal?.rawData = HashMap()
+        TempData.tempSignal?.rawLength = 0
+
+        beginListeningProcess()
+    }
+
     private fun timedOut() {
-        if (isListening) {
+        if (isListeningForResult) {
             Log.e("LSListenActivity", "Never heard back from the Hub...")
             showNoResponseError()
         }
@@ -317,7 +376,11 @@ class LSListenActivity : AppCompatActivity() {
     }
 }
 
-/* --------------------------------------------- Display Error Functions --------------------------------------------- */
+/*
+    ---------------------------------------------
+    Display Error Functions
+    ---------------------------------------------
+*/
 private fun LSListenActivity.showUnknownError(e: Exception?) {
     binding.btnTestSignal.revertAnimation()
     bottomErrorSheet.sheetTitle = getString(R.string.err_unknown_title)
