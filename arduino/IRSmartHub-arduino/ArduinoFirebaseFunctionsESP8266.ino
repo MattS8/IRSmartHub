@@ -205,6 +205,7 @@ void ArduinoFirebaseFunctions::readRawData(uint16_t numChunks)
 		Serial.print("Sending: "); Serial.println(resStr);
 #endif // AFF_DEBUG
 		sendToFirebase(ResultPath, obj.getJsonVariant("/"));
+		sendStringToFirebase(BasePath + "/rawData", "_none_");
 	}
 }
 

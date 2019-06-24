@@ -154,7 +154,16 @@ void ArduinoIRFunctions::readNextSignal()
  **/
 void ArduinoIRFunctions::sendSignal(uint16_t* rawData, uint16_t rawLen, bool bRepeat)
 {
+#ifdef IR_DEBUG_IR_FUNC
+	Serial.println("Sending IR signal...");
+#endif // IR_DEBUG_IR_FUNC
+
 	irSender.sendRaw(rawData, rawLen, SEND_FREQUENCY);
+
+#ifdef IR_DEBUG_IR_FUNC
+
+#endif // IR_DEBUG_IR_FUNC
+
 
 	//TODO Implement repeat functionality
 }
