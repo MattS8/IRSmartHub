@@ -1,57 +1,57 @@
 #ifdef ARDUINO_IR_FUNCTIONS_H
-/**
- *
- **/
-uint16_t* ArduinoIRFunctions::parseRawDataString(const char* dataStr, uint16_t rawlen)
-{
-	// Return value
-	uint16_t* rawData = (uint16_t*) calloc(1, rawlen * sizeof(uint16_t));
-	// Next free position in rawData array
-	uint16_t rawDataPos = 0;
-
-	// Points to next char to parse
-	char* pointer = (char *) dataStr;
-
-	// Debug string used to print parse progress
-	char* temp = new char[50];
-
-	// Debug statement
-	#ifdef IR_DEBUG_IR_FUNC
-	Serial.print("Parsing: ");
-	#endif
-
-	// Continue parsing until reach end of dataStr array
-	while (*pointer != '\0')
-	{
-		// Skip values that aren't numbers
-		if (*pointer < '0' || *pointer > '9') 
-		{
-			#ifdef IR_DEBUG_IR_FUNC
-			Serial.print("<"); Serial.print(*pointer); Serial.print(">");
-			#endif
-			pointer++;
-			continue;
-		}
-
-		// Get next number
-		rawData[rawDataPos++] = strtol(pointer, &pointer, 10);
-
-		// Debug statments that print current progress of parse progress
-		#ifdef IR_DEBUG_IR_FUNC
-		sprintf(temp, "%lu", rawData[rawDataPos-1]); Serial.print("("); Serial.print(temp); Serial.print(")"); Serial.print(*pointer);
-		#endif
-	}
-
-	// Debug statement
-	#ifdef IR_DEBUG_IR_FUNC
-	Serial.println("");
-	#endif
-
-	// Free debug string
-	delete[] temp;
-
-	return rawData;
-}
+///**
+// *
+// **/
+//uint16_t* ArduinoIRFunctions::parseRawDataString(const char* dataStr, uint16_t rawlen)
+//{
+//	// Return value
+//	uint16_t* rawData = (uint16_t*) calloc(1, rawlen * sizeof(uint16_t));
+//	// Next free position in rawData array
+//	uint16_t rawDataPos = 0;
+//
+//	// Points to next char to parse
+//	char* pointer = (char *) dataStr;
+//
+//	// Debug string used to print parse progress
+//	char* temp = new char[50];
+//
+//	// Debug statement
+//	#ifdef IR_DEBUG_IR_FUNC
+//	Serial.print("Parsing: ");
+//	#endif
+//
+//	// Continue parsing until reach end of dataStr array
+//	while (*pointer != '\0')
+//	{
+//		// Skip values that aren't numbers
+//		if (*pointer < '0' || *pointer > '9') 
+//		{
+//			#ifdef IR_DEBUG_IR_FUNC
+//			Serial.print("<"); Serial.print(*pointer); Serial.print(">");
+//			#endif
+//			pointer++;
+//			continue;
+//		}
+//
+//		// Get next number
+//		rawData[rawDataPos++] = strtol(pointer, &pointer, 10);
+//
+//		// Debug statments that print current progress of parse progress
+//		#ifdef IR_DEBUG_IR_FUNC
+//		sprintf(temp, "%lu", rawData[rawDataPos-1]); Serial.print("("); Serial.print(temp); Serial.print(")"); Serial.print(*pointer);
+//		#endif
+//	}
+//
+//	// Debug statement
+//	#ifdef IR_DEBUG_IR_FUNC
+//	Serial.println("");
+//	#endif
+//
+//	// Free debug string
+//	delete[] temp;
+//
+//	return rawData;
+//}
 
 /**
  *
@@ -115,8 +115,6 @@ void ArduinoIRFunctions::readNextSignal()
 #ifdef ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 			FirebaseFunctions.sendError(ERR_OVERFLOW);
 #endif // ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
-
-			
 			break;
 		}
 
@@ -134,9 +132,7 @@ void ArduinoIRFunctions::readNextSignal()
 
 #ifdef ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 			FirebaseFunctions.sendRecordedSignal(results OUT);
-#endif // ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
-
-					
+#endif // ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H	
 			break;
 		} 
 		#ifdef IR_DEBUG_IR_FUNC
@@ -156,9 +152,8 @@ void ArduinoIRFunctions::readNextSignal()
 /**
  *
  **/
-void ArduinoIRFunctions::sendSignal(const String& rawDataStr, uint16_t rawLen, bool bRepeat)
+void ArduinoIRFunctions::sendSignal(uint16_t* rawData, uint16_t rawLen, bool bRepeat)
 {
-	uint16_t* rawData = parseRawDataString(rawDataStr.c_str(), rawLen);
 	irSender.sendRaw(rawData, rawLen, SEND_FREQUENCY);
 
 	//TODO Implement repeat functionality

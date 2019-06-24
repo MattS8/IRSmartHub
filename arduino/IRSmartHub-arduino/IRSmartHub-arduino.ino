@@ -98,6 +98,7 @@ void connectToWifi()
 void setup() 
 {
 	Serial.begin(SMART_HUB_BAUD_RATE);
+#ifndef IRSMARTHUB_UNIT_TESTS
 #ifdef ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 	// Setup dynamic string variables
 	char* temp = (char*)malloc(50 * sizeof(char));
@@ -155,6 +156,7 @@ void setup()
 	// Start connection to firebase process
 	FirebaseFunctions.connect();
 #endif // ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
+#endif // !IRSMARTHUB_UNIT_TESTS
 }
 
 void loop()

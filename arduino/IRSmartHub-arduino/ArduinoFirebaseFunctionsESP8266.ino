@@ -1,3 +1,4 @@
+#include "ArduinoFirebaseFunctionsESP8266.h"
 // Copyright 2019 Matthew Steinhardt
 #ifdef ARDUINO_FIREBASE_FUNCTIONS_ESP8266_H
 /** Initializes global data objects. **/
@@ -69,11 +70,15 @@ bool ArduinoFirebaseFunctions::receivedHubAction()
 		{
 			initializeHubAction();
 			hubAction.type = event.getInt("data/type");
-			hubAction.rawData = event.getString("data/rawData");
+			//hubAction.rawData = event.getString("data/rawData");
 			hubAction.rawLen = event.getInt("data/rawLen");
 			hubAction.sender = event.getString("data/sender");
 			hubAction.timestamp = event.getString("data/timestamp");
 			hubAction.repeat = event.getBool("data/repeat");
+			if (hubAction.type == IR_ACTION_SEND)
+			{
+				readRawData(getCorrectedChunkCount(hubAction.rawLen));
+			}
 			return true; 
 		}
 	}
@@ -103,7 +108,7 @@ void ArduinoFirebaseFunctions::sendRecordedSignal(const decode_results& results)
 
 	initializeHubResult();
 	hubResult.resultCode = RES_SEND_SIG;
-	hubResult.encoding = String(results.decode_type); //typeToString(results.decode_type, results.repeat);
+	hubResult.encoding = results.decode_type; //typeToString(results.decode_type, results.repeat);
 	hubResult.code = "0x" + resultToHexidecimal(results);
 	hubResult.timestamp = String(millis());
 	//hubResult.rawData = rawDataToString(results);
@@ -128,6 +133,82 @@ void ArduinoFirebaseFunctions::sendRecordedSignal(const decode_results& results)
  */
 
 /**
+ *	Begins reading raw data chunks until all raw data has been
+ *	received or a timeout occurs. On successful completetion,
+ *	a RES_SEND_SUCC result is sent. On timeout, an ERR_TIMEOUT
+ *	result is sent. 
+ *
+ *	Note: This function assumes hubAction has been initialized
+ *	prior to calling.
+**/
+void ArduinoFirebaseFunctions::readRawData(uint16_t numChunks)
+{
+	int chunksReceived = 0;
+	long unsigned startTime = millis();
+	String chunk;
+	String path = BasePath + "/rawData/" + chunksReceived;
+	uint16_t* marker;
+
+	
+#ifdef AFF_DEBUG
+	if (hubAction.rawData != NULL)
+	{
+		Serial.println("WARNING: rawData was not NULL at start of readRawData()...");
+	}
+#endif // AFF_DEBUG
+
+	// Allocate memory for rawData array
+	hubAction.rawData = (uint16_t *) calloc(hubAction.rawLen, sizeof(uint16_t));
+	marker = hubAction.rawData;
+
+#ifdef AFF_DEBUG
+	Serial.print("Reading in ");
+	Serial.print(numChunks);
+	Serial.println(" chunks...");
+#endif // AFF_DEBUG
+
+	while (chunksReceived < numChunks && millis() - startTime < READ_RAW_DATA_TIMEOUT)
+	{
+		// Read chunks
+		chunk = Firebase.getString(path);
+		if (!Firebase.failed())
+		{
+
+			marker = parseRawDataString(chunk.c_str(), hubAction.rawData, chunksReceived * CHUNK_SIZE);
+			path = BasePath + "/rawData/" + ++chunksReceived;
+		}
+	}
+
+#ifdef AFF_DEBUG
+	for (int i = 0; i < numChunks; i++)
+	{
+		Serial.print("rawData["); Serial.print(i); Serial.print("]: ");
+		Serial.println(rawDataToString(hubAction.rawData, hubAction.rawLen, i * CHUNK_SIZE, true));
+	}
+#endif // AFF_DEBUG
+
+	// Send err if chunksReceived != numChunks
+	if (chunksReceived != numChunks)
+	{
+#ifdef AFF_DEBUG
+		Serial.println("Didn't received all the chunks in alloted time.");
+#endif // AFF_DEBUG
+		sendError(ERR_TIMEOUT);
+	}
+	else
+	// Otherwise send success result
+	{
+		String end = "}";
+		String resStr = "{\"resultCode\": " + String(RES_SEND_SUCC) + end;
+		FirebaseObject obj = FirebaseObject(resStr.c_str());
+#ifdef AFF_DEBUG
+		Serial.print("Sending: "); Serial.println(resStr);
+#endif // AFF_DEBUG
+		sendToFirebase(ResultPath, obj.getJsonVariant("/"));
+	}
+}
+
+/**
  *	Sends raw data in chunks of 50 words at a time. The first thing sent is
  *	the number of chunks, followed by each chunk with its position in the
  *	array.
@@ -137,20 +218,19 @@ void ArduinoFirebaseFunctions::sendRawData(const decode_results& results)
 	String path = BasePath + "/rawData";
 	int numChunks = getCorrectedChunkCount(hubResult.rawLen);
 
-	String tempStr = "{\"numChunks\": " + String(numChunks) + "}";
-
-#ifdef AFF_DEBUG
-	Serial.print("numChunksStr: ");
-	Serial.println(tempStr);
-#endif // AFF_DEBUG
-
-	FirebaseObject numChunkObj = FirebaseObject(tempStr.c_str());
-	sendToFirebase(path, numChunkObj.getJsonVariant("/"));
-
+//	String tempStr = "{\"numChunks\": " + String(numChunks) + "}";
+//
+//#ifdef AFF_DEBUG
+//	Serial.print("numChunksStr: ");
+//	Serial.println(tempStr);
+//#endif // AFF_DEBUG
+//
+//	FirebaseObject numChunkObj = FirebaseObject(tempStr.c_str());
+//	sendToFirebase(path, numChunkObj.getJsonVariant("/"));
 
 	for (int i = 0; i < numChunks; i++)
 	{
-		String rawDataStr = rawDataToString(results, (i * CHUNK_SIZE) + 1);
+		String rawDataStr = rawDataToString(results.rawbuf, results.rawlen, (i * CHUNK_SIZE) + 1, true);
 
 #ifdef AFF_DEBUG
 		Serial.print("Sending: ");
@@ -261,61 +341,6 @@ uint16_t ArduinoFirebaseFunctions::getCorrectedRawLength(const decode_results& r
 	return extended_length;
 }
 
-/**
- *	Converts a uint64_t to a string. (Function logic from IRutils: https://github.com/markszabo/IRremoteESP8266)
-**/
-String ArduinoFirebaseFunctions::uint64ToString(uint64_t input, uint8_t base)
-{
-	String result = "";
-	// Check we have a base that we can actually print.
-	// i.e. [0-9A-Z] == 36
-	if (base < 2 || base > 36) base = 10;
-
-	do 
-	{
-		char c = input % base;
-		input /= base;
-
-		c += c < 10 ? '0' : 'A' - 10;
-
-		result = c + result;
-	} while (input);
-
-	return result;
-}
-
-/**
- *	Converts the raw data from results to a string. Used
- *  to store in Firebase. (Function logic from IRutils: https://github.com/markszabo/IRremoteESP8266)
- **/
-String ArduinoFirebaseFunctions::rawDataToString(const decode_results& results, uint16_t startPos)
-{
-	String output = "";
-	// Dump data
-	for (uint16_t i = startPos; i < results.rawlen && i < startPos + CHUNK_SIZE; i++) 
-	{
-		uint32_t usecs;
-		for (usecs = results.rawbuf[i] * kRawTick; usecs > UINT16_MAX; usecs -= UINT16_MAX) 
-		{
-			output += uint64ToString(UINT16_MAX);
-			if (i % 2)
-				output += F(", 0,  ");
-			else
-			output += F(",  0, ");
-		}
-		output += uint64ToString(usecs, 10);
-		if (i < results.rawlen - 1)
-			output += F(", ");						// ',' not needed on the last one
-		if (i % 2 == 0) 
-			output += ' ';							// Extra if it was even.
-	}
-
-	// End declaration
-	output += F("\0");
-
-	return output;
-}
-
 void ArduinoFirebaseFunctions::getNextWord(const char*& startWord, const char*& endWord, int& startWordPos, int& endWordPos)
 {
 	while (*startWord != '\0' && *startWord != '\"') { startWordPos++; startWord++; }
@@ -390,17 +415,17 @@ void ArduinoFirebaseFunctions::parseJsonToHubAction(const String jsonStr)
 			startWord = ++endWord;
 			startWordPos = ++endWordPos;
 		}
-		else if (key == F("rawData"))
-		{
-			getNextWord(startWord OUT, endWord OUT, startWordPos OUT, endWordPos OUT);
-			strValue = jsonStr.substring(startWordPos, endWordPos);
-#ifdef AFF_DEBUG
-			Serial.print("rawData = "); Serial.println(strValue);
-#endif // AFF_DEBUG
-			hubAction.rawData = String(strValue);
-			startWord = ++endWord;
-			startWordPos = ++endWordPos;
-		}
+//		else if (key == F("rawData"))
+//		{
+//			getNextWord(startWord OUT, endWord OUT, startWordPos OUT, endWordPos OUT);
+//			strValue = jsonStr.substring(startWordPos, endWordPos);
+//#ifdef AFF_DEBUG
+//			Serial.print("rawData = "); Serial.println(strValue);
+//#endif // AFF_DEBUG
+//			hubAction.rawData = String(strValue);
+//			startWord = ++endWord;
+//			startWordPos = ++endWordPos;
+//		}
 		else if (key == F("rawLen"))
 		{
 			getNextNumber(startWord OUT, endWord OUT, startWordPos OUT, endWordPos OUT);
@@ -432,8 +457,7 @@ String ArduinoFirebaseFunctions::parseHubActionToJson()
 	String retStr = "{" +  HR_STR_SENDER
 		+ hubAction.sender + HR_STR_TIMESTAMP
 		+ hubAction.timestamp + HR_STR_TYPE
-		+ hubAction.type + HR_STR_RAW_DATA
-		+ hubAction.rawData + HR_STR_RAW_LEN
+		+ hubAction.type + HR_STR_RAW_LEN
 		+ hubAction.rawLen + HR_STR_REPEAT;
 	if (hubAction.repeat)
 		retStr += "1}";
@@ -451,13 +475,106 @@ String ArduinoFirebaseFunctions::parseHubResultToJson()
 		+ hubResult.code + HR_STR_TIMESTAMP
 		+ hubResult.timestamp + HR_STR_ENCODING
 		+ hubResult.encoding + HR_STR_RAW_LEN
-		+ hubResult.rawLen + HR_STR_DATA_CHUNKS
-		+ getCorrectedChunkCount(hubResult.rawLen) + HR_STR_REPEAT
+		+ hubResult.rawLen + HR_STR_REPEAT
 		+ repeat;
 
 	return retStr;
 }
 
+/**
+  *	Sets all the values of HubAction to initial values.
+ **/
+void ArduinoFirebaseFunctions::initializeHubAction()
+{
+	if (hubAction.rawData != NULL)
+		free(hubAction.rawData);
+
+	hubAction.type = 0;
+	hubAction.rawData = NULL;
+	hubAction.rawLen = 0;
+	hubAction.sender = "_none_";
+	hubAction.timestamp = "_none_";
+	hubAction.repeat = false;
+}
+
+/**
+  *	Sets all the values of HubResult to initial values.
+ **/
+void ArduinoFirebaseFunctions::initializeHubResult()
+{
+	hubResult.code = "_none_";
+	hubResult.encoding = 0;
+	hubResult.rawData = "_none_";
+	hubResult.rawLen = 0;
+	hubResult.timestamp = "_none_";
+	hubResult.resultCode = 0;
+	hubResult.repeat = false;
+}
+
+/*	--------------------
+ *	 Static Functions
+ *	--------------------
+*/
+
+#ifndef IR_DEBUG_IR_FUNC
+/**
+ *	Converts a uint64_t to a string. (Function logic from IRutils: https://github.com/markszabo/IRremoteESP8266)
+**/
+String uint64ToString(uint64_t input, uint8_t base)
+{
+	String result = "";
+	// Check we have a base that we can actually print.
+	// i.e. [0-9A-Z] == 36
+	if (base < 2 || base > 36) base = 10;
+
+	do
+	{
+		char c = input % base;
+		input /= base;
+
+		c += c < 10 ? '0' : 'A' - 10;
+
+		result = c + result;
+	} while (input);
+
+	return result;
+}
+#endif // !IR_DEBUG_IR_FUNC
+
+
+
+/**
+  *	Converts the raw data from array of uint16_t to a string.
+  * Note: Trying to convert more than CHUNK_SIZE could lead to
+  *	memory instability.
+ **/
+String rawDataToString(volatile uint16_t* rawbuf, uint16_t rawLen, uint16_t startPos, bool limitToChunk)
+{
+	String output = "";
+	// Dump data
+
+
+	for (uint16_t i = startPos; i < rawLen && (i - startPos < CHUNK_SIZE || !limitToChunk); i++)
+	{
+		output += uint64ToString(rawbuf[i], 10);
+		if (i < rawLen - 1)
+			output += F(", ");						// ',' not needed on the last one
+		if (i % 2 == 0)
+			output += ' ';							// Extra if it was even.
+	}
+
+	// End declaration
+	output += F("\0");
+
+	return output;
+}
+
+/**
+  *	Gets the number of chunks needed based on the 
+  *	length of the rawData array. This function
+  *	always rounds up to ensure enough chunks are
+  *	allocated.
+ **/
 uint16_t getCorrectedChunkCount(uint16_t rawLen)
 {
 	uint16_t count = ceil(rawLen / CHUNK_SIZE);
@@ -466,33 +583,66 @@ uint16_t getCorrectedChunkCount(uint16_t rawLen)
 }
 
 /**
- *	Sets all the values of HubAction to initial values.
-**/
-void ArduinoFirebaseFunctions::initializeHubAction()
+  *	Converts a string of number into an array of numbers and places
+  *	the array into rawData. Returns a pointer to the next open spot
+  * in rawData array. 
+  *
+  *	Note: This function assumes there is enough memory allocated to
+  *	rawData to hold the amount of numbers found in dataStr.
+ **/
+uint16_t* parseRawDataString(const char* dataStr, uint16_t* rawData, uint16_t startPos)
 {
-	hubAction.type = 0;
-	hubAction.rawData = "_none_";
-	hubAction.rawLen = 0;
-	hubAction.sender = "_none_";
-	hubAction.timestamp = "_none_";
-	hubAction.repeat = false;
+	// Next free position in rawData array
+	uint16_t rawDataPos = startPos;
+
+	// Points to next char to parse
+	char* pointer = (char*)dataStr;
+
+	// Debug statement
+#ifdef AFF_DEBUG_PARSE
+	Serial.print("Parsing: ");
+	Serial.println(dataStr);
+#endif
+
+	// Continue parsing until reach end of dataStr array
+	while (*pointer != '\0')
+	{
+		// Skip values that aren't numbers
+		if (*pointer < '0' || *pointer > '9')
+		{
+			pointer++;
+			continue;
+		}
+
+#ifdef AFF_DEBUG_PARSE
+		Serial.print("Setting rawData["); 
+		Serial.print(rawDataPos);
+		Serial.print("] = ");
+		//Serial.println(strtol(pointer, &pointer, 10));
+#endif // AFF_DEBUG_PARSE
+
+		// Set number in array
+		rawData[rawDataPos++] = strtol(pointer, &pointer, 10);
+
+#ifdef AFF_DEBUG_PARSE
+		Serial.println(rawData[rawDataPos - 1]);
+#endif // AFF_DEBUG_PARSE
+	}
+
+	// Debug statement
+#ifdef AFF_DEBUG_PARSE
+	Serial.println("");
+#endif
+
+	// Return next spot in rawData array
+	return rawData + rawDataPos;
 }
 
-/**
- *	Sets all the values of HubResult to initial values.
-**/
-void ArduinoFirebaseFunctions::initializeHubResult()
-{
-	hubResult.code = "_none_";
-	hubResult.encoding = "_none_";
-	hubResult.rawData = "_none_";
-	hubResult.rawLen = 0;
-	hubResult.timestamp = "_none_";
-	hubResult.resultCode = 0;
-	hubResult.repeat = false;
-}
 
-/* ------------------ Unit Tests ------------------ */
+/*	------------------
+ *	 Unit Tests 
+ *	------------------ 
+*/
 
 #ifdef IRSMARTHUB_UNIT_TESTS
 int ArduinoFirebaseFunctions::test_parseHubResultToJson()
@@ -501,7 +651,7 @@ int ArduinoFirebaseFunctions::test_parseHubResultToJson()
 
 	// Test Send Signal One Chunk Result
 	hubResult.code = "0x05";
-	hubResult.encoding = "SAMSUNG";
+	hubResult.encoding = 7;
 	hubResult.rawData = "This is raw data";
 	hubResult.rawLen = 2;
 	hubResult.resultCode = RES_SEND_SIG;
@@ -509,7 +659,7 @@ int ArduinoFirebaseFunctions::test_parseHubResultToJson()
 	hubResult.repeat = true;
 
 	String str = parseHubResultToJson();
-	String expectedStr = "{\"resultCode\": 700, \"code\": \"0x05\", \"timestamp\": \"1-1-1\", \"encoding\": \"SAMSUNG\", \"rawLen\": 2, \"numDataChunks\": 1, \"repeat\": 1}";
+	String expectedStr = "{\"resultCode\": 700, \"code\": \"0x05\", \"timestamp\": \"1-1-1\", \"encoding\": 7, \"rawLen\": 2, \"repeat\": 1}";
 	bool bPassed = str == expectedStr;
 	int numFailed = bPassed ? 0 : 1;
 
@@ -521,7 +671,7 @@ int ArduinoFirebaseFunctions::test_parseHubResultToJson()
 
 	// Test Send Signal Multiple Chunks Result
 	hubResult.code = "0x05";
-	hubResult.encoding = "SAMSUNG";
+	hubResult.encoding = 2;
 	hubResult.rawData = "This is raw data";
 	hubResult.rawLen = 52;
 	hubResult.resultCode = RES_SEND_SIG;
@@ -529,7 +679,7 @@ int ArduinoFirebaseFunctions::test_parseHubResultToJson()
 	hubResult.repeat = true;
 
 	str = parseHubResultToJson();
-	expectedStr = "{\"resultCode\": 700, \"code\": \"0x05\", \"timestamp\": \"1-1-1\", \"encoding\": \"SAMSUNG\", \"rawLen\": 52, \"numDataChunks\": 2, \"repeat\": 1}";
+	expectedStr = "{\"resultCode\": 700, \"code\": \"0x05\", \"timestamp\": \"1-1-1\", \"encoding\": 2, \"rawLen\": 52, \"repeat\": 1}";
 	bPassed = str == expectedStr;
 	numFailed += bPassed ? 0 : 1;
 
@@ -545,7 +695,7 @@ int ArduinoFirebaseFunctions::test_parseHubResultToJson()
 	hubResult.timestamp = "1-3-1";
 
 	str = parseHubResultToJson();
-	expectedStr = "{\"resultCode\": 801, \"code\": \"_none_\", \"timestamp\": \"1-3-1\", \"encoding\": \"_none_\", \"rawLen\": 0, \"numDataChunks\": 0, \"repeat\": 0}";
+	expectedStr = "{\"resultCode\": 801, \"code\": \"_none_\", \"timestamp\": \"1-3-1\", \"encoding\": 0, \"rawLen\": 0, \"repeat\": 0}";
 	bPassed = str == expectedStr;
 	numFailed += bPassed ? 0 : 1;
 
@@ -564,13 +714,12 @@ int ArduinoFirebaseFunctions::test_parseHubActionToJson()
 	initializeHubAction();
 	hubAction.type = IR_ACTION_LEARN;
 	hubAction.sender = "THE SENDER";
-	hubAction.rawData = "_none_";
 	hubAction.rawLen = 34;
 	hubAction.timestamp = "1-2-3";
 	hubAction.repeat = true;
 
 	String str = parseHubActionToJson();
-	String expectedStr = "{\"sender\": \"THE SENDER\", \"timestamp\": \"1-2-3\", \"type\": 1, \"rawData\": \"_none_\", \"rawLen\": 34, \"repeat\": 1}";
+	String expectedStr = "{\"sender\": \"THE SENDER\", \"timestamp\": \"1-2-3\", \"type\": 1, \"rawLen\": 34, \"repeat\": 1}";
 	bool bPassed = str == expectedStr;
 	int numFailed = bPassed ? 0 : 1;
 
@@ -584,7 +733,7 @@ int ArduinoFirebaseFunctions::test_parseHubActionToJson()
 	initializeHubAction();
 
 	str = parseHubActionToJson();
-	expectedStr = "{\"sender\": \"_none_\", \"timestamp\": \"_none_\", \"type\": 0, \"rawData\": \"_none_\", \"rawLen\": 0, \"repeat\": 0}";
+	expectedStr = "{\"sender\": \"_none_\", \"timestamp\": \"_none_\", \"type\": 0, \"rawLen\": 0, \"repeat\": 0}";
 	bPassed = str == expectedStr;
 	numFailed += bPassed ? 0 : 1;
 
@@ -604,7 +753,7 @@ int ArduinoFirebaseFunctions::test_parseJsonToHubAction()
 	// Test Learn Signal
 	parseJsonToHubAction(F("{\"type\": 2, \"timestamp\": \"1-2-2\", \"rawLen\": 1, \"sender\": \"Sender\", \"repeat\": 0}"));
 
-	bool bPassed = hubAction.type == 2 && hubAction.timestamp == "1-2-2" && hubAction.rawData == "_none_" && hubAction.rawLen == 1 && hubAction.sender == "Sender" && hubAction.repeat == false;
+	bool bPassed = hubAction.type == 2 && hubAction.timestamp == "1-2-2" && hubAction.rawLen == 1 && hubAction.sender == "Sender" && hubAction.repeat == false;
 	int numFailed = bPassed ? 0 : 1;
 
 	if (!bPassed)
@@ -614,8 +763,6 @@ int ArduinoFirebaseFunctions::test_parseJsonToHubAction()
 			failedStr += "<type = " + String(hubAction.type) + " instead of 2> ";
 		if (hubAction.timestamp != "1-2-2")
 			failedStr += "<timestamp = \"" + hubAction.timestamp + "\" instead of \"1-2-2\"> ";
-		if (hubAction.rawData != " ")
-			failedStr += "<rawData = \"" + hubAction.rawData + "\" instead of \" \"";
 		if (hubAction.rawLen != 1)
 			failedStr += "<rawLen = " + String(hubAction.rawLen) + " instead of 1> ";
 		if (hubAction.sender != "Sender")

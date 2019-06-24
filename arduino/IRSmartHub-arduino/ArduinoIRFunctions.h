@@ -30,7 +30,7 @@ public:
 	**/
 	void readNextSignal();
 
-	void sendSignal(const String& rawDataStr, uint16_t rawlen, bool bRepeat);
+	void sendSignal(uint16_t* rawDataStr, uint16_t rawlen, bool bRepeat);
 
 	void init();
 
