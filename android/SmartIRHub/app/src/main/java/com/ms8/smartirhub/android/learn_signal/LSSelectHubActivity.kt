@@ -3,13 +3,16 @@ package com.ms8.smartirhub.android.learn_signal
 import android.animation.AnimatorSet
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.widget.ArrayAdapter
-import androidx.core.app.ActivityOptionsCompat
+import android.view.View
 import androidx.core.view.isInvisible
 import androidx.databinding.*
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.custom_views.BottomErrorSheet
 import com.ms8.smartirhub.android.data.Hub
@@ -21,20 +24,19 @@ import kotlin.math.hypot
 
 class LSSelectHubActivity : AppCompatActivity() {
     lateinit var binding: ALearnSigGetHubBinding
-    private val hubListeners = HubNamesListener()
-    private val hubList = ArrayList<Hub>()
-    private val errorSheet = BottomErrorSheet()
-    val nameList = ArrayList<String>()
+    private val hubCardListAdapter = HubCardListAdapter(this)
 
 
     override fun onResume() {
         super.onResume()
-        LocalData.hubs.addOnMapChangedCallback(hubListeners)
+        hubCardListAdapter.activity = this
+        hubCardListAdapter.listen(true)
     }
 
     override fun onPause() {
         super.onPause()
-        LocalData.hubs.removeOnMapChangedCallback(hubListeners)
+        hubCardListAdapter.activity = null
+        hubCardListAdapter.listen(false)
     }
 
     override fun onNavigateUp(): Boolean {
@@ -75,65 +77,38 @@ class LSSelectHubActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         preAnimationSetup()
         super.onCreate(savedInstanceState)
-        errorSheet.sheetTitle = getString(R.string.err_no_hub_selected_title)
-        errorSheet.description = getString(R.string.err_no_hub_selected_desc)
+
         binding = DataBindingUtil.setContentView(this, R.layout.a_learn_sig_get_hub)
         performCircularReveal()
 
+        binding.toolbar.title = getString(R.string.select_listening_hub_title)
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowHomeEnabled(true)
+        binding.buttonLayout.clipToOutline = false
 
-//        binding.toolbar.title = getString(R.string.select_listening_hub_title)
-//        setSupportActionBar(binding.toolbar)
-//        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-//        supportActionBar?.setDisplayShowHomeEnabled(true)
-
-        getNameListItems()
-        binding.drpdwnSelectedHub.adapter = ArrayAdapter<String>(this,
-            R.layout.support_simple_spinner_dropdown_item, nameList)
+        binding.rvHubList.layoutManager = GridLayoutManager(this, 1, RecyclerView.VERTICAL, false)
+        binding.rvHubList.adapter = hubCardListAdapter
+        binding.hubList = LocalData.hubs
+        binding.rvHubList.addItemDecoration(object : DividerItemDecoration(this, RecyclerView.VERTICAL){
+            override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
+                if (parent.getChildAdapterPosition(view) == parent.adapter!!.itemCount - 2) {
+                    super.getItemOffsets(outRect, view, parent, state)
+                } else {
+                    outRect.setEmpty()
+                }
+            }
+        })
 
         binding.btnSelectHub.setOnClickListener { selectHub() }
     }
 
-    private fun getNameListItems() {
-        nameList.clear()
-        hubList.clear()
-        hubList.addAll(LocalData.hubs.values)
-        hubList.sortBy { it.name }
-        hubList.forEach { nameList.add(it.name) }
-        nameList.add(getString(R.string.setup_new_hub_drp_dwn))
-        binding.drpdwnSelectedHub.adapter = ArrayAdapter<String>(this@LSSelectHubActivity,
-            R.layout.support_simple_spinner_dropdown_item, nameList)
-
-        Log.d("###TEST", "nameList: ${arrayListOf(nameList)}")
-    }
-
     private fun selectHub() {
-        when (binding.drpdwnSelectedHub.selectedItemPosition) {
-        // No hub selected
-            -1 -> {
-                if (!errorSheet.bIsShowing)
-                    errorSheet.show(supportFragmentManager, "Bottom_error_sheet")
-            }
-        // Set up new hub selected
-            nameList.size-1 -> {
-                binding.drpdwnSelectedHub.setSelection(0)
-                //TODO Start "Set Up Hub" process
-            }
-        // Existing hub selected
-            else -> {
-                val resultIntent = Intent().apply {
-                    val hubUID = hubList[binding.drpdwnSelectedHub.selectedItemPosition].uid
-                    putExtra(LISTENING_HUB, hubUID)
-                }
-                setResult(Activity.RESULT_OK, resultIntent)
-                finish()
-            }
+        val resultIntent = Intent().apply {
+            val hubUID = hubCardListAdapter.list[hubCardListAdapter.selectedItem].uid
+            putExtra(LISTENING_HUB, hubUID)
         }
-    }
-
-
-    private inner class HubNamesListener : ObservableMap.OnMapChangedCallback<ObservableArrayMap<String, Hub>, String, Hub>() {
-        override fun onMapChanged(sender: ObservableArrayMap<String, Hub>?, key: String?) {
-            getNameListItems()
-        }
+        setResult(Activity.RESULT_OK, resultIntent)
+        finish()
     }
 }

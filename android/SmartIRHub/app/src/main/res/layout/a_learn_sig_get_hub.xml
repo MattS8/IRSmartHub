@@ -2,6 +2,10 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools">
 
+    <data>
+        <variable name="hubList" type="androidx.databinding.ObservableArrayMap"/>
+    </data>
+
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -12,7 +16,8 @@
                                                     android:orientation="vertical"
                                                     app:layout_constraintGuide_end="16dp"/>
         <androidx.constraintlayout.widget.Guideline android:layout_width="wrap_content"
-                                                    android:layout_height="wrap_content" android:id="@+id/guidelineStart"
+                                                    android:layout_height="wrap_content"
+                                                    android:id="@+id/guidelineStart"
                                                     app:layout_constraintGuide_begin="20dp"
                                                     android:orientation="vertical"
                                                     app:layout_constraintStart_toStartOf="parent"
@@ -20,7 +25,7 @@
                                                     app:layout_constraintEnd_toEndOf="parent"
         />
 
-    <!-- Toolbar -->
+        <!-- Toolbar -->
         <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
                                            android:layout_width="match_parent"
                                            android:layout_height="?attr/actionBarSize"
@@ -31,21 +36,21 @@
                                            app:layout_constraintVertical_bias="0"
                                            tools:title="Select Listening Hub"
                                            android:elevation="16dp"
-                                           android:visibility="gone"
+                                           android:visibility="visible"
         />
 
-    <!-- Info -->
+        <!-- Info -->
         <TextView
                 android:text="@string/dont_see_hub_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/tvNeedHelpTitle" app:layout_constraintStart_toStartOf="@+id/guidelineStart"
-                android:textAppearance="@style/AppTheme.TextAppearance.SplashHeader" android:layout_marginTop="8dp"
+                android:textAppearance="@style/AppTheme.TextAppearance.Header" android:layout_marginTop="8dp"
                 app:layout_constraintTop_toBottomOf="@+id/toolbar"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintEnd_toStartOf="@+id/guidelineEnd" android:layout_marginBottom="8dp"
-                app:layout_constraintBottom_toTopOf="@+id/btnSelectHub"
-                app:layout_constraintVertical_bias="0.110000014"/>
+                app:layout_constraintBottom_toTopOf="@+id/buttonLayout"
+                app:layout_constraintVertical_bias="0.0"/>
 
         <TextView
                 android:text="@string/dont_see_hub_desc"
@@ -56,17 +61,7 @@
                 app:layout_constraintEnd_toStartOf="@+id/guidelineEnd" android:layout_marginTop="4dp"
                 app:layout_constraintHorizontal_bias="0.0" android:textColor="@color/white"/>
 
-    <!-- Hubs List -->
-        <androidx.appcompat.widget.AppCompatSpinner
-                android:id="@+id/drpdwnSelectedHub"
-                android:layout_width="wrap_content"
-                android:minWidth="200dp"
-                android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="@id/guidelineStart"
-                app:layout_constraintEnd_toEndOf="@id/guidelineEnd"
-                app:layout_constraintTop_toBottomOf="@+id/tvNeedHelpDesc"
-                app:layout_constraintBottom_toTopOf="@id/btnSelectHub"
-                android:elevation="16dp"/>
+        <!-- Hubs List -->
 
         <!--
                 app:placeholder_text="@string/selected_hub"
@@ -79,34 +74,74 @@
                 app:layout_constraintTop_toBottomOf="@+id/space2"
                 app:layout_constraintBottom_toTopOf="@+id/btnSelectHub" app:layout_constraintVertical_bias="0.68" -->
 
-    <!-- Select Hub Button -->
-        <Button
-                android:text="@string/select_ir_hub"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/btnSelectHub" android:layout_marginBottom="24dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="@+id/guidelineStart"
-                app:layout_constraintEnd_toStartOf="@+id/guidelineEnd"
-                android:minWidth="168dp"/>
+        <!-- Select Hub Button -->
+
+
+        <androidx.cardview.widget.CardView android:layout_width="0dp"
+                      android:layout_height="wrap_content"
+                      android:orientation="horizontal"
+                      app:layout_constraintBottom_toBottomOf="parent"
+                      app:layout_constraintStart_toStartOf="parent"
+                      app:layout_constraintEnd_toEndOf="parent"
+                      app:layout_constraintTop_toTopOf="parent"
+                      app:layout_constraintVertical_bias="1"
+                      app:cardBackgroundColor="@color/colorPrimaryDark"
+                      android:id="@+id/buttonLayout"
+                      app:cardElevation="16dp"
+                                           android:clipToPadding="false"
+        >
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                          android:orientation="horizontal"
+                          android:gravity="center_horizontal"
+            >
+                <Button
+                        android:text="@string/select_ir_hub"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/btnSelectHub"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="24dp"
+                        android:minWidth="168dp"
+                        android:enabled="@{hubList.size > 0}"
+                />
+            </LinearLayout>
+
+
+        </androidx.cardview.widget.CardView>
+
+
         <Space
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:layout_constraintTop_toBottomOf="@+id/tvNeedHelpDesc"
-                app:layout_constraintBottom_toTopOf="@+id/btnSelectHub" android:id="@+id/space2"
+                app:layout_constraintBottom_toTopOf="@+id/buttonLayout" android:id="@+id/space2"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" app:layout_constraintVertical_bias="0.25"/>
         <TextView
-                android:text="@string/selected_hub_title"
+                android:text="@string/hubs"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/tvSelectHubTitle"
-                app:layout_constraintBottom_toTopOf="@+id/drpdwnSelectedHub" android:layout_marginTop="8dp"
-                app:layout_constraintTop_toBottomOf="@+id/tvNeedHelpDesc" app:layout_constraintVertical_bias="1.0"
+                app:layout_constraintBottom_toTopOf="@+id/buttonLayout" android:layout_marginTop="24dp"
+                app:layout_constraintTop_toBottomOf="@+id/tvNeedHelpDesc" app:layout_constraintVertical_bias="0.0"
                 android:layout_marginBottom="8dp"
-                app:layout_constraintStart_toStartOf="@+id/drpdwnSelectedHub"
-                app:layout_constraintEnd_toStartOf="@+id/guidelineEnd" app:layout_constraintHorizontal_bias="0.0"
-                android:textAppearance="@style/AppTheme.TextAppearance.SplashSubHeader"/>
+                app:layout_constraintStart_toStartOf="@+id/guidelineStart"
+                app:layout_constraintEnd_toStartOf="@+id/guidelineEnd" app:layout_constraintHorizontal_bias="0.005"
+                android:textAppearance="@style/AppTheme.TextAppearance.Header"
+        />
+        <androidx.recyclerview.widget.RecyclerView
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintStart_toStartOf="@id/guidelineStart"
+                app:layout_constraintEnd_toEndOf="@id/guidelineEnd"
+                app:layout_constraintTop_toBottomOf="@+id/tvSelectHubTitle"
+                app:layout_constraintVertical_bias="0.0"
+                app:layout_constraintHorizontal_bias="0.6" android:id="@+id/rvHubList"
+                android:paddingTop="16dp"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                app:layout_constraintBottom_toTopOf="@+id/buttonLayout"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

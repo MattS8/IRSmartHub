@@ -25,19 +25,17 @@
         />
 
         <!-- Toolbar -->
-        <androidx.appcompat.widget.Toolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintVertical_bias="0"
-                tools:title="@string/send_signal_title"
-
-                app:titleTextAppearance="@style/AppTheme.TextAppearance.SubHeader"
-                android:elevation="16dp"
+        <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
+                                           android:layout_width="match_parent"
+                                           android:layout_height="?attr/actionBarSize"
+                                           app:layout_constraintStart_toStartOf="parent"
+                                           app:layout_constraintEnd_toEndOf="parent"
+                                           app:layout_constraintTop_toTopOf="parent"
+                                           app:layout_constraintBottom_toBottomOf="parent"
+                                           app:layout_constraintVertical_bias="0"
+                                           app:title="@string/record_sig_title"
+                                           android:elevation="16dp"
+                                           android:visibility="visible"
         />
 
         <!-- Title -->
@@ -51,7 +49,7 @@
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintEnd_toStartOf="@+id/guidelineEnd"
                 android:gravity="center"
-        />
+                android:visibility="gone"/>
 
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/tipsLayout"
@@ -59,7 +57,7 @@
                 android:layout_height="wrap_content"
                 app:layout_constraintStart_toStartOf="@id/guidelineStart"
                 app:layout_constraintEnd_toStartOf="@id/guidelineEnd"
-                app:layout_constraintTop_toBottomOf="@+id/tvBeginListeningTitle"
+                app:layout_constraintTop_toBottomOf="@+id/toolbar"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintBottom_toTopOf="@+id/learnedSignalLayout"
                 android:layout_marginTop="8dp">
@@ -69,7 +67,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/tvTipsTitle"
-                    android:textAppearance="@style/AppTheme.TextAppearance.SplashHeader"
+                    android:textAppearance="@style/AppTheme.TextAppearance.Header"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
@@ -109,7 +107,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/tvSignInfoTitle"
-                    android:textAppearance="@style/AppTheme.TextAppearance.SplashHeader"
+                    android:textAppearance="@style/AppTheme.TextAppearance.Header"
                     android:layout_marginStart="8dp"
                     app:layout_constraintStart_toStartOf="parent" android:layout_marginEnd="8dp"
                     app:layout_constraintEnd_toEndOf="parent"

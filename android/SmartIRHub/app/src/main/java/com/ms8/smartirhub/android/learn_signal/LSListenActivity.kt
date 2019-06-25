@@ -230,6 +230,10 @@ class LSListenActivity : AppCompatActivity() {
         binding.btnRetry.setOnClickListener { retry() }
         binding.btnTestSignal.setOnClickListener { testSignal() }
 
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowHomeEnabled(true)
+
         val len = TempData.tempSignal?.rawLength ?: 0
         Log.d("LEN", "$len")
         when {
@@ -268,9 +272,12 @@ class LSListenActivity : AppCompatActivity() {
         }
     }
 
+    override fun onNavigateUp(): Boolean {
+        onBackPressed()
+        return true
+    }
 
-
-/* ------------------------------------------- Listening Process Functions ------------------------------------------- */
+    /* ------------------------------------------- Listening Process Functions ------------------------------------------- */
 
     private fun beginListeningProcess() {
         binding.btnStartListening.startAnimation()
