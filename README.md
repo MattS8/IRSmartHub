@@ -2,51 +2,49 @@
 
 # IRSmartHub
 A project with the goal of creating a solution to the many IR-controlled devices in our home. This project makes those devices "smart", allowing them to be controlled from any android phone (soon to be any device with a browser). This is achieved by creating a device containing an IR receiver/transmitter and ESP8266 wifi board that speaks to a Firebase realtime database backend. In addition, a Firestore database is used to contain all user/device data. This allows for a "serverless" implementation with all commands running through Firebase.
+
 ## Data Structures
 The following describe how data is stored and handled in this project:
 
-### User
+
+### Firestore Data Structures (Android/User-Facing Interfaces):
+The following are data structures used in Firebase Firestore. This is the part of the back-end holds all user content:
+
+
+#### User
 Contains All information with respect to a specific user using this service. 
  - **uid**: The uid associated with this user. ***NOTE***: Users are keyed by *username*. This field is necessary to link user accounts to their respective username.
  - **groups**: A list of groups the user is associated with. ***NOTE***: Upon creating a new user, a *personal group* is automatically added. This group is the default location for any created Commands.
  - **Group Invitations**: A list of invitations to groups the user can join. Any user can add their invitation to this list.
  
- ### Hub
+ #### Hub
  Information about a hub that has been set up and is ready to use. Hubs are keyed by their MAC address (which is conisderd their uid for this project).
  - **name**: Name given by user who initially set up device. This is used to help users distinguish between different hubs
  - **owner**: The uid of the user who initially set up this device.
  - **ownerUsername**: The username of the user who initially set up this device.
  
-### Remote Profile
+#### Remote Profile
 Contains a collection of pre-programmed actions.
 - **name**: A custom name given by the creator of the remote profile.
 - **hub**: The uid of the hub associated with this remote.
 - **buttons**: A list of remote functions (either *actions* or *commands*). Remote functions can be static, pre-defined (i.e. VOL UP) or custom.
 - **groups**: A list of groups this remote profile is associated with.
 
-### Command
+#### IR Signal
+Contains information for a custom-learned IR signal. This is the data object used in the Firestore database to keep track of user-learned IR signals.
+- **rawData**: An array of numbers representing an IR signal.
+- **rawLength**: The length of the raw data array.
+- **name**: User-given name describing what the IR signal does.
+- **encodingType**: The type of encoding for the learned signal (i.e. SAMSUNG, etc.).
+- **code**: The hex code for the IR signal.
+- **repeat**: Determines whether the signal is repeatable. (IMPLEMENTATION MAY CHANGE)
+
+#### Command
 Contains one or more actions for an IRSmartHub to perform. A command can specify a specific IR Hub to target for each command.
-- **Actions**: An ordered list of <Action, Hub> pairs. 
+- **Actions**: An ordered list of <IR Signal, Hub> pairs. 
+- **Name**: User-given name describing what the command does.
 
-### Hub Action
-Contains data for a specific IR signal action. This is what the arduino interprets to know what to do.
-- **rawData**: A string of raw data for the given command.
-- **rawLen**: The length of the raw data string. Used by the IR Hub when parsing.
-- **sender**: The uid of the user who initiated the action.
-- **timestamp**: Date and time the action was sent.
-- **repeat**: Whether or not the action is meant to be repeated. (IMPLEMENTATION MAY CHANGE)
-
-### Hub Result
-Contains data for a result object from an IRSmartHub. This can be either a learned signal or an error message.
-- **resultCode**: The status of the result. Either an error code or result type indicator.
-- **code**: The ir code learned from a learn action.
-- **timestamp**: Time (in milliseconds) the IRSmartHub has been on.
-- **encoding**: The type of encoding for the learned signal (i.e. SAMSUNG, etc.).
-- **rawData**: An array of uint16_t representing the recorded signal.
-- **rawLen**: The length of rawData.
-- **repeat**: Determines whether the learned signal is a repeat. (IMPLEMENTATION MAY CHANGE)
-
-### Group
+#### Group
 Contains a collection of users, remote profiles, and associated hubs. This is used for sharing hubs between multiple users. Each group has a group owner and 0 or more users. Other users can be given specific permissions. 
 - **remoteProfile**: A collection of profiles shared among the group.
 - **connectedDevices**: A collection of hubs associated with the group.
@@ -60,6 +58,30 @@ Contains a collection of users, remote profiles, and associated hubs. This is us
 	- ***removeUsers***: Allows user to remove other users from the group.
 	- ***addRemoteProfiles***: Allows user to add remote profiles to the group. User can remove profiles they have added at any time.
 	- ***removeRemoteProfiles***: Allows user to remove any remote profile shared with the group.
+
+
+### Realtime Database Data Structures (Arduino/IRSmartHub):
+The following are data structures used in the Realtime Database. This part of the back-end instructs IRSmartHubs and transfers information from user to devices:
+
+
+#### Hub Action
+Contains data for a specific action for the hub. This is what the arduino interprets to know what to do.
+- **rawData**: An array of numbers representing an IR signal. This is only used for actions that require it (i.e. "send IR signal").
+- **rawLen**: The length of the raw data array.
+- **sender**: The uid of the user who initiated the action.
+- **timestamp**: Date and time the action was sent.
+- **repeat**: Whether or not the action is meant to be repeated. (IMPLEMENTATION MAY CHANGE)
+
+##### Hub Result
+Contains data for a result object from an IRSmartHub. This can be either a learned signal or an error message.
+- **resultCode**: The status of the result. Either an error code or result type indicator.
+- **code**: The hex code for the learned IR signal.
+- **timestamp**: Time (in milliseconds) the IRSmartHub has been on.
+- **encoding**: The type of encoding for the learned signal (i.e. SAMSUNG, etc.).
+- **rawData**: An array of uint16_t numbers representing the recorded signal.
+- **rawLen**: The length of rawData.
+- **repeat**: Determines whether the learned signal is a repeat. (IMPLEMENTATION MAY CHANGE)
+
 ## Firebase
 ## Android Application
 This is the primary front-end user interface. From it, users can create an account that allows them to: 
