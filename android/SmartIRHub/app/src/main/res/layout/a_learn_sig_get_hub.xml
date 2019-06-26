@@ -103,6 +103,7 @@
                         android:layout_marginTop="8dp"
                         android:layout_marginBottom="24dp"
                         android:minWidth="168dp"
+                        style="@style/AppTheme.Button.SplashSignIn.Colored"
                         android:enabled="@{hubList.size > 0}"
                 />
             </LinearLayout>

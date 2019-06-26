@@ -39,7 +39,7 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
     implementation 'androidx.annotation:annotation:1.1.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-//    implementation 'com.google.android.material:material:1.0.0'
+    //Implementation 'com.google.android.material:material:1.0.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
 
     //Live Data
@@ -57,25 +57,31 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
-    // SnackBar library
+    //SnackBar library
     implementation 'com.andrognito.flashbar:flashbar:1.0.3'
 
-    // Email, Username, and Password Validation
+    //Email, Username, and Password Validation
     implementation "com.wajahatkarim3.easyvalidation:easyvalidation-core:1.0.1"
 
-    // Loading Button
+    //Loading Button
     implementation 'com.github.Muki1992:MaterialLoadingButton:1.0'
     implementation 'br.com.simplepass:loading-button-android:2.1.5'
 
-    // Nav Drawer
+    //Nav Drawer
     implementation "com.mikepenz:materialdrawer:7.0.0-rc01"
 
-    // Material Components
+    //Material Components
     implementation 'com.google.android.material:material:1.1.0-alpha07'
 
-    // Bottom Sheet Dialog
+    //Bottom Sheet Dialog
     implementation 'com.github.andrefrsousa:SuperBottomSheet:1.3.0'
 
-    // Potential Remote Buttons
+    //Potential Remote Buttons
     implementation 'com.github.armcha:ElasticView:0.2.0'
+
+    //Bottom Nav View
+    implementation 'it.sephiroth.android.library.bottomnavigation:bottom-navigation:3.0.0'
+
+    //Potential panel viewpager view
+    implementation 'com.gauravk.bubblenavigation:bubblenavigation:1.0.7'
 }

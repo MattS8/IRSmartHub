@@ -26,18 +26,17 @@
         />
 
         <!-- Toolbar -->
-        <androidx.appcompat.widget.Toolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintVertical_bias="0"
-                tools:title="@string/signal_information"
-                app:titleTextAppearance="@style/AppTheme.TextAppearance.SubHeader"
-                android:elevation="16dp"
+        <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
+               android:layout_width="match_parent"
+               android:layout_height="?attr/actionBarSize"
+               app:layout_constraintStart_toStartOf="parent"
+               app:layout_constraintEnd_toEndOf="parent"
+               app:layout_constraintTop_toTopOf="parent"
+               app:layout_constraintBottom_toBottomOf="parent"
+               app:layout_constraintVertical_bias="0"
+               app:title="@string/record_sig_title"
+               android:elevation="16dp"
+               android:visibility="visible"
         />
 
         <ScrollView
@@ -48,6 +47,7 @@
                 app:layout_constraintTop_toBottomOf="@id/toolbar"
                 app:layout_constraintBottom_toBottomOf="parent" android:id="@+id/infoContainer"
                 app:layout_constraintHorizontal_bias="0.0" app:layout_constraintVertical_bias="1.0">
+
             <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">

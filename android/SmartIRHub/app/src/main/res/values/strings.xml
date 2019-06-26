@@ -56,7 +56,7 @@
         and try again.
     </string>
     <string name="username">Username</string>
-    <string name="title_remotes">Remotes</string>
+    <string name="title_remotes">My Remotes</string>
     <string name="title_actions">Actions</string>
     <string name="passwordConfirm">Confirm Password</string>
     <string name="error">Error</string>
@@ -71,7 +71,7 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
-    <string name="create_remote">Create Remote</string>
+    <string name="create_remote">New Remote</string>
     <string name="remote_name">Remote Name:</string>
     <string name="pick_button_name">Name your new button</string>
     <string name="choose_ir_action">Choose an IR signal / action</string>
@@ -182,4 +182,14 @@
     <string name="setup_new_hub_desc">Connect a hub to your account and use it to learn new IR signals.</string>
     <string name="set_up_by">Set up by: </string>
     <string name="record_sig_title">Record IR Signal</string>
+    <string name="create_action">Create Action</string>
+    <string name="title_my_commands">My Commands</string>
+    <string name="create_command">New Command</string>
+    <string name="title_my_devices">My Devices</string>
+    <string name="add_ir_device">Add Device</string>
+    <string name="create_ir_signal">New IR Signal</string>
+    <string name="setup_new_hub">Set Up New Hub</string>
+    <string name="favorite_remote">My Favorite Remote</string>
+    <string name="title_programmed_signals">Programmed IR Signals</string>
+    <string name="title_my_ir_hubs">My IRSmartHubs</string>
 </resources>
