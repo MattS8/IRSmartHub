@@ -21,6 +21,4 @@ class IrSignal {
     var encodingType = 0
     var code = ""
     var repeat = false
-
-    //TODO add extra info
 }

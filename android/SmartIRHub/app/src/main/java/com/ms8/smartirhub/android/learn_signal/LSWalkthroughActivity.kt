@@ -35,7 +35,6 @@ import kotlin.math.hypot
 
 class LSWalkthroughActivity : AppCompatActivity() {
     lateinit var binding : ACreateButtonWalkthroughBinding
-    val errorSheet = BottomErrorSheet()
     val warningSheet: BackWarningSheet = BackWarningSheet()
     private var listeningHub = ""
     private var clicked = false
@@ -66,9 +65,6 @@ class LSWalkthroughActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        errorSheet.sheetTitle = getString(R.string.err_uploading_signal_title)
-        errorSheet.description = getString(R.string.err_uploading_signal_desc)
-        errorSheet.setPositiveButton(getString(R.string.retry)) { uploadIrSignal() }
         listeningHub = savedInstanceState?.getString(LISTENING_HUB, "") ?: ""
         binding = DataBindingUtil.setContentView(this, R.layout.a_create_button_walkthrough)
 
@@ -134,7 +130,8 @@ class LSWalkthroughActivity : AppCompatActivity() {
             REQ_NAME -> {
                 if (resultCode == Activity.RESULT_OK) {
                     Log.d("###TEST", "We done! Uploading signal...")
-                    uploadIrSignal()
+                    setResult(Activity.RESULT_OK)
+                    finish()
                 }
             }
         }
@@ -148,21 +145,7 @@ class LSWalkthroughActivity : AppCompatActivity() {
         }
     }
 
-    private fun uploadIrSignal() {
-        binding.btnNextStep.isEnabled = false
-        binding.prog3.isEnabled = false
-        FirestoreActions.addIrSignal()
-            .addOnFailureListener {
-                Log.e("LSWalkthroughActivity", "AddIrSignal listener error: $it")
-                errorSheet.show(supportFragmentManager, "bottom_error_sheet_ir_upload")
-            }
-            .addOnSuccessListener {
-                Log.d("###TEST", "Uploaded!")
-                setResult(Activity.RESULT_OK)
-                TempData.tempSignal = null
-                finish()
-            }
-    }
+
 
     private fun getSignalNameActivity() {
         if (!clicked) {
