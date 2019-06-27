@@ -554,10 +554,19 @@ String rawDataToString(volatile uint16_t* rawbuf, uint16_t rawLen, uint16_t star
 	String output = "";
 	// Dump data
 
-
+	uint32_t usecs;
 	for (uint16_t i = startPos; i < rawLen && (i - startPos < CHUNK_SIZE || !limitToChunk); i++)
 	{
-		output += uint64ToString(rawbuf[i], 10);
+		// If data is > UINT16_MAX, add multiple entries
+		for (usecs = rawbuf[i] * kRawTick; usecs > UINT16_MAX; usecs -= UINT16_MAX)
+		{
+			output += uint64ToString(UINT16_MAX);
+			if (i % 2)
+				output += F(", 0,  ");
+			else
+				output += F(",  0, ");
+		}
+		output += uint64ToString(usecs, 10);
 		if (i < rawLen - 1)
 			output += F(", ");						// ',' not needed on the last one
 		if (i % 2 == 0)
