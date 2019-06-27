@@ -15,7 +15,7 @@
             android:theme="@style/AppTheme">
         <activity android:name=".setup_hub.HubSetupMainActivity">
         </activity>
-        <activity android:name=".SplashActivity3">
+        <activity android:name=".splash.SplashActivity3">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -43,7 +43,7 @@
         <activity android:name=".TestViewActivity">
         </activity>
         <activity
-                android:name=".MainViewActivity"
+                android:name=".main_view.MainViewActivity"
                 android:label="@string/title_activity_main_view">
         </activity>
         <activity

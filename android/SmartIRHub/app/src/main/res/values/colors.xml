@@ -3,6 +3,7 @@
     <color name="colorPrimary">#9E9E9E</color>
     <color name="colorPrimaryDark">#1A1A1A</color>
     <color name="colorPrimaryExtraDark">#121212</color>
+    <color name="colorPrimaryExtraExtraDark">#070707</color>
     <color name="colorCardDark">#212121</color>
     <color name="colorHubCardSelected">#525252</color>
     <color name="colorAccent">#607D8B</color>

@@ -180,7 +180,7 @@
     <string name="raw_data_chunks">Raw Data Chunks:</string>
     <string name="hubs">Hubs:</string>
     <string name="setup_new_hub_desc">Connect a hub to your account and use it to learn new IR signals.</string>
-    <string name="set_up_by">Set up by: </string>
+    <string name="set_up_by">Set up by:</string>
     <string name="record_sig_title">Record IR Signal</string>
     <string name="create_action">Create Action</string>
     <string name="title_my_commands">My Commands</string>
@@ -192,4 +192,7 @@
     <string name="favorite_remote">My Favorite Remote</string>
     <string name="title_programmed_signals">Programmed IR Signals</string>
     <string name="title_my_ir_hubs">My IRSmartHubs</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

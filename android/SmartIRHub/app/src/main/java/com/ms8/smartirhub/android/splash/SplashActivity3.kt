@@ -1,4 +1,4 @@
-package com.ms8.smartirhub.android
+package com.ms8.smartirhub.android.splash
 
 import android.animation.ObjectAnimator
 import android.app.Activity
@@ -28,12 +28,14 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.QuerySnapshot
+import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.data.Group
 import com.ms8.smartirhub.android.data.User
 import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.databinding.ASplashLoginMainBinding
 import com.ms8.smartirhub.android.firebase.FirebaseAuthActions
 import com.ms8.smartirhub.android.firebase.FirestoreActions
+import com.ms8.smartirhub.android.main_view.MainViewActivity
 import com.ms8.smartirhub.android.utils.MyValidators
 import java.io.Serializable
 
@@ -60,7 +62,7 @@ class SplashActivity3 : AppCompatActivity() {
 
     override fun onBackPressed() {
         when (state.layoutState) {
-            SHOW_SIGN_IN,  SHOW_SIGN_UP, SHOW_UDERSNAME -> showSignInOptionsLayout(true)
+            SHOW_SIGN_IN, SHOW_SIGN_UP, SHOW_UDERSNAME -> showSignInOptionsLayout(true)
             else -> super.onBackPressed()
         }
     }
@@ -242,7 +244,10 @@ class SplashActivity3 : AppCompatActivity() {
     private fun handleGoogleSignInResult(data: Intent?) {
         when (val task = FirebaseAuthActions.handleGoogleSignInResult2(data)) {
             // Google Sign In failed
-            null -> showErrorWithAction(R.string.error, R.string.err_sign_in_desc, R.string.report_issue,
+            null -> showErrorWithAction(
+                R.string.error,
+                R.string.err_sign_in_desc,
+                R.string.report_issue,
                 { FirestoreActions.reportError("Error signing in with Google")}, {})
             // Check task result
             else -> {
@@ -266,7 +271,8 @@ class SplashActivity3 : AppCompatActivity() {
                 binding.layoutSignIn.btnSignIn.revertAnimation()
                 binding.layoutSignUp.btnSignUp.revertAnimation()
                 binding.layoutUsername.btnSelectUsername.revertAnimation()
-                Log.e(TAG, "Username query failed for user with uid:" +
+                Log.e(
+                    TAG, "Username query failed for user with uid:" +
                         " ${FirebaseAuth.getInstance().currentUser?.uid} ($e)")
                 onSignInError(e)
             }
@@ -323,7 +329,9 @@ class SplashActivity3 : AppCompatActivity() {
                     binding.layoutSignUp.signUpContainer.visibility = View.GONE
                     binding.layoutUsername.usernameContainer.visibility = View.VISIBLE
 
-                    val upAnim = AnimationUtils.loadAnimation(this@SplashActivity3, R.anim.slide_up)
+                    val upAnim = AnimationUtils.loadAnimation(this@SplashActivity3,
+                        R.anim.slide_up
+                    )
                     binding.signInContainer.startAnimation(upAnim)
                 }
 
@@ -355,7 +363,9 @@ class SplashActivity3 : AppCompatActivity() {
                     binding.layoutSignUp.signUpContainer.visibility = View.GONE
                     binding.layoutUsername.usernameContainer.visibility = View.GONE
 
-                    val upAnim = AnimationUtils.loadAnimation(this@SplashActivity3, R.anim.slide_up)
+                    val upAnim = AnimationUtils.loadAnimation(this@SplashActivity3,
+                        R.anim.slide_up
+                    )
                     binding.signInContainer.startAnimation(upAnim)
                 }
 
@@ -387,7 +397,9 @@ class SplashActivity3 : AppCompatActivity() {
                     binding.layoutSignUp.signUpContainer.visibility = View.VISIBLE
                     binding.layoutUsername.usernameContainer.visibility = View.GONE
 
-                    val upAnim = AnimationUtils.loadAnimation(this@SplashActivity3, R.anim.slide_up)
+                    val upAnim = AnimationUtils.loadAnimation(this@SplashActivity3,
+                        R.anim.slide_up
+                    )
                     binding.signInContainer.startAnimation(upAnim)
                 }
 
@@ -419,7 +431,9 @@ class SplashActivity3 : AppCompatActivity() {
                     binding.layoutSignUp.signUpContainer.visibility = View.GONE
                     binding.layoutUsername.usernameContainer.visibility = View.GONE
 
-                    val upAnim = AnimationUtils.loadAnimation(this@SplashActivity3, R.anim.slide_up)
+                    val upAnim = AnimationUtils.loadAnimation(this@SplashActivity3,
+                        R.anim.slide_up
+                    )
                     binding.signInContainer.startAnimation(upAnim)
                 }
 
@@ -487,13 +501,24 @@ class SplashActivity3 : AppCompatActivity() {
      */
     private fun onSignInError(exception: Exception) {
         when (exception) {
-            is FirebaseAuthUserCollisionException -> showError(R.string.err_account_made_title, R.string.err_acount_made_desc)
-            is FirebaseAuthInvalidCredentialsException -> showError(R.string.err_inv_email_pass, R.string.err_inv_email_pass_desc)
-            is FirebaseAuthInvalidUserException -> showError(R.string.err_email_nonexistant, R.string.err_email_nonexistant_desc)
+            is FirebaseAuthUserCollisionException -> showError(
+                R.string.err_account_made_title,
+                R.string.err_acount_made_desc
+            )
+            is FirebaseAuthInvalidCredentialsException -> showError(
+                R.string.err_inv_email_pass,
+                R.string.err_inv_email_pass_desc
+            )
+            is FirebaseAuthInvalidUserException -> showError(
+                R.string.err_email_nonexistant,
+                R.string.err_email_nonexistant_desc
+            )
             is FirebaseFirestoreException -> {
                 when (exception.code) {
-                    FirebaseFirestoreException.Code.PERMISSION_DENIED -> {showError(R.string.username_taken_title,
-                        R.string.err_username_taken_desc)}
+                    FirebaseFirestoreException.Code.PERMISSION_DENIED -> {showError(
+                        R.string.username_taken_title,
+                        R.string.err_username_taken_desc
+                    )}
                     else -> { showUnknownError(exception) }
                 }
             }
@@ -504,7 +529,10 @@ class SplashActivity3 : AppCompatActivity() {
     private fun showUnknownError(exception: Exception) {
         val errorMessage = "Unexpected task result from signInWithEmail: ($exception)"
         Log.e(TAG, errorMessage)
-        showErrorWithAction(R.string.error, R.string.err_sign_in_desc, R.string.report_issue,
+        showErrorWithAction(
+            R.string.error,
+            R.string.err_sign_in_desc,
+            R.string.report_issue,
             {FirestoreActions.reportError(errorMessage)},
             {})
     }

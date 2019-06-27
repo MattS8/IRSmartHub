@@ -7,17 +7,15 @@
       android:background="@color/colorPrimaryDark"
 >
     <item
-            android:id="@+id/navigation_main_remote"
-            android:icon="@drawable/temp_splash_logo"
-            android:title="@string/title_remotes"
-    />
-
-    <item
             android:id="@+id/navigation_commands"
             android:icon="@drawable/temp_splash_logo"
             android:title="@string/title_my_commands"
     />
-
+    <item
+            android:id="@+id/navigation_main_remote"
+            android:icon="@drawable/temp_splash_logo"
+            android:title="@string/title_remotes"
+    />
     <item
         android:id="@+id/navigation_devices"
         android:icon="@drawable/temp_splash_logo"
