@@ -23,8 +23,14 @@ Contains All information with respect to a specific user using this service.
 Contains a collection of pre-programmed actions.
 - **name**: A custom name given by the creator of the remote profile.
 - **hub**: The uid of the hub associated with this remote.
-- **buttons**: A list of remote functions (either *actions* or *commands*). Remote functions can be static, pre-defined (i.e. VOL UP) or custom.
+- **buttons**: A list of remote functions (*commands*). Remote functions can be static, pre-defined (i.e. VOL UP) or custom.
 - **groups**: A list of groups this remote profile is associated with.
+
+### Button
+Contains information about a button.
+- **name**: An optional name for the button, given by the user.
+- **command**: The command to send when the button is pressed.
+- **style**: An integer representing the style type of the button.
 
 ### IR Signal
 Contains information for a custom-learned IR signal. This is the data object used in the Firestore database to keep track of user-learned IR signals.
