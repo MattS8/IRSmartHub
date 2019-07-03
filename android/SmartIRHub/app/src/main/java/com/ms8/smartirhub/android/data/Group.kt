@@ -14,7 +14,7 @@ class Group(val owner : String, val personalGroup: Boolean) {
     @get:Exclude
     val connectedDevices : ObservableArrayList<String> = ObservableArrayList()
     @get:Exclude
-    val users : ObservableMap<String, Permissions> = ObservableArrayMap<String, Permissions>()
+    val users : ObservableMap<String, Permissions> = ObservableArrayMap()
 
     @get:Exclude
     var uid  = ""

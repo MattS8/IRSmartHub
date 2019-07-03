@@ -195,4 +195,25 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="choose_button_action_title">Choose Button Action</string>
+    <string name="choose_button_action_desc">Buttons can send one or more IR signals in sequential or concurrent
+        order.
+    </string>
+    <string name="pair">Pair</string>
+    <string name="add_action">Add Action</string>
+    <string name="select_action">Select an action</string>
+    <string name="choose_actions_title">Choose an action</string>
+    <string name="delay">Delay:</string>
+    <string name="send_signal_to">send signal to:</string>
+    <string name="select_actions">Select actions</string>
+    <string name="choose_remote_template_title">Choose a remote template</string>
+    <string name="start_from_scratch">Start From Scratch</string>
+    <string name="choose_ir_signal_title">Choose IR Signal</string>
+    <string name="remember_button_name_desc">Button names will only appear on certain button styles.</string>
+    <string name="err_invalid_button_name_title">Invalid Button Name</string>
+    <string name="err_invalid_button_name_desc">The entered input is not a valid button name. Please try again.</string>
+    <string name="prog_button_name">Choose a name for the button</string>
+    <string name="prog_get_actions">Choose what the button should do</string>
+    <string name="prog_button_style">Select a style for the button</string>
+    <string name="expand">expand</string>
 </resources>

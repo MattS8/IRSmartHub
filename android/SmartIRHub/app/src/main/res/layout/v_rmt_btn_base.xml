@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.ms8.smartirhub.android.custom_views.ButtonView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:minWidth="56dp"
+        android:minHeight="56dp"
+        app:layout_constraintStart_toStartOf="parent"
+        android:foreground="?android:selectableItemBackground"
+        app:cardElevation="2dp"
+        app:flexibility="2"
+        android:background="@color/colorCardDark"
+        android:id="@+id/btnViewBase"
+        android:layout_margin="16dp"
+>
+
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" android:id="@+id/btnRmtInnerView" android:gravity="center"
+            android:layout_gravity="center" tools:text="1" app:autoSizeTextType="uniform"
+            android:textColor="@color/colorControlNormalWhite" android:padding="8dp"/>
+</com.ms8.smartirhub.android.custom_views.ButtonView>

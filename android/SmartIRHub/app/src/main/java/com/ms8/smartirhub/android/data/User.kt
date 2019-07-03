@@ -8,4 +8,5 @@ import com.google.firebase.firestore.IgnoreExtraProperties
 class User(val uid: String, @Exclude val username: String) {
     var groups : ObservableArrayList<String> = ObservableArrayList()
     var irSignals : ObservableArrayList<String> = ObservableArrayList()
+    var defaultHub = ""
 }

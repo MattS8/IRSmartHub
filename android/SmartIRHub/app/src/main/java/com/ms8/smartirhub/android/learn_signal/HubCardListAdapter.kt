@@ -1,5 +1,6 @@
 package com.ms8.smartirhub.android.learn_signal
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.util.Log
@@ -16,13 +17,15 @@ import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.databinding.VHubCardBinding
 import com.ms8.smartirhub.android.setup_hub.HubSetupMainActivity
 import com.ms8.smartirhub.android.setup_hub.HubSetupMainActivity.Companion.RC_HUB_SETUP_MAIN
+import java.lang.ref.WeakReference
 
-class HubCardListAdapter(var activity: Activity?) : RecyclerView.Adapter<HubCardListAdapter.HubCardViewHolder>() {
+class HubCardListAdapter(var activity: WeakReference<Activity>) : RecyclerView.Adapter<HubCardListAdapter.HubCardViewHolder>() {
     val list = ArrayList<Hub>(LocalData.hubs.values)
     var selectedItem = 0
     var setupNewHub : ObservableBoolean = ObservableBoolean(false)
 
     private val listener = object : ObservableMap.OnMapChangedCallback<ObservableMap<String, Hub>, String, Hub>() {
+        @SuppressLint("LogNotTimber")
         override fun onMapChanged(sender: ObservableMap<String, Hub>?, key: String?) {
             if (sender != null) {
                 when {
@@ -87,7 +90,7 @@ class HubCardListAdapter(var activity: Activity?) : RecyclerView.Adapter<HubCard
                 }
                 holder.bind(hub, selectedItem == position)
                 holder.binding.hubCard.setOnClickListener {
-                    activity?.startActivityForResult(Intent(activity, HubSetupMainActivity::class.java), RC_HUB_SETUP_MAIN)
+                    activity.get()?.startActivityForResult(Intent(activity.get(), HubSetupMainActivity::class.java), RC_HUB_SETUP_MAIN)
                 }
 
                 // override string concatenation done in databinding

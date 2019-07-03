@@ -1,15 +1,14 @@
 package com.ms8.smartirhub.android
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
 import androidx.databinding.DataBindingUtil
-import android.net.wifi.WifiConfiguration
-import android.net.wifi.WifiManager
 import android.os.Bundle
 import androidx.core.app.ActivityCompat
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
+import androidx.databinding.ObservableArrayMap
+import androidx.databinding.ObservableMap
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ms8.smartirhub.android.data.User
@@ -19,6 +18,24 @@ import com.ms8.smartirhub.android.firebase.FirestoreActions
 
 class TestActivity : AppCompatActivity() {
     lateinit var binding: TestActivityBinding
+
+    private val observableMap = ObservableArrayMap<String, Int>()
+    private val callback = object : ObservableMap.OnMapChangedCallback<ObservableArrayMap<String, Int>, String, Int>() {
+        override fun onMapChanged(sender: ObservableArrayMap<String, Int>?, key: String?) {
+            if (sender != null) {
+                var strKeys = "["
+                sender.keys.forEach { k -> strKeys += "$k, " }
+                strKeys += "]"
+                var strValues = "["
+                sender.values.forEach { k -> strValues += "$k, " }
+                strValues += "]"
+                Log.d("T#", "Sender has keys: $strKeys and values: $strValues (key was: $key)")
+            } else {
+                Log.d("T#", "Sender was null... (key was: $key)")
+            }
+        }
+    }
+    private var step = 0
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,6 +52,38 @@ class TestActivity : AppCompatActivity() {
         binding.btnViewToken.setOnClickListener { printUserToken() }
         binding.btnConnectToIRHub.setOnClickListener { testConnectToIRHub() }
         binding.btnTestMakeUser.setOnClickListener { testMakeUser() }
+        binding.btnTestArrayMap.setOnClickListener { testObservableMapCallback() }
+
+        observableMap.addOnMapChangedCallback(callback)
+    }
+
+
+    fun testObservableMapCallback() {
+        when (step) {
+            0 -> {
+                Log.d("T#", "Adding 0..3 to map...")
+                observableMap["Zero"] = 0
+                observableMap["One"] = 1
+                observableMap["Two"] = 2
+                observableMap["Three"] = 3
+                step++
+            }
+            1 -> {
+                Log.d("T#", "removing 2 from map...")
+                observableMap.remove("Two")
+                step++
+            }
+            2 -> {
+                Log.d("T#", " replacing 1 in map with 11...")
+                observableMap["One"] = 11
+                step++
+            }
+            else -> {
+                Log.d("T#", "Clearing map...")
+                observableMap.clear()
+                step = 0
+            }
+        }
     }
 
     private fun testMakeUser() {

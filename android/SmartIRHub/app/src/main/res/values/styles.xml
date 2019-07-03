@@ -12,6 +12,8 @@
     </style>
     <style name="AppTheme" parent="Base.V0.AppTheme"/>
 
+    <style name="AppTheme.TextAppearance.ToolbarTitle" parent="TextAppearance.AppCompat.Widget.ActionBar.Title" />
+
     <!-- Appbar Overlay Theme -->
     <style name="Base.V0.AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Light">
         <item name="android:fontFamily">@font/roboto_light</item>

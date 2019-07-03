@@ -5,6 +5,8 @@ import android.animation.ValueAnimator
 import android.graphics.Color.TRANSPARENT
 import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
+import com.ms8.smartirhub.android.data.RemoteProfile
+import com.ms8.smartirhub.android.database.TempData
 
 val AppCompatActivity.hasSourceBounds: Boolean get() = intent?.sourceBounds != null
 
@@ -34,3 +36,8 @@ val AppCompatActivity.statusBarAnimator: Animator
 val AppCompatActivity.navigationBarAnimator: Animator
     get() = ValueAnimator.ofArgb(TRANSPARENT, window.navigationBarColor)
         .animatedValue(window::setNavigationBarColor)
+
+fun AppCompatActivity.startCreateButtonProcess() {
+    TempData.tempButton = RemoteProfile.Button()
+
+}

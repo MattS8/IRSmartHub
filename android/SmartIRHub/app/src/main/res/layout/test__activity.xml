@@ -68,7 +68,7 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/btnTestCreateUser"
                     android:textAllCaps="false"
-                    app:layout_constraintTop_toBottomOf="@+id/btnTestGetUserFromUID"
+                    app:layout_constraintTop_toBottomOf="@+id/btnConnectToIRHub"
                     app:layout_constraintBottom_toTopOf="@+id/btnTestCreateUserDB"
                     app:layout_constraintStart_toStartOf="parent" app:layout_constraintHorizontal_bias="0.5"
                     app:layout_constraintEnd_toEndOf="parent"/>
@@ -96,6 +96,17 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/btnConnectToIRHub"
                     app:layout_constraintTop_toBottomOf="@+id/btnViewToken"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.5" android:textAllCaps="false"
+                    app:layout_constraintBottom_toTopOf="@+id/btnTestArrayMap"/>
+
+            <Button
+                    android:text="Test Array Map Callback"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/btnTestArrayMap"
+                    app:layout_constraintTop_toBottomOf="@+id/btnConnectToIRHub"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintHorizontal_bias="0.5" android:textAllCaps="false"/>

@@ -13,6 +13,10 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
+        <activity android:name=".create_command.CC_ChooseIrSignalActivity">
+        </activity>
+        <activity android:name=".create_command.CC_ChooseActionsActivity">
+        </activity>
         <activity android:name=".setup_hub.HubSetupMainActivity">
         </activity>
         <activity android:name=".splash.SplashActivity3">

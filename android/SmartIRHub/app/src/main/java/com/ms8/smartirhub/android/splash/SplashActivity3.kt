@@ -1,6 +1,7 @@
 package com.ms8.smartirhub.android.splash
 
 import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -53,7 +54,11 @@ class SplashActivity3 : AppCompatActivity() {
         duration = TRANSITION_DURATION.toLong()
     }
 
-/* ---------------------------------------------- Overridden Functions ---------------------------------------------- */
+/*
+    ----------------------------------------------
+        Overridden Functions
+    ----------------------------------------------
+*/
 
     override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
         super.onSaveInstanceState(outState, outPersistentState)
@@ -62,37 +67,37 @@ class SplashActivity3 : AppCompatActivity() {
 
     override fun onBackPressed() {
         when (state.layoutState) {
-            SHOW_SIGN_IN, SHOW_SIGN_UP, SHOW_UDERSNAME -> showSignInOptionsLayout(true)
+            SHOW_SIGN_IN, SHOW_SIGN_UP, SHOW_USERNAME -> showSignInOptionsLayout(true)
             else -> super.onBackPressed()
         }
     }
 
+    @SuppressLint("LogNotTimber")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
             FirebaseAuthActions.RC_SIGN_IN -> {
                 when (resultCode) {
                     Activity.RESULT_OK -> {
-                        Log.d("TEST###", "Result OK")
                         handleGoogleSignInResult(data)
                     }
-                    else -> Log.w("TEST####", "Result no ok... $resultCode")
                 }
             }
-            else -> Log.w(TAG, "Unknown request resultCode ($requestCode)")
+            else -> Log.w(TAG, "Unknown request requestCode ($requestCode)")
         }
     }
 
     override fun onPause() {
         super.onPause()
-        LocalData.userGroups.removeOnMapChangedCallback(userGroupsListener.apply { context = null })
+        LocalData.userGroups.removeOnMapChangedCallback(userGroupsListener)
+        userGroupsListener.context = null
     }
 
     override fun onResume() {
         super.onResume()
         LocalData.userGroups.addOnMapChangedCallback(userGroupsListener.apply { context = this@SplashActivity3 })
         val groupSize = LocalData.user?.groups?.size ?: -1
-        if (LocalData.user != null && groupSize == LocalData.userGroups.size) {
+        if (LocalData.user != null && LocalData.user!!.groups.size == LocalData.userGroups.size) {
             Log.d("Test##", "All group data got! ($groupSize)")
             startActivity(Intent(this, MainViewActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
         } else {
@@ -125,27 +130,8 @@ class SplashActivity3 : AppCompatActivity() {
             SHOW_OPTIONS -> showSignInOptionsLayout(false)
             SHOW_SIGN_IN -> showSignInLayout(false)
             SHOW_SIGN_UP -> showSignUpLayout(false)
-            SHOW_UDERSNAME -> showUsernameLayout(false)
+            SHOW_USERNAME -> showUsernameLayout(false)
         }
-    }
-
-    private fun moveLogoUp(animate: Boolean) {
-        val constraintSet = ConstraintSet()
-        constraintSet.clone(this, R.layout.a_splash_login_show)
-        constraintSet.constrainHeight(binding.splashLogo.id, 375)
-        if (animate) {
-            Handler().postDelayed({
-                androidx.transition.TransitionManager.beginDelayedTransition(binding.splashContainer, layoutTransition)
-                constraintSet.applyTo(binding.splashContainer)
-                ObjectAnimator.ofFloat(binding.cardContainer, "alpha", 1f).apply {
-                    duration = TRANSITION_DURATION.toLong() + 250
-                    interpolator = AccelerateInterpolator()
-                }.start()
-            }, 500)
-        } else {
-            constraintSet.applyTo(binding.splashContainer)
-        }
-
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -167,16 +153,19 @@ class SplashActivity3 : AppCompatActivity() {
 
     }
 
-/* ------------------------------------------------ OnClick Functions ----------------------------------------------- */
+/*
+    ------------------------------------------------
+        OnClick Functions
+    -----------------------------------------------
+*/
 
     private fun createUser() {
         val username : String = binding.layoutUsername.selectUsername.editText?.text.toString()
         if (isValidUsername(username)) {
             binding.layoutUsername.btnSelectUsername.startAnimation()
-            Log.d("TESTFIRE###", "Adding new user")
             FirestoreActions.addUser(username)
                 .addOnSuccessListener {
-                    onSignInSuccess()
+                    FirestoreActions.listenToUserData(username)
                 }
                 .addOnFailureListener { e ->
                     onSignInError(e)
@@ -261,8 +250,8 @@ class SplashActivity3 : AppCompatActivity() {
      * When a listener failure occurs, an error is shown. Otherwise, the user data is stored
      * and the sign in process continues by fetching all group info
      */
+    @SuppressLint("LogNotTimber")
     private fun onSignInSuccess() {
-        Log.d(TAG, "onSignInSuccess (${FirebaseAuth.getInstance().currentUser?.displayName})")
         FirestoreActions.getUserFromUID()
             .addOnSuccessListener { querySnapshot ->
                 onUserFromUidSuccess(querySnapshot)
@@ -271,16 +260,15 @@ class SplashActivity3 : AppCompatActivity() {
                 binding.layoutSignIn.btnSignIn.revertAnimation()
                 binding.layoutSignUp.btnSignUp.revertAnimation()
                 binding.layoutUsername.btnSelectUsername.revertAnimation()
-                Log.e(
-                    TAG, "Username query failed for user with uid:" +
+                Log.e(TAG, "Username query failed for user with uid:" +
                         " ${FirebaseAuth.getInstance().currentUser?.uid} ($e)")
                 onSignInError(e)
             }
     }
 
     @Suppress("UNCHECKED_CAST")
+    @SuppressLint("LogNotTimber")
     private fun onUserFromUidSuccess(querySnapshot: QuerySnapshot) {
-        Log.d(TAG, "Success: isEmpty = ${querySnapshot.isEmpty}")
         when {
             querySnapshot.isEmpty -> {
                 binding.layoutSignIn.btnSignIn.revertAnimation()
@@ -289,32 +277,49 @@ class SplashActivity3 : AppCompatActivity() {
             }
             else -> {
                 if (querySnapshot.size() > 1)
-                    Log.e(
-                        TAG, "Received more than one user object from uid:" +
-                                " ${FirebaseAuth.getInstance().currentUser?.uid}"
-                    )
+                    Log.e(TAG, "Received more than one user object from uid:" +
+                                " ${FirebaseAuth.getInstance().currentUser?.uid}")
                 val doc = querySnapshot.documents[0]
-                LocalData.user = User(FirebaseAuth.getInstance().currentUser!!.uid, doc.id).apply {
-                    groups = ObservableArrayList<String>().apply { addAll(doc["groups"] as ArrayList<String>) }
+                LocalData.user = User(FirebaseAuth.getInstance().currentUser!!.uid, doc.id)
+                try {
+                    LocalData.user?.groups = ObservableArrayList<String>().apply { addAll(doc["groups"] as ArrayList<String>) }
+                } catch (e : java.lang.Exception) {
+                    Log.e("onUserFromUidSuccess", "$e")
+                    showUnknownError(e)
+                    LocalData.user = null
                 }
-                FirestoreActions.listenToUserGroups()
+                LocalData.user?.username?.let { FirestoreActions.listenToUserData(it) }
             }
         }
     }
 
-/* ------------------------------------------- Layout Transition Functions ------------------------------------------ */
+/*
+    -------------------------------------------
+        Layout Transition Functions
+    ------------------------------------------
+*/
 
-    private fun playSplashTransition() {
-        state.layoutState = SHOW_OPTIONS
-
-        val anim = AnimationUtils.loadAnimation(this, R.anim.slide_up)
-        binding.signInContainer.startAnimation(anim)
-        binding.splashLogo.startAnimation(anim)
-        binding.welcomeTitle.startAnimation(anim)
+private fun moveLogoUp(animate: Boolean) {
+    val constraintSet = ConstraintSet()
+    constraintSet.clone(this, R.layout.a_splash_login_show)
+    constraintSet.constrainHeight(binding.splashLogo.id, 375)
+    if (animate) {
+        Handler().postDelayed({
+            androidx.transition.TransitionManager.beginDelayedTransition(binding.splashContainer, layoutTransition)
+            constraintSet.applyTo(binding.splashContainer)
+            ObjectAnimator.ofFloat(binding.cardContainer, "alpha", 1f).apply {
+                duration = TRANSITION_DURATION.toLong() + 250
+                interpolator = AccelerateInterpolator()
+            }.start()
+        }, 500)
+    } else {
+        constraintSet.applyTo(binding.splashContainer)
     }
 
+}
+
     private fun showUsernameLayout(animate: Boolean) {
-        state.layoutState = SHOW_UDERSNAME
+        state.layoutState = SHOW_USERNAME
 
         moveLogoUp(true)
 
@@ -464,7 +469,20 @@ class SplashActivity3 : AppCompatActivity() {
         binding.welcomeDescription.visibility = View.GONE
     }
 
-/* ----------------------------------------------- Validator Functions ---------------------------------------------- */
+//    private fun playSplashTransition() {
+//        state.layoutState = SHOW_OPTIONS
+//
+//        val anim = AnimationUtils.loadAnimation(this, R.anim.slide_up)
+//        binding.signInContainer.startAnimation(anim)
+//        binding.splashLogo.startAnimation(anim)
+//        binding.welcomeTitle.startAnimation(anim)
+//    }
+
+/*
+    -----------------------------------------------
+        Validator Functions
+    ----------------------------------------------
+*/
 
     /**
      * Handles showing error messages if passwords don't match
@@ -526,8 +544,9 @@ class SplashActivity3 : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("LogNotTimber")
     private fun showUnknownError(exception: Exception) {
-        val errorMessage = "Unexpected task result from signInWithEmail: ($exception)"
+        val errorMessage = "Unexpected error during SplashActivity: ($exception)"
         Log.e(TAG, errorMessage)
         showErrorWithAction(
             R.string.error,
@@ -609,7 +628,7 @@ class SplashActivity3 : AppCompatActivity() {
         const val SHOW_OPTIONS = 1
         const val SHOW_SIGN_IN = 2
         const val SHOW_SIGN_UP = 3
-        const val SHOW_UDERSNAME = 4
+        const val SHOW_USERNAME = 4
 
         const val STATE = "SPLASH_STATE"
         const val TAG = "SplashActivity"
@@ -618,10 +637,10 @@ class SplashActivity3 : AppCompatActivity() {
     }
 
     class InstanceState : Serializable {
-        var emailString = ""
-        var passString = ""
-        var passConfirmString = ""
-        var usernameString = ""
+//        var emailString = ""
+//        var passString = ""
+//        var passConfirmString = ""
+//        var usernameString = ""
 
         var layoutState = SHOW_SPLASH
     }

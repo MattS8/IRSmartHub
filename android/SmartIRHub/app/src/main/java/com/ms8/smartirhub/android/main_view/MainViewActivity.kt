@@ -1,5 +1,6 @@
 package com.ms8.smartirhub.android.main_view
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.os.Parcel
@@ -21,13 +22,17 @@ import com.mikepenz.materialdrawer.DrawerBuilder
 import com.mikepenz.materialdrawer.model.ProfileDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem
 import com.ms8.smartirhub.android.R
+import com.ms8.smartirhub.android.custom_views.RemoteTemplatesSheet
 import com.ms8.smartirhub.android.data.RemoteProfile
 import com.ms8.smartirhub.android.database.LocalData
+import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ActivityMainViewBinding
+import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.learn_signal.LSWalkthroughActivity
 import com.ms8.smartirhub.android.main_view.fragments.*
 import it.sephiroth.android.library.bottomnavigation.BottomNavigation
 import kotlinx.android.synthetic.main.activity_main_view.*
+import java.lang.ref.WeakReference
 
 class MainViewActivity : AppCompatActivity() {
     private lateinit var binding : ActivityMainViewBinding
@@ -38,6 +43,7 @@ class MainViewActivity : AppCompatActivity() {
     private val commandsFragments: MutableList<Fragment> = arrayListOf(MyCommandsFragment(), MyIrSignalsFragment())
     private val devicesFragments: MutableList<Fragment> = arrayListOf(MyDevicesFragment(), MyIRSmartHubsFragment())
     private val remotesFragments: MutableList<Fragment> = arrayListOf(RemoteFragment(), MyRemotesFragment())
+    private val remoteFragment = RemoteFragment()
 
     /*
     -----------------------------------------------
@@ -48,7 +54,7 @@ class MainViewActivity : AppCompatActivity() {
     private val remoteProfilesListener: ObservableMap.OnMapChangedCallback<out ObservableMap<String, RemoteProfile>, String, RemoteProfile>? = object :
         ObservableMap.OnMapChangedCallback<ObservableMap<String, RemoteProfile>, String, RemoteProfile>() {
         override fun onMapChanged(sender: ObservableMap<String, RemoteProfile>?, key: String?) {
-
+            //todo ?
         }
     }
 
@@ -57,6 +63,15 @@ class MainViewActivity : AppCompatActivity() {
         Overridden Functions
     ----------------------------------------------
     */
+
+    override fun onBackPressed() {
+        Log.d("MainViewActivity", "mainOnBackPressed (checking)")
+        if (remoteTemplatesSheet.onBackPressed()) {
+            Log.d("MainViewActivity", "consumed")
+        } else {
+            super.onBackPressed()
+        }
+    }
 
     override fun onSaveInstanceState(outState: Bundle) {
         state.adapterBaseID = pagerAdapter.getBaseItemId()
@@ -106,10 +121,11 @@ class MainViewActivity : AppCompatActivity() {
         pagerAdapter = MainViewAdapter(supportFragmentManager, FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT, state.navPosition, state.adapterBaseID)
         pagerAdapter.addFragment(MyCommandsFragment(), MainViewAdapter.Companion.ViewPagerList.COMMANDS)
         pagerAdapter.addFragment(MyIrSignalsFragment(), MainViewAdapter.Companion.ViewPagerList.COMMANDS)
-        pagerAdapter.addFragment(RemoteFragment(), MainViewAdapter.Companion.ViewPagerList.REMOTES)
+        pagerAdapter.addFragment(remoteFragment, MainViewAdapter.Companion.ViewPagerList.REMOTES)
         pagerAdapter.addFragment(MyRemotesFragment(), MainViewAdapter.Companion.ViewPagerList.REMOTES)
         pagerAdapter.addFragment(MyDevicesFragment(), MainViewAdapter.Companion.ViewPagerList.DEVICES)
         pagerAdapter.addFragment(MyIRSmartHubsFragment(), MainViewAdapter.Companion.ViewPagerList.DEVICES)
+
 
         binding.frameLayout.adapter = pagerAdapter
         binding.frameLayout.addOnPageChangeListener(pageChangeCallback)
@@ -131,11 +147,11 @@ class MainViewActivity : AppCompatActivity() {
     }
 
 
-    /*
-     ----------------------------------------------
-        Inner Layout Functions
-     ----------------------------------------------
-     */
+/*
+ ----------------------------------------------
+    Inner Layout Functions
+ ----------------------------------------------
+ */
 
     private val pageChangeCallback = object: ViewPager.OnPageChangeListener {
         override fun onPageScrollStateChanged(state: Int) {}
@@ -143,7 +159,6 @@ class MainViewActivity : AppCompatActivity() {
         override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
 
         override fun onPageSelected(position: Int) {
-            Log.d("MainViewActivity", "page changed to $position")
             state.viewPagerPosition = position
             setupFab()
         }
@@ -154,7 +169,6 @@ class MainViewActivity : AppCompatActivity() {
         when (state.navPosition) {
         // My Remotes
             R.id.navigation_main_remote -> {
-                Log.d("MainViewActivity", "Here! viewPagerPosition = ${state.viewPagerPosition}")
                 //TODO Implement remotes page
                 /*
                     This page contains two panels:
@@ -164,11 +178,10 @@ class MainViewActivity : AppCompatActivity() {
                 //pagerAdapter.setFragments(remotesFragments)
                 when (state.viewPagerPosition) {
                     VP_FAV_REMOTE -> {
-                        Log.d("MainViewActivity", "Here!!!!!!! viewPagerPosition = ${state.viewPagerPosition}")
-                        binding.toolbar.title = getString(R.string.favorite_remote) //todo replace this with actual name of remote
+                        val title = if (TempData.tempRemoteProfile.name == "") getString(R.string.favorite_remote) else TempData.tempRemoteProfile.name
+                        binding.toolbar.title = title
                     }
                     VP_ALL_REMOTES -> {
-                        Log.d("MainViewActivity", "Here11111111 viewPagerPosition = ${state.viewPagerPosition}")
                         binding.toolbar.title = getString(R.string.title_remotes)
                     }
                 }
@@ -311,8 +324,22 @@ class MainViewActivity : AppCompatActivity() {
     ----------------------------------------------
     */
 
+    private val remoteTemplatesSheet = RemoteTemplatesSheet(object : RemoteTemplatesSheet.RemoteTemplateSheetCallback{
+        @SuppressLint("LogNotTimber")
+        override fun onTemplateSelected(uid: String) {
+            Log.d("onTemplateSelected", "Template selected: $uid")
+            TempData.tempRemoteProfile = LocalData.remoteProfiles[uid] ?: RemoteProfile().also {
+                Log.e("onTemplateSelected", "Tried to set tempRemoteProfile to $uid but wasn't in local database")
+            }
+            TempData.tempRemoteProfile.inEditMode.set(true)
+            setupInnerView()
+        }
+    })
+
     private fun createRemote() {
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        FirestoreActions.getRemoteTemplates()
+        remoteTemplatesSheet.show(supportFragmentManager, "RemoteTemplateSheet")
+        //remoteFragment.createRemote()
     }
 
     private fun createCommand() {

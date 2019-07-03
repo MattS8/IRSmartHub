@@ -5,19 +5,13 @@
             android:layout_height="match_parent"
             android:background="@color/colorPrimaryExtraDark"
     >
+        <com.ms8.smartirhub.android.custom_views.RemoteLayout
+                android:id="@+id/remoteLayout"
+                android:layout_width="0dp"
+                android:layout_height="0dp" app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
 
-        <!--TEST VIEW-->
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/tvTEST" app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                android:textAppearance="@style/AppTheme.TextAppearance.Header"
-                android:text="Favorite Remote View"
-
-        />
-
+        </com.ms8.smartirhub.android.custom_views.RemoteLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

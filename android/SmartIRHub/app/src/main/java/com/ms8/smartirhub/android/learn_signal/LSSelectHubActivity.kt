@@ -20,22 +20,22 @@ import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.databinding.ALearnSigGetHubBinding
 import com.ms8.smartirhub.android.exts.*
 import com.ms8.smartirhub.android.learn_signal.LSWalkthroughActivity.Companion.LISTENING_HUB
+import java.lang.ref.WeakReference
 import kotlin.math.hypot
 
 class LSSelectHubActivity : AppCompatActivity() {
     lateinit var binding: ALearnSigGetHubBinding
-    private val hubCardListAdapter = HubCardListAdapter(this)
+    private val hubCardListAdapter = HubCardListAdapter(WeakReference(this))
 
 
     override fun onResume() {
         super.onResume()
-        hubCardListAdapter.activity = this
+        hubCardListAdapter.activity = WeakReference(this)
         hubCardListAdapter.listen(true)
     }
 
     override fun onPause() {
         super.onPause()
-        hubCardListAdapter.activity = null
         hubCardListAdapter.listen(false)
     }
 

@@ -1,6 +1,8 @@
 package com.ms8.smartirhub.android.learn_signal
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -10,6 +12,7 @@ import com.ms8.smartirhub.android.custom_views.BottomErrorSheet
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ALearnSigNameBinding
 import com.ms8.smartirhub.android.firebase.FirestoreActions
+import com.ms8.smartirhub.android.learn_signal.LSWalkthroughActivity.Companion.NEW_IR_SIGNAL_UID
 import com.ms8.smartirhub.android.utils.MyValidators.SignalNameValidator
 
 class LSNameSignalActivity : AppCompatActivity() {
@@ -53,6 +56,7 @@ class LSNameSignalActivity : AppCompatActivity() {
     ----------------------------------------------
  */
 
+    @SuppressLint("LogNotTimber")
     private fun uploadIrSignal() {
         binding.btnPickName.startAnimation()
 
@@ -65,7 +69,7 @@ class LSNameSignalActivity : AppCompatActivity() {
                 errorSaveSheet.show(supportFragmentManager, "bottom_error_sheet_ir_upload")
             }
             .addOnSuccessListener {
-                setResult(Activity.RESULT_OK)
+                setResult(Activity.RESULT_OK, Intent().putExtra(NEW_IR_SIGNAL_UID, TempData.tempSignal?.uid))
                 TempData.tempSignal = null
                 finish()
             }

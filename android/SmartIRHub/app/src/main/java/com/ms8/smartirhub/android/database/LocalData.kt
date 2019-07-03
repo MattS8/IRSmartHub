@@ -10,6 +10,8 @@ object LocalData {
     val hubs = ObservableArrayMap<String, Hub>()
     val irSignals = ObservableArrayMap<String, IrSignal>()
 
+    val remoteProfileTemplates = ObservableArrayMap<String, RemoteProfileTemplate>()
+
     fun removeUserData() {
         user = null
         userGroups.clear()
@@ -17,4 +19,17 @@ object LocalData {
         hubs.clear()
         irSignals.clear()
     }
+
+//    fun userDataReady(): Boolean {
+//        var userDataReady = user != null && user!!.groups.size == LocalData.userGroups.size
+//        when (userDataReady) {
+//            false -> return false
+//            true -> {
+//                remoteProfiles.forEach { entry ->
+//                    entry.value.
+//                }
+//            }
+//        }
+//        return
+//    }
 }

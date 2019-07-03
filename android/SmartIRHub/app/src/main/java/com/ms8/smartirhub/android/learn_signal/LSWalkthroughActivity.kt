@@ -129,8 +129,7 @@ class LSWalkthroughActivity : AppCompatActivity() {
             }
             REQ_NAME -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    Log.d("###TEST", "We done! Uploading signal...")
-                    setResult(Activity.RESULT_OK)
+                    setResult(Activity.RESULT_OK, Intent().putExtra(NEW_IR_SIGNAL_UID, data?.getStringExtra(NEW_IR_SIGNAL_UID)))
                     finish()
                 }
             }
@@ -196,10 +195,12 @@ class LSWalkthroughActivity : AppCompatActivity() {
     }
 
     companion object {
+        const val REQ_NEW_IR_SIGNAL = 9
         const val REQ_HUB = 2
         const val REQ_SIG = 3
         const val REQ_NAME = 4
         const val LISTENING_HUB = "LISTENEING_HUB"
+        const val NEW_IR_SIGNAL_UID = "NEW_SIGNAL_UID"
         const val EXTRA_REVEAL = "EXTRA_REVEAL"
     }
 }

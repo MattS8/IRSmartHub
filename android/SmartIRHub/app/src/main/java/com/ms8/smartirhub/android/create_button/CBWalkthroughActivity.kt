@@ -1,10 +1,12 @@
 package com.ms8.smartirhub.android.create_button
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.ms8.smartirhub.android.R
+import com.ms8.smartirhub.android.create_command.CC_ChooseActionsActivity
 import com.ms8.smartirhub.android.custom_views.BackWarningSheet
 import com.ms8.smartirhub.android.data.RemoteProfile
 import com.ms8.smartirhub.android.database.TempData
@@ -12,8 +14,14 @@ import com.ms8.smartirhub.android.databinding.ACreateButtonWalkthroughBinding
 
 class CBWalkthroughActivity : AppCompatActivity() {
     lateinit var binding: ACreateButtonWalkthroughBinding
-    var buttonPos = 0
+
     val warningSheet: BackWarningSheet = BackWarningSheet()
+
+/*
+    ----------------------------------------------
+        Overridden Functions
+    ----------------------------------------------
+*/
 
     override fun onBackPressed() {
         when {
@@ -36,17 +44,64 @@ class CBWalkthroughActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.a_create_button_walkthrough)
 
-        buttonPos = intent.getIntExtra(EXTRA_BUTTON_POS, 0)
+        if (TempData.tempButton == null)
+            TempData.tempButton = RemoteProfile.Button()
 
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.title = getString(R.string.how_to_add_button)
 
+        // Set progress texts
+        binding.prog1.description = getString(R.string.prog_button_name)
+        binding.prog2.description = getString(R.string.prog_get_actions)
+        binding.prog3.description = getString(R.string.prog_button_style)
+
         // Figure out which step we're on
+        determineWalkThroughState()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        when (requestCode) {
+            REQ_SIG_ACTION -> {
+                determineWalkThroughState()
+            }
+            REQ_STYLE -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    TempData.tempButton?.command?.let {
+                        TempData.tempRemoteProfile.addButton(TempData.tempButton!!, intent.getIntExtra(EXTRA_BUTTON_POS, -1))
+                        TempData.tempButton = null
+                        // Only finish if TempData has a valid button
+                        setResult(Activity.RESULT_OK)
+                        finish()
+                    }
+                }
+            }
+            REQ_NAME -> {
+                determineWalkThroughState()
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (isFinishing) {
+            TempData.tempButton = null
+        }
+    }
+
+/*
+    ----------------------------------------------
+        Layout Functions
+    ----------------------------------------------
+*/
+
+    private fun determineWalkThroughState() {
         when {
-            TempData.tempButton == null || TempData.tempButton!!.name == "" -> {
-                TempData.tempButton = RemoteProfile.Button(buttonPos)
+            TempData.tempButton == null || TempData.tempButton?.name == "" -> {
+                TempData.tempButton = RemoteProfile.Button()
                 binding.prog1.bOnThisStep = true
                 binding.prog2.bOnThisStep = false
                 binding.prog3.bOnThisStep = false
@@ -54,7 +109,7 @@ class CBWalkthroughActivity : AppCompatActivity() {
                 binding.btnNextStep.setOnClickListener { getNameActivity() }
                 binding.prog1.setOnClickListener { getNameActivity() }
             }
-            TempData.tempRemoteProfile!!.buttons.size == 0 -> {
+            TempData.tempButton?.command?.actions?.size ?: 0 == 0 -> {
                 binding.prog1.bOnThisStep = true
                 binding.prog2.bOnThisStep = true
                 binding.prog3.bOnThisStep = false
@@ -73,19 +128,26 @@ class CBWalkthroughActivity : AppCompatActivity() {
         }
     }
 
-    fun getSignalOrAction() {
-        startActivityForResult(Intent(this, CBSigActionActivity::class.java), REQ_SIG_ACTION)
+/*
+    ----------------------------------------------
+        OnClick Functions
+    ----------------------------------------------
+*/
+
+    private fun getSignalOrAction() {
+        startActivityForResult(Intent(this, CC_ChooseActionsActivity::class.java), REQ_SIG_ACTION)
     }
 
-    fun getButtonStyle() {
+    private fun getButtonStyle() {
         startActivityForResult(Intent(this, CBStyleActivity::class.java), REQ_STYLE)
     }
 
-    fun getNameActivity() {
+    private fun getNameActivity() {
         startActivityForResult(Intent(this, CBNameActivity::class.java), REQ_NAME)
     }
 
     companion object {
+        const val REQ_NEW_BUTTON = 9
         const val REQ_NAME = 2
         const val REQ_SIG_ACTION = 3
         const val REQ_STYLE = 4
