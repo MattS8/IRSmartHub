@@ -2,9 +2,10 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools">
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/primary_dark"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/primary_dark"
+            android:id="@+id/nameSheetContainer"
     >
 
         <!-- Guidelines -->
@@ -25,29 +26,16 @@
                 app:layout_constraintEnd_toEndOf="parent"
         />
 
-        <!-- Toolbar -->
-        <com.ms8.smartirhub.android.custom_views.ToolbarCenteredTitle android:id="@+id/toolbar"
-                                           android:layout_width="match_parent"
-                                           android:layout_height="?attr/actionBarSize"
-                                           app:layout_constraintStart_toStartOf="parent"
-                                           app:layout_constraintEnd_toEndOf="parent"
-                                           app:layout_constraintTop_toTopOf="parent"
-                                           app:layout_constraintBottom_toBottomOf="parent"
-                                           app:layout_constraintVertical_bias="0"
-                                           app:title="@string/record_sig_title"
-                                           android:elevation="16dp"
-                                           android:visibility="visible"
-        />
 
         <!-- Title -->
         <TextView
-                android:id="@+id/tvBeginListeningTitle"
+                android:id="@+id/tvTitle"
                 android:text="@string/need_help_with_a_name"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintStart_toStartOf="@+id/guidelineStart"
                 android:textAppearance="@style/AppTheme.TextAppearance.Header" android:layout_marginTop="16dp"
-                app:layout_constraintTop_toBottomOf="@id/toolbar"
+                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_goneMarginTop="?attr/actionBarSize"
                 app:layout_constraintEnd_toStartOf="@+id/guidelineEnd"
@@ -81,7 +69,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/tvHelpNameDesc" android:textColor="@color/white"
-                android:layout_marginTop="8dp" app:layout_constraintTop_toBottomOf="@+id/tvBeginListeningTitle"
+                android:layout_marginTop="8dp" app:layout_constraintTop_toBottomOf="@+id/tvTitle"
                 app:layout_constraintStart_toStartOf="@+id/guidelineStart"
                 app:layout_constraintEnd_toStartOf="@+id/guidelineEnd" app:layout_constraintHorizontal_bias="0.0"/>
         <TextView
@@ -115,6 +103,7 @@
                 android:text="@string/learn_remember_desc"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="@color/white"
                 android:id="@+id/tvRememberDesc" android:layout_marginTop="8dp"
                 app:layout_constraintTop_toBottomOf="@+id/tvRemember"
                 app:layout_constraintStart_toStartOf="@+id/guidelineStart"
@@ -128,28 +117,39 @@
                 app:layout_constraintStart_toStartOf="@+id/guidelineStart"
                 app:layout_constraintEnd_toStartOf="@+id/guidelineEnd" android:layout_marginStart="32dp"
                 android:layout_marginEnd="32dp" android:layout_marginBottom="32dp"
-                app:layout_constraintTop_toBottomOf="@+id/tvRememberDesc" android:id="@+id/txtSignalName"
+                app:layout_constraintTop_toBottomOf="@+id/tvRememberDesc" android:id="@+id/txtName"
                 android:layout_marginTop="32dp"
-                app:layout_constraintVertical_bias="1.0" app:layout_constraintBottom_toTopOf="@+id/btnPickName">
+                android:textColor="@color/colorControlNormalWhite"
+                app:hintTextColor="@color/colorControlNormalWhite"
+                android:textColorHint="@color/colorControlNormalWhite"
+                app:hintTextAppearance="@style/TextAppearance.App.TextInputLayout"
+                app:layout_constraintVertical_bias="1.0"
+                app:layout_constraintBottom_toTopOf="@+id/btnPickName"
+        >
 
             <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:singleLine="true"
+                    android:textColor="@color/white"
                     android:maxLines="1"
+                    android:textColorHint="@color/colorControlNormalWhite"
+                    android:textColorHighlight="@color/white"
                     android:hint="@string/signal_name"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Button -->
-        <br.com.simplepass.loadingbutton.customViews.CircularProgressButton
+        <Button
                 android:text="@string/start_listening"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                style="@style/AppTheme.Button.SplashSignIn.Colored" android:minWidth="168dp"
                 android:id="@+id/btnPickName" android:layout_marginBottom="24dp"
-                style="@style/AppTheme.Button.SplashSignIn.Colored"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/guidelineEnd"
-                app:layout_constraintTop_toBottomOf="@+id/toolbar" app:layout_constraintVertical_bias="1.0"
+                android:textColor="@color/white"
+                android:backgroundTint="@color/accent"
+                app:layout_constraintTop_toBottomOf="@+id/tvTitle" app:layout_constraintVertical_bias="1.0"
                 app:layout_constraintStart_toStartOf="parent" app:layout_constraintHorizontal_bias="0.5"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

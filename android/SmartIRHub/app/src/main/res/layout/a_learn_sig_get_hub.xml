@@ -26,7 +26,7 @@
         />
 
         <!-- Toolbar -->
-        <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
+        <com.ms8.smartirhub.android.custom_views.ToolbarCenteredTitle android:id="@+id/toolbar"
                                            android:layout_width="match_parent"
                                            android:layout_height="?attr/actionBarSize"
                                            app:layout_constraintStart_toStartOf="parent"
@@ -34,7 +34,7 @@
                                            app:layout_constraintTop_toTopOf="parent"
                                            app:layout_constraintBottom_toBottomOf="parent"
                                            app:layout_constraintVertical_bias="0"
-                                           tools:title="Select Listening Hub"
+                                           app:title="@string/select_an_irsmarthub_title"
                                            android:elevation="16dp"
                                            android:visibility="visible"
         />

@@ -42,7 +42,7 @@ class LSNameSignalActivity : AppCompatActivity() {
         ----------------------------------------------
      */
     private fun checkName() {
-        val isValidName = SignalNameValidator(binding.txtSignalName.editText!!.text.toString())
+        val isValidName = binding.txtSignalName.editText!!.text.toString().SignalNameValidator()
             .addErrorCallback { errorNameSheet.show(supportFragmentManager, "bottom_sheet_error_invalid_name") }
             .check()
         if (isValidName) {

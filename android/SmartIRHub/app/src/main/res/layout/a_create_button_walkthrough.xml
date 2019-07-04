@@ -8,7 +8,7 @@
             android:clipChildren="false"
     >
         <!-- Toolbar -->
-        <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar"
+        <com.ms8.smartirhub.android.custom_views.ToolbarCenteredTitle android:id="@+id/toolbar"
                                            android:layout_width="0dp"
                                            android:layout_height="?attr/actionBarSize"
                                            app:layout_constraintStart_toStartOf="parent"
@@ -16,7 +16,7 @@
                                            app:layout_constraintTop_toTopOf="parent"
                                            app:layout_constraintBottom_toBottomOf="parent"
                                            app:layout_constraintVertical_bias="0"
-                                           tools:title="@string/how_to_add_button"
+                                           tools:title="@string/create_button_title"
         />
 
 

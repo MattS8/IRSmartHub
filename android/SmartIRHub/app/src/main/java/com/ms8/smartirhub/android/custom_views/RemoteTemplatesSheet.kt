@@ -154,6 +154,8 @@ class RemoteTemplatesSheet(var templateSheetCallback: RemoteTemplateSheetCallbac
         // Start from scratch button
         binding!!.btnPos.setOnClickListener {
             TempData.tempRemoteProfile = RemoteProfile()
+            awaitingRemoteUID = ""
+            templateSheetCallback?.onTemplateSelected("")
             dismiss()
         }
 

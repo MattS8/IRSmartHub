@@ -212,8 +212,19 @@
     <string name="remember_button_name_desc">Button names will only appear on certain button styles.</string>
     <string name="err_invalid_button_name_title">Invalid Button Name</string>
     <string name="err_invalid_button_name_desc">The entered input is not a valid button name. Please try again.</string>
+    <string name="err_invalid_button_name">Invalid button name. Please try again.</string>
     <string name="prog_button_name">Choose a name for the button</string>
     <string name="prog_get_actions">Choose what the button should do</string>
     <string name="prog_button_style">Select a style for the button</string>
     <string name="expand">expand</string>
+    <string name="select_an_irsmarthub_title">Select an IRSmartHub</string>
+    <string name="advanced_info_title">Advanced Signal Info</string>
+    <string name="create_button_title">Add Button</string>
+    <string name="choose_button_name_title">Choose a Name</string>
+    <string name="add_button_title">Add New Button</string>
+    <string name="choose_button_name">Choose Button Name</string>
+    <string name="choose_name">Choose Name</string>
+    <string name="select_style">Select Style</string>
+    <string name="command_title">Command:</string>
+    <string name="clear_actions">Clear Actions</string>
 </resources>

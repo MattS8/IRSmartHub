@@ -328,9 +328,7 @@ class MainViewActivity : AppCompatActivity() {
         @SuppressLint("LogNotTimber")
         override fun onTemplateSelected(uid: String) {
             Log.d("onTemplateSelected", "Template selected: $uid")
-            TempData.tempRemoteProfile = LocalData.remoteProfiles[uid] ?: RemoteProfile().also {
-                Log.e("onTemplateSelected", "Tried to set tempRemoteProfile to $uid but wasn't in local database")
-            }
+            TempData.tempRemoteProfile = LocalData.remoteProfiles[uid] ?: RemoteProfile()
             TempData.tempRemoteProfile.inEditMode.set(true)
             setupInnerView()
         }

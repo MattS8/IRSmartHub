@@ -8,7 +8,7 @@ import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.custom_views.BottomErrorSheet
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ACreateButtonNameBinding
-import com.ms8.smartirhub.android.utils.MyValidators
+import com.ms8.smartirhub.android.utils.MyValidators.ButtonNameValidator
 
 class CBNameActivity : AppCompatActivity() {
     lateinit var binding: ACreateButtonNameBinding
@@ -35,7 +35,7 @@ class CBNameActivity : AppCompatActivity() {
     ----------------------------------------------
  */
     private fun checkName() {
-        val isValidName = MyValidators.SignalNameValidator(binding.txtButtonName.editText!!.text.toString())
+        val isValidName = binding.txtButtonName.editText!!.text.toString().ButtonNameValidator()
             .addErrorCallback { errorNameSheet.show(supportFragmentManager, "bottom_sheet_error_invalid_name") }
             .check()
         if (isValidName) {
