@@ -1,20 +1,21 @@
 package com.ms8.smartirhub.android.main_view
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.Log
-import android.view.MenuItem
-import android.view.View
+import android.view.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableMap
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
-import androidx.viewpager2.widget.ViewPager2
 import com.google.firebase.auth.FirebaseAuth
 import com.mikepenz.materialdrawer.AccountHeaderBuilder
 import com.mikepenz.materialdrawer.Drawer
@@ -22,17 +23,18 @@ import com.mikepenz.materialdrawer.DrawerBuilder
 import com.mikepenz.materialdrawer.model.ProfileDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem
 import com.ms8.smartirhub.android.R
+import com.ms8.smartirhub.android.custom_views.BackWarningSheet
 import com.ms8.smartirhub.android.custom_views.RemoteTemplatesSheet
 import com.ms8.smartirhub.android.data.RemoteProfile
 import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ActivityMainViewBinding
+import com.ms8.smartirhub.android.utils.exts.getNavBarHeight
 import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.learn_signal.LSWalkthroughActivity
 import com.ms8.smartirhub.android.main_view.fragments.*
-import it.sephiroth.android.library.bottomnavigation.BottomNavigation
-import kotlinx.android.synthetic.main.activity_main_view.*
-import java.lang.ref.WeakReference
+import com.ms8.smartirhub.android.utils.exts.getStatusBarHeight
+import org.jetbrains.anko.dip
 
 class MainViewActivity : AppCompatActivity() {
     private lateinit var binding : ActivityMainViewBinding
@@ -44,6 +46,8 @@ class MainViewActivity : AppCompatActivity() {
     private val devicesFragments: MutableList<Fragment> = arrayListOf(MyDevicesFragment(), MyIRSmartHubsFragment())
     private val remotesFragments: MutableList<Fragment> = arrayListOf(RemoteFragment(), MyRemotesFragment())
     private val remoteFragment = RemoteFragment()
+
+    private val exitWarningSheet = BackWarningSheet()
 
     /*
     -----------------------------------------------
@@ -65,11 +69,10 @@ class MainViewActivity : AppCompatActivity() {
     */
 
     override fun onBackPressed() {
-        Log.d("MainViewActivity", "mainOnBackPressed (checking)")
-        if (remoteTemplatesSheet.onBackPressed()) {
-            Log.d("MainViewActivity", "consumed")
-        } else {
-            super.onBackPressed()
+        when {
+            remoteTemplatesSheet.onBackPressed() -> {}
+            !exitWarningSheet.isVisible -> { exitWarningSheet.show(supportFragmentManager, "ExitWarningSheet") }
+            else -> { super.onBackPressed() }
         }
     }
 
@@ -84,6 +87,20 @@ class MainViewActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main_view)
         //binding.navView.menuItemSelectionListener = navListener
 
+        /* --- Set up exit sheet -- */
+        exitWarningSheet.callback = object : BackWarningSheet.BackWaringSheetCallback {
+            override fun btnNegAction() {}
+
+            override fun btnPosAction() {
+                Log.w("TEST", "HERRER")
+                finishAndRemoveTask()
+            }
+        }
+        exitWarningSheet.titleStr = getString(R.string.exit_app_title)
+        exitWarningSheet.descStr = getString(R.string.exit_app_desc)
+        exitWarningSheet.btnNegStr = getString(android.R.string.cancel)
+        exitWarningSheet.btnPosStr = getString(R.string.leave)
+
         /* --- Build drawer layout --- */
         val header = AccountHeaderBuilder()
             .withActivity(this)
@@ -94,6 +111,15 @@ class MainViewActivity : AppCompatActivity() {
                     .withEmail(FirebaseAuth.getInstance().currentUser?.email)
             )
             .build()
+
+        /* -- Account for nav/status bar height --*/
+        val rotation = (getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.rotation
+        if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) {
+            try {
+                window.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+                binding.navView.setPadding(0, 0, 0, getNavBarHeight())
+            } catch (e :Exception) {}
+        }
 
         /* --- Build Side Drawer --- */
         drawer = DrawerBuilder()
@@ -125,6 +151,7 @@ class MainViewActivity : AppCompatActivity() {
         pagerAdapter.addFragment(MyRemotesFragment(), MainViewAdapter.Companion.ViewPagerList.REMOTES)
         pagerAdapter.addFragment(MyDevicesFragment(), MainViewAdapter.Companion.ViewPagerList.DEVICES)
         pagerAdapter.addFragment(MyIRSmartHubsFragment(), MainViewAdapter.Companion.ViewPagerList.DEVICES)
+
 
 
         binding.frameLayout.adapter = pagerAdapter
@@ -324,15 +351,17 @@ class MainViewActivity : AppCompatActivity() {
     ----------------------------------------------
     */
 
-    private val remoteTemplatesSheet = RemoteTemplatesSheet(object : RemoteTemplatesSheet.RemoteTemplateSheetCallback{
-        @SuppressLint("LogNotTimber")
-        override fun onTemplateSelected(uid: String) {
-            Log.d("onTemplateSelected", "Template selected: $uid")
-            TempData.tempRemoteProfile = LocalData.remoteProfiles[uid] ?: RemoteProfile()
-            TempData.tempRemoteProfile.inEditMode.set(true)
-            setupInnerView()
+    private val remoteTemplatesSheet = RemoteTemplatesSheet().apply {
+       templateSheetCallback = object : RemoteTemplatesSheet.RemoteTemplateSheetCallback{
+            @SuppressLint("LogNotTimber")
+            override fun onTemplateSelected(uid: String) {
+                Log.d("onTemplateSelected", "Template selected: $uid")
+                TempData.tempRemoteProfile = LocalData.remoteProfiles[uid] ?: RemoteProfile()
+                TempData.tempRemoteProfile.inEditMode.set(true)
+                setupInnerView()
+            }
         }
-    })
+    }
 
     private fun createRemote() {
         FirestoreActions.getRemoteTemplates()

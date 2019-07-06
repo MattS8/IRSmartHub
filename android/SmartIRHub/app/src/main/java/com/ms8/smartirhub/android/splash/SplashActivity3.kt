@@ -645,13 +645,14 @@ private fun moveLogoUp(animate: Boolean) {
         var layoutState = SHOW_SPLASH
     }
 
-    class UserGroupsListener(var context: Context?) : ObservableMap.OnMapChangedCallback<ObservableArrayMap<String, Group>, String, Group>() {
+    class UserGroupsListener(var context: Activity?) : ObservableMap.OnMapChangedCallback<ObservableArrayMap<String, Group>, String, Group>() {
         override fun onMapChanged(sender: ObservableArrayMap<String, Group>?, key: String?) {
             Log.d("UserGroupListener", "Map Changed!")
             val groupSize = LocalData.user?.groups?.size ?: -1
             if (LocalData.user != null && groupSize == LocalData.userGroups.size) {
                 Log.d("UserGroupListener", "Done fetching user groups... (${LocalData.user!!.groups.size} == ${LocalData.userGroups.size}")
                 context?.startActivity(Intent(context, MainViewActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
+                context?.finish()
             }
         }
     }

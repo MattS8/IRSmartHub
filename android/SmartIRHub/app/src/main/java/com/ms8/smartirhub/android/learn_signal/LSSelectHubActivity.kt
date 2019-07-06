@@ -6,7 +6,6 @@ import android.content.Intent
 import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.core.view.isInvisible
 import androidx.databinding.*
@@ -14,11 +13,9 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.custom_views.BottomErrorSheet
-import com.ms8.smartirhub.android.data.Hub
 import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.databinding.ALearnSigGetHubBinding
-import com.ms8.smartirhub.android.exts.*
+import com.ms8.smartirhub.android.utils.exts.*
 import com.ms8.smartirhub.android.learn_signal.LSWalkthroughActivity.Companion.LISTENING_HUB
 import java.lang.ref.WeakReference
 import kotlin.math.hypot
@@ -81,7 +78,7 @@ class LSSelectHubActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.a_learn_sig_get_hub)
         performCircularReveal()
 
-        binding.toolbar.title = getString(R.string.select_listening_hub_title)
+        //binding.toolbar.title = getString(R.string.select_listening_hub_title)
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)

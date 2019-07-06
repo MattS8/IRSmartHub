@@ -7,6 +7,8 @@ import android.view.WindowManager
 import android.widget.TextView
 import androidx.core.widget.TextViewCompat
 import com.ms8.smartirhub.android.R
+import com.ms8.smartirhub.android.utils.TypefaceCache
+import java.lang.Exception
 
 
 class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.appcompat.widget.Toolbar(context, attrs) {
@@ -14,6 +16,7 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
     private var _screenWidth: Int
     private var _titleTextView: TextView
     private val location = IntArray(2)
+    private var titleStr: String = ""
     var centerTitle = true
     set(value) {
         field = value
@@ -24,6 +27,8 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
         _screenWidth = getScreenSize().x
 
         _titleTextView = TextView(context)
+        _titleTextView.text = titleStr
+        TypefaceCache.get("fonts/roboto_light.ttf", context)?.let { _titleTextView.typeface = it }
         TextViewCompat.setTextAppearance(_titleTextView, R.style.AppTheme_TextAppearance_ToolbarTitle)
         addView(_titleTextView)
     }
@@ -37,14 +42,22 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
         }
     }
 
+    @Suppress("UNNECESSARY_SAFE_CALL")
     override fun setTitle(resId: Int) {
-        _titleTextView.setText(resId)
-        requestLayout()
+        titleStr = context.getString(resId)
+        _titleTextView?.let { tv ->
+            tv.setText(resId)
+            requestLayout()
+        }
     }
 
+    @Suppress("UNNECESSARY_SAFE_CALL")
     override fun setTitle(title : CharSequence) {
-        _titleTextView.text = title
-        requestLayout()
+        titleStr = title.toString()
+        _titleTextView?.let { tv ->
+            tv.text = title
+            requestLayout()
+        }
     }
 
     private fun getScreenSize(): Point {

@@ -90,7 +90,7 @@
                 app:layout_constraintEnd_toStartOf="@+id/guidelineEnd" app:layout_constraintHorizontal_bias="0.0"
                 android:layout_marginTop="8dp" android:textColor="@color/white" android:textStyle="bold"/>
         <TextView
-                android:text="@string/learn_tips_desc_2"
+                android:text="@string/tips_learn_desc_2"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/tvTipsDesc2"
@@ -117,7 +117,7 @@
                 app:layout_constraintStart_toStartOf="@+id/guidelineStart"
                 app:layout_constraintEnd_toStartOf="@+id/guidelineEnd" android:layout_marginStart="32dp"
                 android:layout_marginEnd="32dp" android:layout_marginBottom="32dp"
-                app:layout_constraintTop_toBottomOf="@+id/tvRememberDesc" android:id="@+id/txtName"
+                app:layout_constraintTop_toBottomOf="@+id/tvRememberDesc" android:id="@+id/txtInput"
                 android:layout_marginTop="32dp"
                 android:textColor="@color/colorControlNormalWhite"
                 app:hintTextColor="@color/colorControlNormalWhite"
@@ -125,6 +125,7 @@
                 app:hintTextAppearance="@style/TextAppearance.App.TextInputLayout"
                 app:layout_constraintVertical_bias="1.0"
                 app:layout_constraintBottom_toTopOf="@+id/btnPickName"
+                android:inputType="textAutoComplete"
         >
 
             <com.google.android.material.textfield.TextInputEditText
@@ -133,10 +134,30 @@
                     android:singleLine="true"
                     android:textColor="@color/white"
                     android:maxLines="1"
+                    android:inputType="textAutoComplete"
                     android:textColorHint="@color/colorControlNormalWhite"
                     android:textColorHighlight="@color/white"
-                    android:hint="@string/signal_name"/>
+                    android:hint="@string/signal_name_hint"/>
         </com.google.android.material.textfield.TextInputLayout>
+        <!--<EditText-->
+                <!--android:autofillHints="@string/button_name_hint"-->
+                <!--android:hint="@string/button_name_hint"-->
+                <!--android:layout_width="0dp" -->
+                <!--android:layout_height="wrap_content"-->
+                <!--app:layout_constraintStart_toStartOf="@+id/guidelineStart"-->
+                <!--app:layout_constraintEnd_toStartOf="@+id/guidelineEnd" android:layout_marginStart="32dp"-->
+                <!--android:layout_marginEnd="32dp" android:layout_marginBottom="32dp"-->
+                <!--app:layout_constraintTop_toBottomOf="@+id/tvRememberDesc" android:id="@+id/txtInput"-->
+                <!--android:layout_marginTop="32dp"-->
+                <!--android:textColor="@color/colorControlNormalWhite"-->
+                <!--app:hintTextColor="@color/colorControlNormalWhite"-->
+                <!--android:textColorHint="@color/colorControlNormalWhite"-->
+                <!--app:hintTextAppearance="@style/TextAppearance.App.TextInputLayout"-->
+                <!--app:layout_constraintVertical_bias="1.0"-->
+                <!--app:layout_constraintBottom_toTopOf="@+id/btnPickName"-->
+                <!--android:inputType="textNoSuggestions"-->
+        <!---->
+        <!--/>-->
 
         <!-- Button -->
         <Button

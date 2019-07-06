@@ -1,41 +1,39 @@
 package com.ms8.smartirhub.android.learn_signal
 
-import android.animation.Animator
-import android.animation.AnimatorSet
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
 import android.os.PersistableBundle
 import android.util.Log
 import android.view.View
-import android.view.ViewAnimationUtils
-import android.view.animation.DecelerateInterpolator
 import androidx.core.app.ActivityCompat
-import androidx.core.app.ActivityOptionsCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.doOnNextLayout
 import androidx.databinding.DataBindingUtil
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.custom_views.BackWarningSheet
-import com.ms8.smartirhub.android.custom_views.BottomErrorSheet
-import com.ms8.smartirhub.android.custom_views.CircularProgressView
-import androidx.core.view.isInvisible
+import com.ms8.smartirhub.android.custom_views.PickNameSheet
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ACreateButtonWalkthroughBinding
-import com.ms8.smartirhub.android.exts.createCircularReveal
-import com.ms8.smartirhub.android.exts.hasSourceBounds
-import com.ms8.smartirhub.android.exts.screenBounds
-import com.ms8.smartirhub.android.exts.sourceBounds
-import com.ms8.smartirhub.android.firebase.FirestoreActions
-import kotlinx.android.synthetic.main.v_circular_progress.view.*
-import kotlin.math.hypot
 
 class LSWalkthroughActivity : AppCompatActivity() {
     lateinit var binding : ACreateButtonWalkthroughBinding
-    val warningSheet: BackWarningSheet = BackWarningSheet()
+
+    private val warningSheet: BackWarningSheet = BackWarningSheet()
+    private val nameSheet: PickNameSheet = PickNameSheet().apply {
+            nameDesc = getString(R.string.need_help_name_ls_desc)
+            tipsTitle = getString(R.string.tips_title)
+            tipsDesc1 = getString(R.string.tips_learn_desc_1)
+            tipsDesc2 = getString(R.string.tips_learn_desc_2)
+            tipsExampleTitle = getString(R.string.for_example)
+            nameInputHint = getString(R.string.signal_name_hint)
+            callback = object : PickNameSheet.Callback {
+                override fun onDismiss() {
+                    determineWalkThroughState()
+                }
+            }
+        }
+
     private var listeningHub = ""
     private var clicked = false
 
@@ -47,8 +45,14 @@ class LSWalkthroughActivity : AppCompatActivity() {
                     !warningSheet.bIsShowing -> warningSheet.show(supportFragmentManager, "WarningBottomSheet")
                 }
             }
-            binding.prog2.bOnThisStep -> { listeningHub = ""; setupProgressViews()}
-            binding.prog3.bOnThisStep -> { TempData.tempSignal = null; setupProgressViews() }
+            binding.prog2.bOnThisStep -> {
+                listeningHub = ""
+                determineWalkThroughState()
+            }
+            binding.prog3.bOnThisStep -> {
+                TempData.tempSignal = null
+                determineWalkThroughState()
+            }
         }
     }
 
@@ -75,18 +79,16 @@ class LSWalkthroughActivity : AppCompatActivity() {
         binding.prog1.description = getString(R.string.select_ir_hub_desc)
         binding.prog2.description = getString(R.string.send_ir_signal_desc)
         binding.prog3.description = getString(R.string.name_learned_signal_desc)
-
-        binding.btnNextStep.text = getString(R.string.next)
     }
 
     override fun onResume() {
         super.onResume()
         clicked = false
 
-        setupProgressViews()
+        determineWalkThroughState()
     }
 
-    private fun setupProgressViews() {
+    private fun determineWalkThroughState() {
         // Figure out which step we're on
         when {
             listeningHub == "" -> {

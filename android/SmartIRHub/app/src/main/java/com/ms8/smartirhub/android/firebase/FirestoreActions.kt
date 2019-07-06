@@ -55,7 +55,7 @@ object FirestoreActions {
                                         try {
                                             val template = RemoteProfileTemplate()
                                             template.name = docChange.document["name"] as String
-                                            template.remoteProfile = docChange.document["remoteProfile"] as String
+                                            template.remoteProfile = docChange.document["remoteProfiles"] as String
                                             template.previewURL = docChange.document["previewURL"] as String
                                             template.uid = docChange.document.id
                                             LocalData.remoteProfileTemplates[docChange.document.id] = template
@@ -70,7 +70,6 @@ object FirestoreActions {
                     }
                 }
             }
-
         }
     }
 

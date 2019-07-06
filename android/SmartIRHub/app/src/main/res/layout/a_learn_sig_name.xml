@@ -102,7 +102,7 @@
                 app:layout_constraintEnd_toStartOf="@+id/guidelineEnd" app:layout_constraintHorizontal_bias="0.0"
                 android:layout_marginTop="8dp" android:textColor="@color/white" android:textStyle="bold"/>
         <TextView
-                android:text="@string/learn_tips_desc_2"
+                android:text="@string/tips_learn_desc_2"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/tvTipsDesc2"
@@ -137,7 +137,7 @@
                     android:layout_height="wrap_content"
                     android:singleLine="true"
                     android:maxLines="1"
-                    android:hint="@string/signal_name"/>
+                    android:hint="@string/signal_name_hint"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Button -->

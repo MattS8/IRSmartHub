@@ -34,7 +34,7 @@
                                            app:layout_constraintTop_toTopOf="parent"
                                            app:layout_constraintBottom_toBottomOf="parent"
                                            app:layout_constraintVertical_bias="0"
-                                           app:title="@string/select_an_irsmarthub_title"
+                                           app:title="@string/learn_ir_title"
                                            android:elevation="16dp"
                                            android:visibility="visible"
         />

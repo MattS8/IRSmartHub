@@ -2,6 +2,7 @@ package com.ms8.smartirhub.android.exts
 
 import android.animation.Animator
 import android.animation.ValueAnimator
+import android.content.Context
 import android.graphics.Color.TRANSPARENT
 import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
@@ -40,4 +41,11 @@ val AppCompatActivity.navigationBarAnimator: Animator
 fun AppCompatActivity.startCreateButtonProcess() {
     TempData.tempButton = RemoteProfile.Button()
 
+}
+
+fun Context.getNavBarHeight() : Int {
+    val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
+    return if (resourceId > 0) {
+        resources.getDimensionPixelSize(resourceId)
+    } else 0
 }

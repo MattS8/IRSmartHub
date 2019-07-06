@@ -11,6 +11,7 @@
             android:animateLayoutChanges="true"
             android:clipChildren="false"
             android:clipToPadding="false"
+            android:fitsSystemWindows="true"
     >
 
 
@@ -110,10 +111,11 @@
         />
 
         <!-- Toolbar -->
-        <androidx.appcompat.widget.Toolbar
+        <com.ms8.smartirhub.android.custom_views.ToolbarCenteredTitle
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:id="@+id/toolbar"
+                android:layout_marginTop="@dimen/fsw_nav_height"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"

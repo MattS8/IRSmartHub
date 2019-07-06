@@ -2,6 +2,7 @@ package com.ms8.smartirhub.android.custom_views
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.Handler
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.LayoutInflater
@@ -26,9 +27,10 @@ import org.jetbrains.anko.windowManager
 import kotlin.math.min
 
 
-class RemoteTemplatesSheet(var templateSheetCallback: RemoteTemplateSheetCallback?) : SuperBottomSheetFragment() {
+class RemoteTemplatesSheet : SuperBottomSheetFragment() {
     private var binding: VRemoteTemplatesSheetBinding? = null
     private var awaitingRemoteUID = ""
+    var templateSheetCallback: RemoteTemplateSheetCallback? = null
 
 /*
     ----------------------------------------------
@@ -118,6 +120,7 @@ class RemoteTemplatesSheet(var templateSheetCallback: RemoteTemplateSheetCallbac
     @SuppressLint("LogNotTimber")
     override fun onResume() {
         super.onResume()
+
         adapter.listen()
         // Check to see if we were waiting for a remoteProfile to load
         if (awaitingRemoteUID != "") {

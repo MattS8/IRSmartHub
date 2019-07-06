@@ -3,6 +3,7 @@ package com.ms8.smartirhub.android.custom_views
 import android.content.DialogInterface
 import android.content.res.ColorStateList
 import android.os.Bundle
+import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,8 +19,51 @@ import org.jetbrains.anko.sdk27.coroutines.onFocusChange
 
 class PickNameSheet : SuperBottomSheetFragment() {
 
-    lateinit var binding: VChooseNameSheetBinding
+    private var binding: VChooseNameSheetBinding? = null
     var callback: Callback? = null
+
+    var btnName = ""
+    set(value) {
+        field = value
+        binding?.btnPickName?.text = field
+    }
+    var nameTitle = ""
+    set(value) {
+        field = value
+        binding?.tvTitle?.text = field
+    }
+    var nameDesc = ""
+    set(value) {
+        field = value
+        binding?.tvHelpNameDesc?.text = field
+    }
+    var tipsTitle = ""
+    set(value) {
+        field = value
+        binding?.tvTipsTitle?.text = field
+    }
+    var tipsDesc1 = ""
+    set(value) {
+        field = value
+        binding?.tvTipsDesc1?.text = field
+    }
+    var tipsDesc2 = ""
+    set(value) {
+        field = value
+        binding?.tvTipsDesc2?.text = field
+    }
+    var tipsExampleTitle = ""
+    set(value) {
+        field = value
+        binding?.tvTipsDescExampleTitle?.text = value
+    }
+    var nameInputHint = ""
+    set(value) {
+        field = value
+        binding?.txtInput?.hint = value
+    }
+
+
     /*
     ----------------------------------------------
         Overridden Functions
@@ -28,26 +72,39 @@ class PickNameSheet : SuperBottomSheetFragment() {
 
     override fun getTheme() = R.style.AppTheme
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putStringArrayList(KEY_STR_LIST, arrayListOf(btnName, nameTitle, nameDesc, tipsTitle, tipsDesc1, tipsDesc2, tipsExampleTitle, nameInputHint))
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         super.onCreateView(inflater, container, savedInstanceState)
         binding = DataBindingUtil.inflate(inflater, R.layout.v_choose_name_sheet, container, false)
 
-        binding.btnPickName.text = getString(R.string.pick_name)
-        binding.tvTitle.text = getString(R.string.need_help_with_a_name)
-        binding.tvHelpNameDesc.text = getString(R.string.need_help_name_desc)
-        binding.tvRememberDesc.text = getString(R.string.remember_button_name_desc)
+        val strList = savedInstanceState?.getStringArrayList(KEY_STR_LIST)
 
-        binding.tvTipsTitle.visibility = View.GONE
-        binding.tvTipsDesc1.visibility = View.GONE
-        binding.tvTipsDesc2.visibility = View.GONE
-        binding.tvTipsDescExampleTitle.visibility = View.GONE
+        binding!!.let { b ->
+            b.btnPickName.text = strList?.get(0) ?: if (btnName != "") btnName else getString(R.string.pick_name)
+            b.tvTitle.text =  strList?.get(1) ?: if (nameTitle != "") nameTitle else getString(R.string.need_help_with_a_name)
+            b.tvHelpNameDesc.text = strList?.get(2) ?: if (nameDesc != "") nameDesc else getString(R.string.need_help_name_desc)
+            b.tvTipsTitle.text = strList?.get(3) ?: tipsTitle
+            if (b.tvTipsTitle.text == "")
+                b.tvTipsTitle.visibility = View.GONE
+            b.tvTipsDesc1.text = strList?.get(4) ?: tipsDesc1
+            if (b.tvTipsDesc1.text == "")
+                b.tvTipsDesc1.visibility = View.GONE
+            b.tvTipsDesc2.text = strList?.get(4) ?: tipsDesc2
+            if (b.tvTipsDesc2.text == "")
+                b.tvTipsDesc2.visibility = View.GONE
+            b.tvTipsDescExampleTitle.text = strList?.get(5) ?: tipsExampleTitle
+            if (b.tvTipsDescExampleTitle.text == "")
+                b.tvTipsDescExampleTitle.visibility = View.GONE
+            b.txtInput.hint = strList?.get(6) ?: nameInputHint
 
-        binding.txtName.hint = getString(R.string.button_name_hint)
+            b.btnPickName.setOnClickListener { checkName() }
+        }
 
-        binding.btnPickName.text = getString(R.string.pick_name)
-        binding.btnPickName.setOnClickListener { checkName() }
-
-        return binding.root
+        return binding!!.root
     }
 
     override fun onStart() {
@@ -55,11 +112,12 @@ class PickNameSheet : SuperBottomSheetFragment() {
         val layoutParams = dialog!!.findViewById<FrameLayout>(R.id.super_bottom_sheet).layoutParams
         layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
         dialog!!.findViewById<FrameLayout>(R.id.super_bottom_sheet).layoutParams = layoutParams
-        binding.txtName.editText!!.setUnderlineColor()
-        binding.txtName.editText!!.onFocusChange {v, _ ->
+        binding?.txtInput?.editText!!.setUnderlineColor()
+        binding?.txtInput?.editText!!.onFocusChange {v, _ ->
             v.setUnderlineColor()
-
         }
+
+        //binding.txtInput.editText!!.inputType = (InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS or InputType.TYPE_TEXT_VARIATION_PASSWORD )
     }
 
     private fun View.setUnderlineColor() {
@@ -80,8 +138,6 @@ class PickNameSheet : SuperBottomSheetFragment() {
         super.onDismiss(dialog)
         callback?.onDismiss()
     }
-
-
 
     override fun getBackgroundColor() = ContextCompat.getColor(context!!, R.color.colorCardDark)
 
@@ -113,12 +169,12 @@ class PickNameSheet : SuperBottomSheetFragment() {
     ----------------------------------------------
  */
     private fun checkName() {
-    binding.txtName.error = ""
-        val isValidName = binding.txtName.editText!!.text.toString().ButtonNameValidator()
-            .addErrorCallback { binding.txtName.error = getString(R.string.err_invalid_button_name) }
+    binding?.txtInput?.error = ""
+        val isValidName = binding?.txtInput?.editText!!.text.toString().ButtonNameValidator()
+            .addErrorCallback { binding?.txtInput?.error = getString(R.string.err_invalid_button_name) }
             .check()
         if (isValidName) {
-            TempData.tempButton?.name = binding.txtName.editText!!.text.toString()
+            TempData.tempButton?.name = binding?.txtInput?.editText!!.text.toString()
             dismiss()
         }
     }
@@ -133,5 +189,9 @@ class PickNameSheet : SuperBottomSheetFragment() {
 
     interface Callback {
         fun onDismiss()
+    }
+
+    companion object {
+        const val KEY_STR_LIST = "KEY_MANE_SHEET_STR_LIST"
     }
 }
