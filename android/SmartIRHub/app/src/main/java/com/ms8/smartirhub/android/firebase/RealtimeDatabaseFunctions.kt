@@ -101,6 +101,10 @@ object RealtimeDatabaseFunctions {
     }
 
 
+    fun getHubAvailability(hubUID: String) : DatabaseReference {
+        return FirebaseDatabase.getInstance().reference.child("devices").child(hubUID).child("action").child("sender")
+    }
+
     fun clearResult(hubUID: String): Task<Void> {
         return FirebaseDatabase.getInstance().reference.child("devices").child(hubUID).child("result")
             .removeValue()

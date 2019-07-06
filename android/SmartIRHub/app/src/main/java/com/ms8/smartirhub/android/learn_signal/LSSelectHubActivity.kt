@@ -16,7 +16,7 @@ import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.databinding.ALearnSigGetHubBinding
 import com.ms8.smartirhub.android.utils.exts.*
-import com.ms8.smartirhub.android.learn_signal.LSWalkthroughActivity.Companion.LISTENING_HUB
+import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity.Companion.LISTENING_HUB
 import java.lang.ref.WeakReference
 import kotlin.math.hypot
 

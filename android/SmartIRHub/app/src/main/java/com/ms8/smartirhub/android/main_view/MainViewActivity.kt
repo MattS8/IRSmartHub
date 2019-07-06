@@ -3,14 +3,12 @@ package com.ms8.smartirhub.android.main_view
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.Log
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableMap
 import androidx.fragment.app.Fragment
@@ -23,18 +21,16 @@ import com.mikepenz.materialdrawer.DrawerBuilder
 import com.mikepenz.materialdrawer.model.ProfileDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.custom_views.BackWarningSheet
-import com.ms8.smartirhub.android.custom_views.RemoteTemplatesSheet
+import com.ms8.smartirhub.android.custom_views.bottom_sheets.BackWarningSheet
+import com.ms8.smartirhub.android.custom_views.bottom_sheets.RemoteTemplatesSheet
 import com.ms8.smartirhub.android.data.RemoteProfile
 import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ActivityMainViewBinding
 import com.ms8.smartirhub.android.utils.exts.getNavBarHeight
 import com.ms8.smartirhub.android.firebase.FirestoreActions
-import com.ms8.smartirhub.android.learn_signal.LSWalkthroughActivity
+import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity
 import com.ms8.smartirhub.android.main_view.fragments.*
-import com.ms8.smartirhub.android.utils.exts.getStatusBarHeight
-import org.jetbrains.anko.dip
 
 class MainViewActivity : AppCompatActivity() {
     private lateinit var binding : ActivityMainViewBinding
@@ -374,7 +370,7 @@ class MainViewActivity : AppCompatActivity() {
     }
 
     private fun createIrSignal() {
-        startActivityForResult(Intent(this, LSWalkthroughActivity::class.java), REQ_NEW_IR_SIG)
+        startActivityForResult(Intent(this, LSWalkThroughActivity::class.java), REQ_NEW_IR_SIG)
     }
 
     private fun setupNewHub() {

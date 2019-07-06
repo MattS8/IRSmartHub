@@ -1,10 +1,12 @@
-package com.ms8.smartirhub.android.exts
+package com.ms8.smartirhub.android.utils.exts
 
 import android.animation.Animator
 import android.animation.ValueAnimator
+import android.app.Activity
 import android.content.Context
 import android.graphics.Color.TRANSPARENT
 import android.graphics.Rect
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.ms8.smartirhub.android.data.RemoteProfile
 import com.ms8.smartirhub.android.database.TempData
@@ -43,9 +45,16 @@ fun AppCompatActivity.startCreateButtonProcess() {
 
 }
 
+fun Activity.getStatusBarHeight() : Int {
+    val rectangle = Rect()
+    window.decorView.getWindowVisibleDisplayFrame(rectangle)
+    return rectangle.top
+}
+
 fun Context.getNavBarHeight() : Int {
     val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
-    return if (resourceId > 0) {
+    Log.d("NAVBAR", "height = $resourceId")
+    return if (resourceId > 0)
         resources.getDimensionPixelSize(resourceId)
-    } else 0
+    else 0
 }

@@ -1,7 +1,6 @@
-package com.ms8.smartirhub.android.custom_views
+package com.ms8.smartirhub.android.custom_views.bottom_sheets
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +9,6 @@ import androidx.databinding.DataBindingUtil
 import com.andrefrsousa.superbottomsheet.SuperBottomSheetFragment
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.databinding.VBottomSheetBinding
-import kotlinx.android.synthetic.main.v_bottom_sheet.*
 
 class BackWarningSheet : SuperBottomSheetFragment() {
     private var binding: VBottomSheetBinding? = null

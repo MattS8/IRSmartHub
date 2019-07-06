@@ -1,36 +1,105 @@
 package com.ms8.smartirhub.android.create_button
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import androidx.databinding.ObservableArrayList
+import androidx.databinding.ObservableList
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.create_command.CC_ChooseActionsActivity
-import com.ms8.smartirhub.android.custom_views.BackWarningSheet
-import com.ms8.smartirhub.android.custom_views.PickActionsSheet
-import com.ms8.smartirhub.android.custom_views.PickActionsSheet.Companion.REQ_EDIT_ACTION
-import com.ms8.smartirhub.android.custom_views.PickActionsSheet.Companion.REQ_NEW_ACTION
-import com.ms8.smartirhub.android.custom_views.PickNameSheet
+import com.ms8.smartirhub.android.create_command.ActionSequenceAdapter
+import com.ms8.smartirhub.android.create_command.CC_ChooseIrSignalActivity
+import com.ms8.smartirhub.android.custom_views.bottom_sheets.BackWarningSheet
+import com.ms8.smartirhub.android.custom_views.bottom_sheets.SimpleListDescSheet
+import com.ms8.smartirhub.android.custom_views.bottom_sheets.SimpleListDescSheet.Companion.REQ_EDIT_ACTION
+import com.ms8.smartirhub.android.custom_views.bottom_sheets.SimpleListDescSheet.Companion.REQ_NEW_ACTION
+import com.ms8.smartirhub.android.custom_views.bottom_sheets.PickNameSheet
 import com.ms8.smartirhub.android.data.Command
 import com.ms8.smartirhub.android.data.RemoteProfile
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ACreateButtonWalkthroughBinding
-import com.ms8.smartirhub.android.learn_signal.LSWalkthroughActivity
+import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity
 
-class CBWalkthroughActivity : AppCompatActivity() {
+class CBWalkThroughActivity : AppCompatActivity() {
     lateinit var binding: ACreateButtonWalkthroughBinding
 
-    val warningSheet: BackWarningSheet = BackWarningSheet()
-    val pickNameSheet = PickNameSheet()
-    val pickActionsSheet = PickActionsSheet()
+    private val warningSheet: BackWarningSheet = BackWarningSheet()
+    private val pickNameSheet = PickNameSheet()
+
+/*
+    ----------------------------------------------
+        PickActionsSheet Logic
+    ----------------------------------------------
+*/
+
+    private var editingPosition = -1
+    private val pickActionsSheet = SimpleListDescSheet().apply {
+        adapter = pickActionsSheetAdapter
+        layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
+    }
+
+    private val commandListener = object : ObservableList.OnListChangedCallback<ObservableArrayList<Command.Action>>() {
+        override fun onChanged(sender: ObservableArrayList<Command.Action>) {
+            pickActionsSheetAdapter.actionList = ArrayList(sender)
+            pickActionsSheet.isSaveEnabled = sender.size > 0
+        }
+
+        override fun onItemRangeRemoved(sender: ObservableArrayList<Command.Action>, positionStart: Int, itemCount: Int) {
+            pickActionsSheetAdapter.actionList = ArrayList(sender)
+            pickActionsSheetAdapter.notifyItemRangeRemoved(positionStart, itemCount)
+            pickActionsSheet.isSaveEnabled = sender.size > 0
+        }
+
+        override fun onItemRangeMoved(sender: ObservableArrayList<Command.Action>, fromPosition: Int, toPosition: Int, itemCount: Int) {
+            pickActionsSheetAdapter.actionList = ArrayList(sender)
+            pickActionsSheetAdapter.notifyDataSetChanged()
+            pickActionsSheet.isSaveEnabled = sender.size > 0
+        }
+
+        override fun onItemRangeInserted(sender: ObservableArrayList<Command.Action>, positionStart: Int, itemCount: Int) {
+            pickActionsSheetAdapter.actionList = ArrayList(sender)
+            pickActionsSheetAdapter.notifyItemRangeInserted(positionStart, itemCount)
+            pickActionsSheet.isSaveEnabled = sender.size > 0
+        }
+
+        override fun onItemRangeChanged(sender: ObservableArrayList<Command.Action>, positionStart: Int, itemCount: Int) {
+            pickActionsSheetAdapter.actionList = ArrayList(sender)
+            pickActionsSheetAdapter.notifyItemRangeChanged(positionStart, itemCount)
+            pickActionsSheet.isSaveEnabled = sender.size > 0
+        }
+    }
+
+    private val actionSequenceAdapterCallback = object : ActionSequenceAdapter.ActionSequenceAdapterCallbacks {
+        override fun addNewAction() {
+            startActivityForResult(Intent(this@CBWalkThroughActivity, CC_ChooseIrSignalActivity::class.java),
+                REQ_NEW_ACTION
+            )
+        }
+
+        override fun startEditAction(action: Command.Action, position: Int) {
+            editingPosition = position
+            startActivityForResult(Intent(this@CBWalkThroughActivity, CC_ChooseIrSignalActivity::class.java),
+                REQ_EDIT_ACTION
+            )
+        }
+    }
+    val pickActionsSheetAdapter = ActionSequenceAdapter(actionSequenceAdapterCallback)
 
 /*
     ----------------------------------------------
         Overridden Functions
     ----------------------------------------------
 */
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(KEY_ACTIONS_EDITING_POS, editingPosition)
+    }
 
     override fun onBackPressed() {
         when {
@@ -62,6 +131,7 @@ class CBWalkthroughActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        TempData.tempButton?.command?.actions?.addOnListChangedCallback(commandListener)
         pickNameSheet.callback = object : PickNameSheet.Callback {
             override fun onDismiss() {
                 determineWalkThroughState()
@@ -71,6 +141,7 @@ class CBWalkthroughActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
+        TempData.tempButton?.command?.actions?.removeOnListChangedCallback(commandListener)
         pickNameSheet.callback = null
     }
 
@@ -86,6 +157,8 @@ class CBWalkthroughActivity : AppCompatActivity() {
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.title = getString(R.string.add_button_title)
 
+        savedInstanceState?.getInt(KEY_ACTIONS_EDITING_POS)?.let { editingPosition = it }
+
         // Set progress texts
         binding.prog1.description = getString(R.string.prog_button_name)
         binding.prog2.description = getString(R.string.prog_get_actions)
@@ -95,20 +168,24 @@ class CBWalkthroughActivity : AppCompatActivity() {
         determineWalkThroughState()
     }
 
+    @SuppressLint("LogNotTimber")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         when (requestCode) {
             REQ_NEW_ACTION -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    val newIrSignalUID = data?.getStringExtra(LSWalkthroughActivity.NEW_IR_SIGNAL_UID) ?: return
+                    val newIrSignalUID = data?.getStringExtra(LSWalkThroughActivity.NEW_IR_SIGNAL_UID) ?: return
                     TempData.tempButton?.command?.actions?.add(Command.Action().apply { irSignal =  newIrSignalUID})
                 }
             }
             REQ_EDIT_ACTION -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    val newIrSignalUID = data?.getStringExtra(LSWalkthroughActivity.NEW_IR_SIGNAL_UID) ?: return
-                    pickActionsSheet.replaceActionWithIrSignal(newIrSignalUID)
+                    val newIrSignalUID = data?.getStringExtra(LSWalkThroughActivity.NEW_IR_SIGNAL_UID) ?: return
+                    if (editingPosition != -1) {
+                        TempData.tempButton?.command?.actions?.removeAt(editingPosition)
+                        TempData.tempButton?.command?.actions?.add(editingPosition, Command.Action().apply { irSignal = newIrSignalUID })
+                    } else { Log.e("ChooseActions", "Returned successfully from REQ_EDIT_ACTION, but editingPosition was -1") }
                 }
             }
             REQ_SIG_ACTION -> {
@@ -206,5 +283,8 @@ class CBWalkthroughActivity : AppCompatActivity() {
         const val REQ_SIG_ACTION = 3
         const val REQ_STYLE = 4
         const val EXTRA_BUTTON_POS = "EXTRA_BUTTON_POS"
+
+
+        const val KEY_ACTIONS_EDITING_POS = "KEY_ACT_EDIT_POS"
     }
 }

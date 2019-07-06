@@ -5,7 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.databinding.DataBindingUtil
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.custom_views.BottomErrorSheet
+import com.ms8.smartirhub.android.custom_views.bottom_sheets.BottomErrorSheet
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ACreateButtonNameBinding
 import com.ms8.smartirhub.android.utils.MyValidators.ButtonNameValidator

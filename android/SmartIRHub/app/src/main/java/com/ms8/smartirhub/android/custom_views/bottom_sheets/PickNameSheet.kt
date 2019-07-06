@@ -1,9 +1,8 @@
-package com.ms8.smartirhub.android.custom_views
+package com.ms8.smartirhub.android.custom_views.bottom_sheets
 
 import android.content.DialogInterface
 import android.content.res.ColorStateList
 import android.os.Bundle
-import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -88,17 +87,13 @@ class PickNameSheet : SuperBottomSheetFragment() {
             b.tvTitle.text =  strList?.get(1) ?: if (nameTitle != "") nameTitle else getString(R.string.need_help_with_a_name)
             b.tvHelpNameDesc.text = strList?.get(2) ?: if (nameDesc != "") nameDesc else getString(R.string.need_help_name_desc)
             b.tvTipsTitle.text = strList?.get(3) ?: tipsTitle
-            if (b.tvTipsTitle.text == "")
-                b.tvTipsTitle.visibility = View.GONE
+            b.tvTipsTitle.visibility = if (b.tvTipsTitle.text == "") View.GONE else View.VISIBLE
             b.tvTipsDesc1.text = strList?.get(4) ?: tipsDesc1
-            if (b.tvTipsDesc1.text == "")
-                b.tvTipsDesc1.visibility = View.GONE
+            b.tvTipsDesc1.visibility = if (b.tvTipsDesc1.text == "") View.GONE else View.VISIBLE
             b.tvTipsDesc2.text = strList?.get(4) ?: tipsDesc2
-            if (b.tvTipsDesc2.text == "")
-                b.tvTipsDesc2.visibility = View.GONE
+            b.tvTipsDesc2.visibility = if (b.tvTipsDesc2.text == "") View.GONE else View.VISIBLE
             b.tvTipsDescExampleTitle.text = strList?.get(5) ?: tipsExampleTitle
-            if (b.tvTipsDescExampleTitle.text == "")
-                b.tvTipsDescExampleTitle.visibility = View.GONE
+            b.tvTipsDescExampleTitle.visibility = if (b.tvTipsDescExampleTitle.text == "") View.GONE else View.VISIBLE
             b.txtInput.hint = strList?.get(6) ?: nameInputHint
 
             b.btnPickName.setOnClickListener { checkName() }

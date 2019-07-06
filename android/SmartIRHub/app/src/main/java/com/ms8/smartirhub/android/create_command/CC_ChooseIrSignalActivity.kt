@@ -13,12 +13,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.data.IrSignal
 import com.ms8.smartirhub.android.database.LocalData
-import com.ms8.smartirhub.android.database.TempData
-import com.ms8.smartirhub.android.databinding.ACcChooseActionBinding
 import com.ms8.smartirhub.android.databinding.ACcChooseIrSignalBinding
-import com.ms8.smartirhub.android.learn_signal.LSWalkthroughActivity
-import com.ms8.smartirhub.android.learn_signal.LSWalkthroughActivity.Companion.NEW_IR_SIGNAL_UID
-import com.ms8.smartirhub.android.learn_signal.LSWalkthroughActivity.Companion.REQ_NEW_IR_SIGNAL
+import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity
+import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity.Companion.NEW_IR_SIGNAL_UID
+import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity.Companion.REQ_NEW_IR_SIGNAL
 
 class CC_ChooseIrSignalActivity : AppCompatActivity() {
     lateinit var binding: ACcChooseIrSignalBinding
@@ -93,7 +91,7 @@ class CC_ChooseIrSignalActivity : AppCompatActivity() {
 */
 
     private fun onNewIrSignalSelected() {
-        startActivityForResult(Intent(this, LSWalkthroughActivity::class.java), REQ_NEW_IR_SIGNAL)
+        startActivityForResult(Intent(this, LSWalkThroughActivity::class.java), REQ_NEW_IR_SIGNAL)
     }
 
     private fun onSignalSelected(irSignal : IrSignal?) {

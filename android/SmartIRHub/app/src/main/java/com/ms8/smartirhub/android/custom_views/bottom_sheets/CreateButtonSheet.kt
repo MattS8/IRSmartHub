@@ -1,4 +1,4 @@
-package com.ms8.smartirhub.android.custom_views
+package com.ms8.smartirhub.android.custom_views.bottom_sheets
 
 import android.os.Bundle
 import android.view.LayoutInflater

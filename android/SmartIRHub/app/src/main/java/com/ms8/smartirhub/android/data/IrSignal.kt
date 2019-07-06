@@ -22,4 +22,12 @@ class IrSignal {
     var code = ""
     var repeat = false
     var uid = ""
+
+    fun resetData() {
+        rawData = HashMap()
+        rawLength = 0
+        encodingType = 0
+        code = ""
+        repeat = false
+    }
 }

@@ -97,13 +97,13 @@
     <string name="pick_a_button_style">Pick a button style</string>
     <string name="button_name_hint">Button Name:</string>
     <string name="how_to_add_button">Add Button:</string>
-    <string name="learn_ir_title">Learn IR Signal</string>
+    <string name="learn_ir_title">Learn IR Signal:</string>
     <string name="select_ir_hub">Select Hub</string>
     <string name="send_ir_signal">Send IR Signal</string>
     <string name="select_ir_hub_desc">Select a hub to listen for a signal</string>
     <string name="send_ir_signal_desc">Send a signal to the hub</string>
     <string name="name_learned_signal_desc">Name the newly learned signal</string>
-    <string name="dont_see_hub_title">Don\'t see your hub listed below?</string>
+    <string name="dont_see_hub_title">Don\'t see your hub listed above?</string>
     <string name="dont_see_hub_desc">Make sure the hub is properly set up and ensure the owner has given you permission
         to use it. If you still don\'t see it, try setting the hub up again.
     </string>
@@ -118,12 +118,10 @@
     <string name="begin_learning_title">Tap \"Start Listening\" to begin recording an IR signal</string>
     <string name="tips_title">Tips:</string>
     <string name="start_listening">Start Listening</string>
-    <string name="learning_tips_desc">Point your remote directly at the sensor
-        \n\nSimply tap the button on your remote.
-        \n\nHolding the button could cause problems learning the signal.
-        \n\nYou can make sure the signal was learned properly by tapping \"Test Signal\"
+    <string name="learning_tips_desc">Tap \"Start Listening\", then point your remote at the IR SmartHub and press the button you wish to learn.
+        After a successful pairing, you can ensure the IR signal was correctly learned by tapping \"Test Signal\". If something went wrong, you can try again by tapping the \"Retry\" button.
     </string>
-    <string name="learned_signal_info_title">Learned Signal Info:</string>
+    <string name="learned_signal_info_title">Learned Signal:</string>
     <string name="signal_type_title">Signal Type:</string>
     <string name="show_advanced_info">Show Advanced Info</string>
     <string name="test_signal">Test Signal</string>
@@ -233,4 +231,7 @@
     <string name="exit_app_title">Exit Application</string>
     <string name="exit_app_desc">Are you sure you want to leave the application?</string>
     <string name="leave">Leave</string>
+    <string name="pair_signal">Pair IR Signal</string>
+    <string name="pair_signal_title">Pair Signal:</string>
+    <string name="signal_sent">Signal was sent to the IR Smart Hub!</string>
 </resources>

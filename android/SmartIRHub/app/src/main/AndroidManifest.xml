@@ -32,7 +32,7 @@
         </activity>
         <activity android:name=".learn_signal.LSSelectHubActivity">
         </activity>
-        <activity android:name=".learn_signal.LSWalkthroughActivity">
+        <activity android:name=".learn_signal.LSWalkThroughActivity">
         </activity>
         <activity android:name=".create_button.CBStyleActivity">
         </activity>
@@ -40,7 +40,7 @@
         </activity>
         <activity android:name=".create_button.CBNameActivity">
         </activity>
-        <activity android:name=".create_button.CBWalkthroughActivity">
+        <activity android:name=".create_button.CBWalkThroughActivity">
         </activity>
         <activity android:name=".TestViewActivity">
         </activity>

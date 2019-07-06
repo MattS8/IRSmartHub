@@ -8,11 +8,11 @@ import android.os.Bundle
 import android.util.Log
 import androidx.databinding.DataBindingUtil
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.custom_views.BottomErrorSheet
+import com.ms8.smartirhub.android.custom_views.bottom_sheets.BottomErrorSheet
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ALearnSigNameBinding
 import com.ms8.smartirhub.android.firebase.FirestoreActions
-import com.ms8.smartirhub.android.learn_signal.LSWalkthroughActivity.Companion.NEW_IR_SIGNAL_UID
+import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity.Companion.NEW_IR_SIGNAL_UID
 import com.ms8.smartirhub.android.utils.MyValidators.SignalNameValidator
 
 class LSNameSignalActivity : AppCompatActivity() {

@@ -6,7 +6,6 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toolbar
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableArrayList
 import androidx.databinding.ObservableList
@@ -16,10 +15,9 @@ import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.create_command.CC_ChooseIrSignalActivity.Companion.REQ_EDIT_ACTION
 import com.ms8.smartirhub.android.create_command.CC_ChooseIrSignalActivity.Companion.REQ_NEW_ACTION
 import com.ms8.smartirhub.android.data.Command
-import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ACcChooseActionBinding
-import com.ms8.smartirhub.android.learn_signal.LSWalkthroughActivity
+import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity
 
 class CC_ChooseActionsActivity : AppCompatActivity() {
     lateinit var binding: ACcChooseActionBinding
@@ -92,14 +90,14 @@ class CC_ChooseActionsActivity : AppCompatActivity() {
         when (requestCode) {
             REQ_NEW_ACTION -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    val newIrSignalUID = data?.getStringExtra(LSWalkthroughActivity.NEW_IR_SIGNAL_UID) ?: return
+                    val newIrSignalUID = data?.getStringExtra(LSWalkThroughActivity.NEW_IR_SIGNAL_UID) ?: return
                     TempData.tempButton?.command?.actions?.add(Command.Action().apply { irSignal =  newIrSignalUID})
                 }
             }
             REQ_EDIT_ACTION -> {
                 if (resultCode == Activity.RESULT_OK) {
                     if (editingPosition != -1) {
-                        val newIrSignalUID = data?.getStringExtra(LSWalkthroughActivity.NEW_IR_SIGNAL_UID) ?: return
+                        val newIrSignalUID = data?.getStringExtra(LSWalkThroughActivity.NEW_IR_SIGNAL_UID) ?: return
                         TempData.tempButton?.command?.actions?.removeAt(editingPosition)
                         TempData.tempButton?.command?.actions?.add(editingPosition, Command.Action().apply { irSignal = newIrSignalUID })
                     } else {

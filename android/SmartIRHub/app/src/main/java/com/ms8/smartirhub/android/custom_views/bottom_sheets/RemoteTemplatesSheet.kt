@@ -1,8 +1,7 @@
-package com.ms8.smartirhub.android.custom_views
+package com.ms8.smartirhub.android.custom_views.bottom_sheets
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.os.Handler
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.LayoutInflater

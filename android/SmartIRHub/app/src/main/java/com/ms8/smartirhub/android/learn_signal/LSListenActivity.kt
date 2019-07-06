@@ -18,15 +18,14 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.custom_views.BottomErrorSheet
+import com.ms8.smartirhub.android.custom_views.bottom_sheets.BottomErrorSheet
 import com.ms8.smartirhub.android.data.HubResult
 import com.ms8.smartirhub.android.data.IrSignal
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ALearnSigListenBinding
 import com.ms8.smartirhub.android.firebase.FirebaseConstants
-import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
-import com.ms8.smartirhub.android.learn_signal.LSWalkthroughActivity.Companion.LISTENING_HUB
+import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity.Companion.LISTENING_HUB
 import java.lang.Exception
 
 class LSListenActivity : AppCompatActivity() {
@@ -77,7 +76,6 @@ class LSListenActivity : AppCompatActivity() {
                 Log.w("rawDataListener", "Mismatch in chunk list size: expected $numChunks but actually ${rawData.size}")
             }
         }
-
     }
 
     /**
@@ -252,8 +250,8 @@ class LSListenActivity : AppCompatActivity() {
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
-        super.onSaveInstanceState(outState, outPersistentState)
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
         outState.putBoolean(IS_LISTENING, isListeningForResult)
     }
 
