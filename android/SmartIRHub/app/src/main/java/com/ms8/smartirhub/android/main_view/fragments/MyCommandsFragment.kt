@@ -5,13 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.Fragment
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.databinding.FCommandsBinding
 
 
-class MyCommandsFragment : MainViewFragment() {
-    override fun newInstance(): MainViewFragment {
+class MyCommandsFragment : MainFragment() {
+    override fun newInstance(): MainFragment {
         return MyCommandsFragment()
     }
 

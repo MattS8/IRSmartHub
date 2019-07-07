@@ -23,7 +23,7 @@ import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.BackWarningSheet
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.RemoteTemplatesSheet
-import com.ms8.smartirhub.android.data.RemoteProfile
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile
 import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ActivityMainViewBinding
@@ -38,18 +38,14 @@ class MainViewActivity : AppCompatActivity() {
     private lateinit var state : State
     private lateinit var pagerAdapter: MainViewAdapter
 
-    private val commandsFragments: MutableList<Fragment> = arrayListOf(MyCommandsFragment(), MyIrSignalsFragment())
-    private val devicesFragments: MutableList<Fragment> = arrayListOf(MyDevicesFragment(), MyIRSmartHubsFragment())
-    private val remotesFragments: MutableList<Fragment> = arrayListOf(RemoteFragment(), MyRemotesFragment())
     private val remoteFragment = RemoteFragment()
-
     private val exitWarningSheet = BackWarningSheet()
 
-    /*
-    -----------------------------------------------
-        Database Listeners
-    -----------------------------------------------
-    */
+/*
+-----------------------------------------------
+    Database Listeners
+-----------------------------------------------
+*/
 
     private val remoteProfilesListener: ObservableMap.OnMapChangedCallback<out ObservableMap<String, RemoteProfile>, String, RemoteProfile>? = object :
         ObservableMap.OnMapChangedCallback<ObservableMap<String, RemoteProfile>, String, RemoteProfile>() {
@@ -58,24 +54,26 @@ class MainViewActivity : AppCompatActivity() {
         }
     }
 
-    /*
-    ----------------------------------------------
-        Overridden Functions
-    ----------------------------------------------
-    */
+/*
+----------------------------------------------
+    Overridden Functions
+----------------------------------------------
+*/
 
     override fun onBackPressed() {
         when {
+        // Check remoteTemplateSheet state
             remoteTemplatesSheet.onBackPressed() -> {}
+        // Show exit warning before leaving
             !exitWarningSheet.isVisible -> { exitWarningSheet.show(supportFragmentManager, "ExitWarningSheet") }
+        // Proceed with normal onBackPressed
             else -> { super.onBackPressed() }
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        state.adapterBaseID = pagerAdapter.getBaseItemId()
-        outState.putParcelable(STATE, state)
         super.onSaveInstanceState(outState)
+        outState.putParcelable(STATE, state.apply { adapterBaseID = pagerAdapter.getBaseItemId() })
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,18 +82,18 @@ class MainViewActivity : AppCompatActivity() {
         //binding.navView.menuItemSelectionListener = navListener
 
         /* --- Set up exit sheet -- */
-        exitWarningSheet.callback = object : BackWarningSheet.BackWaringSheetCallback {
-            override fun btnNegAction() {}
+        exitWarningSheet
+            .apply {
+                titleStr = this@MainViewActivity.getString(R.string.exit_app_title)
+                descStr = this@MainViewActivity.getString(R.string.exit_app_desc)
+                btnNegStr = this@MainViewActivity.getString(android.R.string.cancel)
+                btnPosStr = this@MainViewActivity.getString(R.string.leave)
+                callback = object : BackWarningSheet.BackWaringSheetCallback {
+                    override fun btnNegAction() {}
 
-            override fun btnPosAction() {
-                Log.w("TEST", "HERRER")
-                finishAndRemoveTask()
+                    override fun btnPosAction() { finishAndRemoveTask() }
+                }
             }
-        }
-        exitWarningSheet.titleStr = getString(R.string.exit_app_title)
-        exitWarningSheet.descStr = getString(R.string.exit_app_desc)
-        exitWarningSheet.btnNegStr = getString(android.R.string.cancel)
-        exitWarningSheet.btnPosStr = getString(R.string.leave)
 
         /* --- Build drawer layout --- */
         val header = AccountHeaderBuilder()
@@ -141,21 +139,27 @@ class MainViewActivity : AppCompatActivity() {
 
         /* --- Set Inner View Layout --- */
         pagerAdapter = MainViewAdapter(supportFragmentManager, FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT, state.navPosition, state.adapterBaseID)
-        pagerAdapter.addFragment(MyCommandsFragment(), MainViewAdapter.Companion.ViewPagerList.COMMANDS)
-        pagerAdapter.addFragment(MyIrSignalsFragment(), MainViewAdapter.Companion.ViewPagerList.COMMANDS)
-        pagerAdapter.addFragment(remoteFragment, MainViewAdapter.Companion.ViewPagerList.REMOTES)
-        pagerAdapter.addFragment(MyRemotesFragment(), MainViewAdapter.Companion.ViewPagerList.REMOTES)
-        pagerAdapter.addFragment(MyDevicesFragment(), MainViewAdapter.Companion.ViewPagerList.DEVICES)
-        pagerAdapter.addFragment(MyIRSmartHubsFragment(), MainViewAdapter.Companion.ViewPagerList.DEVICES)
+            .apply {
+                addFragment(MyCommandsFragment(), MainViewAdapter.Companion.ViewPagerList.COMMANDS)
+                addFragment(MyIrSignalsFragment(), MainViewAdapter.Companion.ViewPagerList.COMMANDS)
+                addFragment(remoteFragment, MainViewAdapter.Companion.ViewPagerList.REMOTES)
+                addFragment(MyRemotesFragment(), MainViewAdapter.Companion.ViewPagerList.REMOTES)
+                addFragment(MyDevicesFragment(), MainViewAdapter.Companion.ViewPagerList.DEVICES)
+                addFragment(MyIRSmartHubsFragment(), MainViewAdapter.Companion.ViewPagerList.DEVICES)
+            }
 
 
+        /* -- Set bindings -- */
+        binding
+            .apply {
+                frameLayout.adapter = pagerAdapter
+                frameLayout.addOnPageChangeListener(pageChangeCallback)
 
-        binding.frameLayout.adapter = pagerAdapter
-        binding.frameLayout.addOnPageChangeListener(pageChangeCallback)
+                navView.setOnNavigationItemSelectedListener { item -> onItemSelected(item) }
+                navView.setOnNavigationItemReselectedListener { run {  } }
+                navView.selectedItemId = state.navPosition
+            }
 
-        binding.navView.setOnNavigationItemSelectedListener { item -> onItemSelected(item) }
-        binding.navView.setOnNavigationItemReselectedListener { run {  } }
-        binding.navView.selectedItemId = state.navPosition
         setupInnerView()
     }
 
@@ -187,8 +191,8 @@ class MainViewActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("LogNotTimber")
     private fun setupInnerView() {
-        Log.d("MainViewActivity", "Setting up with ${state.navPosition}")
         when (state.navPosition) {
         // My Remotes
             R.id.navigation_main_remote -> {
@@ -248,11 +252,8 @@ class MainViewActivity : AppCompatActivity() {
                     }
                 }
             }
-            else -> {
-                Log.e("MainViewActivity", "Unknown nav id: ${state.navPosition}")
-            }
+            else -> { Log.e("MainViewActivity", "Unknown nav id: ${state.navPosition}") }
         }
-        //pagerAdapter.updateNavPosition(state.navPosition)
         pagerAdapter.setNavPosition(state.navPosition)
         binding.frameLayout.setCurrentItem(state.viewPagerPosition, false)
     }
@@ -296,11 +297,11 @@ class MainViewActivity : AppCompatActivity() {
         }
     }
 
-    /*
-     ----------------------------------------------
-        Navigation Functions
-     ----------------------------------------------
-     */
+/*
+ ----------------------------------------------
+    Navigation Functions
+ ----------------------------------------------
+ */
 
     private fun onDrawerItemClicked(view: View?, position: Int, drawerItem: IDrawerItem<*>) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -323,29 +324,11 @@ class MainViewActivity : AppCompatActivity() {
         return true
     }
 
-//    private val navListener = object : BottomNavigation.OnMenuItemSelectionListener {
-//        override fun onMenuItemReselect(itemId: Int, position: Int, fromUser: Boolean) {}
-//
-//        override fun onMenuItemSelect(itemId: Int, position: Int, fromUser: Boolean) {
-//            // Update state
-//            state.navPosition = position
-//
-//            // Reset viewpager position
-//            state.viewPagerPosition = 0
-//
-//            // Update FAB based on selected item
-//            setupFab()
-//
-//            // Show proper views based on selected item
-//            setupInnerView()
-//        }
-//    }
-
-    /*
-    ----------------------------------------------
-        OnClick Functions
-    ----------------------------------------------
-    */
+/*
+----------------------------------------------
+    OnClick Functions
+----------------------------------------------
+*/
 
     private val remoteTemplatesSheet = RemoteTemplatesSheet().apply {
        templateSheetCallback = object : RemoteTemplatesSheet.RemoteTemplateSheetCallback{
@@ -362,7 +345,6 @@ class MainViewActivity : AppCompatActivity() {
     private fun createRemote() {
         FirestoreActions.getRemoteTemplates()
         remoteTemplatesSheet.show(supportFragmentManager, "RemoteTemplateSheet")
-        //remoteFragment.createRemote()
     }
 
     private fun createCommand() {
@@ -400,37 +382,37 @@ class MainViewActivity : AppCompatActivity() {
     ----------------------------------------------
     */
 
-}
+    class State() : Parcelable {
+        var navPosition = R.id.navigation_main_remote
+        var viewPagerPosition = 0
+        var adapterBaseID: Long = 0
 
-class State() : Parcelable {
-    var navPosition = R.id.navigation_main_remote
-    var viewPagerPosition = 0
-    var adapterBaseID: Long = 0
-
-    constructor(parcel: Parcel) : this() {
-        navPosition = parcel.readInt()
-        viewPagerPosition = parcel.readInt()
-        adapterBaseID = parcel.readLong()
-    }
-
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeInt(navPosition)
-        parcel.writeInt(viewPagerPosition)
-        parcel.writeLong(adapterBaseID)
-    }
-
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    companion object CREATOR : Parcelable.Creator<State> {
-        override fun createFromParcel(parcel: Parcel): State {
-            return State(parcel)
+        constructor(parcel: Parcel) : this() {
+            navPosition = parcel.readInt()
+            viewPagerPosition = parcel.readInt()
+            adapterBaseID = parcel.readLong()
         }
 
-        override fun newArray(size: Int): Array<State?> {
-            return arrayOfNulls(size)
+        override fun writeToParcel(parcel: Parcel, flags: Int) {
+            parcel.writeInt(navPosition)
+            parcel.writeInt(viewPagerPosition)
+            parcel.writeLong(adapterBaseID)
+        }
+
+        override fun describeContents(): Int {
+            return 0
+        }
+
+        companion object CREATOR : Parcelable.Creator<State> {
+            override fun createFromParcel(parcel: Parcel): State {
+                return State(parcel)
+            }
+
+            override fun newArray(size: Int): Array<State?> {
+                return arrayOfNulls(size)
+            }
         }
     }
-
 }
+
+

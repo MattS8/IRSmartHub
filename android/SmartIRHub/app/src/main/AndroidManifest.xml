@@ -34,11 +34,11 @@
         </activity>
         <activity android:name=".learn_signal.LSWalkThroughActivity">
         </activity>
-        <activity android:name=".create_button.CBStyleActivity">
+        <activity android:name=".create_button._old.CBStyleActivity">
         </activity>
-        <activity android:name=".create_button.CBSigActionActivity">
+        <activity android:name=".create_button._old.CBSigActionActivity">
         </activity>
-        <activity android:name=".create_button.CBNameActivity">
+        <activity android:name=".create_button._old.CBNameActivity">
         </activity>
         <activity android:name=".create_button.CBWalkThroughActivity">
         </activity>

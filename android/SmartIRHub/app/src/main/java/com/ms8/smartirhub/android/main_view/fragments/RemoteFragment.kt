@@ -15,7 +15,7 @@ import com.ms8.smartirhub.android.custom_views.RemoteLayout
 import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.databinding.FRemoteCurrentBinding
 
-class RemoteFragment : MainViewFragment() {
+class RemoteFragment : MainFragment() {
     lateinit var binding: FRemoteCurrentBinding
     var waitingForCreateButtonActivity = false
     private var isShowingTemplateSheet = false
@@ -39,7 +39,7 @@ class RemoteFragment : MainViewFragment() {
         Overridden Functions
     ----------------------------------------------
 */
-    override fun newInstance(): MainViewFragment { return RemoteFragment() }
+    override fun newInstance(): MainFragment { return RemoteFragment() }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)

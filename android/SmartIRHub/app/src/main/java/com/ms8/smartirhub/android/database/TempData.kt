@@ -1,11 +1,10 @@
 package com.ms8.smartirhub.android.database
 
-import com.ms8.smartirhub.android.data.Command
-import com.ms8.smartirhub.android.data.IrSignal
-import com.ms8.smartirhub.android.data.RemoteProfile
+import com.ms8.smartirhub.android.models.firestore.IrSignal
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile
 
 object TempData {
-    var tempRemoteProfile = RemoteProfile()
-    var tempButton: RemoteProfile.Button? = null
-    var tempSignal: IrSignal? = null
+    var tempRemoteProfile   : RemoteProfile         = RemoteProfile()
+    var tempButton          : RemoteProfile.Button? = null
+    var tempSignal          : IrSignal?             = null
 }

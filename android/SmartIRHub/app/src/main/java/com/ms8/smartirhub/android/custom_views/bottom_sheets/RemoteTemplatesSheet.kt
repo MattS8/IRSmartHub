@@ -16,8 +16,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.andrefrsousa.superbottomsheet.SuperBottomSheetFragment
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.create_remote_profile.RemoteTemplateAdapter
-import com.ms8.smartirhub.android.data.RemoteProfile
-import com.ms8.smartirhub.android.data.RemoteProfileTemplate
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile
+import com.ms8.smartirhub.android.models.firestore.RemoteProfileTemplate
 import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.VRemoteTemplatesSheetBinding

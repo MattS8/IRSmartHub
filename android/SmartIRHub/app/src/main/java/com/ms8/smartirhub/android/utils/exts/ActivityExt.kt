@@ -8,7 +8,7 @@ import android.graphics.Color.TRANSPARENT
 import android.graphics.Rect
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.ms8.smartirhub.android.data.RemoteProfile
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile
 import com.ms8.smartirhub.android.database.TempData
 
 val AppCompatActivity.hasSourceBounds: Boolean get() = intent?.sourceBounds != null

@@ -4,7 +4,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
-        <variable name="hub" type="com.ms8.smartirhub.android.data.Hub"/>
+        <variable name="hub" type="com.ms8.smartirhub.android.models.firestore.Hub"/>
 
     </data>
 

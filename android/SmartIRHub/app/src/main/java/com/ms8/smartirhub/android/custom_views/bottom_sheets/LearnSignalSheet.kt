@@ -18,8 +18,8 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.data.HubResult
-import com.ms8.smartirhub.android.data.IrSignal
+import com.ms8.smartirhub.android.models.realtimedatabase.HubResult
+import com.ms8.smartirhub.android.models.firestore.IrSignal
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.VLearnSigSheetBinding
 import com.ms8.smartirhub.android.firebase.FirebaseConstants

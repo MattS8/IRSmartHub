@@ -9,7 +9,7 @@ import androidx.databinding.*
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.data.RemoteProfileTemplate
+import com.ms8.smartirhub.android.models.firestore.RemoteProfileTemplate
 import com.ms8.smartirhub.android.database.LocalData
 
 class RemoteTemplateAdapter(var templateCallback: RemoteTemplateAdapterCallback): RecyclerView.Adapter<RemoteTemplateAdapter.RemoteTemplateViewHolder>() {

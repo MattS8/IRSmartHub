@@ -1,35 +1,27 @@
 package com.ms8.smartirhub.android.database
 
 import androidx.databinding.ObservableArrayMap
-import com.ms8.smartirhub.android.data.*
+import com.ms8.smartirhub.android.models.firestore.IrSignal
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile
+import com.ms8.smartirhub.android.models.firestore.Group
+import com.ms8.smartirhub.android.models.firestore.Hub
+import com.ms8.smartirhub.android.models.firestore.RemoteProfileTemplate
+import com.ms8.smartirhub.android.models.firestore.User
 
 object LocalData {
-    var user : User? = null
-    val userGroups = ObservableArrayMap<String, Group>()
-    val remoteProfiles = ObservableArrayMap<String, RemoteProfile>()
-    val hubs = ObservableArrayMap<String, Hub>()
-    val irSignals = ObservableArrayMap<String, IrSignal>()
+    val groups                  : ObservableArrayMap<String, Group>                 = ObservableArrayMap()
+    val hubs                    : ObservableArrayMap<String, Hub>                   = ObservableArrayMap()
+    val remoteProfiles          : ObservableArrayMap<String, RemoteProfile>         = ObservableArrayMap()
+    val remoteProfileTemplates  : ObservableArrayMap<String, RemoteProfileTemplate> = ObservableArrayMap()
+    val signals                 : ObservableArrayMap<String, IrSignal>              = ObservableArrayMap()
+    var user                    : User?                                             = null
 
-    val remoteProfileTemplates = ObservableArrayMap<String, RemoteProfileTemplate>()
 
     fun removeUserData() {
         user = null
-        userGroups.clear()
+        groups.clear()
         remoteProfiles.clear()
         hubs.clear()
-        irSignals.clear()
+        signals.clear()
     }
-
-//    fun userDataReady(): Boolean {
-//        var userDataReady = user != null && user!!.groups.size == LocalData.userGroups.size
-//        when (userDataReady) {
-//            false -> return false
-//            true -> {
-//                remoteProfiles.forEach { entry ->
-//                    entry.value.
-//                }
-//            }
-//        }
-//        return
-//    }
 }

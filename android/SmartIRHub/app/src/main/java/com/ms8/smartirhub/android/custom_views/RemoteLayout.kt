@@ -13,12 +13,12 @@ import androidx.databinding.ObservableList
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.data.RemoteProfile.Button
-import com.ms8.smartirhub.android.data.RemoteProfile.Button.Companion.STYLE_CREATE_BUTTON
-import com.ms8.smartirhub.android.data.RemoteProfile.Button.Companion.STYLE_ROUND_BUTTON
-import com.ms8.smartirhub.android.data.RemoteProfile.Button.Companion.STYLE_SQUARE_BUTTON
-import com.ms8.smartirhub.android.data.RemoteProfile.Button.Companion.STYLE_VERTICAL_RECT_BOT_ROUNDED
-import com.ms8.smartirhub.android.data.RemoteProfile.Button.Companion.STYLE_VERTICAL_RECT_TOP_ROUNDED
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_CREATE_BUTTON
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_ROUND_BUTTON
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_SQUARE_BUTTON
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_VERTICAL_RECT_BOT_ROUNDED
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_VERTICAL_RECT_TOP_ROUNDED
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
 

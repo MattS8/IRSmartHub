@@ -3,7 +3,6 @@ package com.ms8.smartirhub.android.splash
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -30,11 +29,11 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.QuerySnapshot
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.data.Group
-import com.ms8.smartirhub.android.data.User
+import com.ms8.smartirhub.android.models.firestore.Group
+import com.ms8.smartirhub.android.models.firestore.User
 import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.databinding.ASplashLoginMainBinding
-import com.ms8.smartirhub.android.firebase.FirebaseAuthActions
+import com.ms8.smartirhub.android.firebase.AuthActions
 import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.main_view.MainViewActivity
 import com.ms8.smartirhub.android.utils.MyValidators
@@ -76,7 +75,7 @@ class SplashActivity3 : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
-            FirebaseAuthActions.RC_SIGN_IN -> {
+            AuthActions.RC_SIGN_IN -> {
                 when (resultCode) {
                     Activity.RESULT_OK -> {
                         handleGoogleSignInResult(data)
@@ -89,19 +88,19 @@ class SplashActivity3 : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        LocalData.userGroups.removeOnMapChangedCallback(userGroupsListener)
+        LocalData.groups.removeOnMapChangedCallback(userGroupsListener)
         userGroupsListener.context = null
     }
 
     override fun onResume() {
         super.onResume()
-        LocalData.userGroups.addOnMapChangedCallback(userGroupsListener.apply { context = this@SplashActivity3 })
+        LocalData.groups.addOnMapChangedCallback(userGroupsListener.apply { context = this@SplashActivity3 })
         val groupSize = LocalData.user?.groups?.size ?: -1
-        if (LocalData.user != null && LocalData.user!!.groups.size == LocalData.userGroups.size) {
+        if (LocalData.user != null && LocalData.user!!.groups.size == LocalData.groups.size) {
             Log.d("Test##", "All group data got! ($groupSize)")
             startActivity(Intent(this, MainViewActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
         } else {
-            Log.d("Test##", "Still waiting on something... user: ${LocalData.user} | groupSize = $groupSize | LocalData.userGroups.size = ${LocalData.userGroups.size}")
+            Log.d("Test##", "Still waiting on something... user: ${LocalData.user} | groupSize = $groupSize | LocalData.groups.size = ${LocalData.groups.size}")
         }
     }
 
@@ -123,7 +122,7 @@ class SplashActivity3 : AppCompatActivity() {
         binding.layoutUsername.btnSelectUsername.setOnClickListener { createUser() }
         binding.btnSignIn.setOnClickListener { showSignInLayout(true) }
         binding.btnSignUpEmail.setOnClickListener { showSignUpLayout(true) }
-        binding.signInGoogle.setOnClickListener { FirebaseAuthActions.signInWithGoogle(this) }
+        binding.signInGoogle.setOnClickListener { AuthActions.signInWithGoogle(this) }
 
         when (state.layoutState) {
             SHOW_SPLASH -> { checkLoginStatus() }
@@ -190,7 +189,7 @@ class SplashActivity3 : AppCompatActivity() {
 
         if (isValidEmailAndPassword && passwordsMatch(password, passwordConfirm)) {
             binding.layoutSignUp.btnSignUp.startAnimation()
-            FirebaseAuthActions.createAccount(email, password)
+            AuthActions.createAccount(email, password)
                 .addOnSuccessListener {
                     binding.layoutSignUp.btnSignUp.revertAnimation()
                     showUsernameLayout(true)
@@ -216,7 +215,7 @@ class SplashActivity3 : AppCompatActivity() {
 
         if (isValidEmailAndPassword) {
             binding.layoutSignIn.btnSignIn.startAnimation()
-            FirebaseAuthActions.signInWithEmail(email, password)
+            AuthActions.signInWithEmail(email, password)
                 .addOnSuccessListener {
                     onSignInSuccess()
                 }
@@ -231,7 +230,7 @@ class SplashActivity3 : AppCompatActivity() {
      * Handles whether to show an error or continue with sign in process based on Google sign in result
      */
     private fun handleGoogleSignInResult(data: Intent?) {
-        when (val task = FirebaseAuthActions.handleGoogleSignInResult2(data)) {
+        when (val task = AuthActions.handleGoogleSignInResult2(data)) {
             // Google Sign In failed
             null -> showErrorWithAction(
                 R.string.error,
@@ -280,7 +279,10 @@ class SplashActivity3 : AppCompatActivity() {
                     Log.e(TAG, "Received more than one user object from uid:" +
                                 " ${FirebaseAuth.getInstance().currentUser?.uid}")
                 val doc = querySnapshot.documents[0]
-                LocalData.user = User(FirebaseAuth.getInstance().currentUser!!.uid, doc.id)
+                LocalData.user = User().apply {
+                    this.uid = FirebaseAuth.getInstance().currentUser!!.uid
+                    this.username = doc.id
+                }
                 try {
                     LocalData.user?.groups = ObservableArrayList<String>().apply { addAll(doc["groups"] as ArrayList<String>) }
                 } catch (e : java.lang.Exception) {
@@ -649,8 +651,8 @@ private fun moveLogoUp(animate: Boolean) {
         override fun onMapChanged(sender: ObservableArrayMap<String, Group>?, key: String?) {
             Log.d("UserGroupListener", "Map Changed!")
             val groupSize = LocalData.user?.groups?.size ?: -1
-            if (LocalData.user != null && groupSize == LocalData.userGroups.size) {
-                Log.d("UserGroupListener", "Done fetching user groups... (${LocalData.user!!.groups.size} == ${LocalData.userGroups.size}")
+            if (LocalData.user != null && groupSize == LocalData.groups.size) {
+                Log.d("UserGroupListener", "Done fetching user groups... (${LocalData.user!!.groups.size} == ${LocalData.groups.size}")
                 context?.startActivity(Intent(context, MainViewActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
                 context?.finish()
             }

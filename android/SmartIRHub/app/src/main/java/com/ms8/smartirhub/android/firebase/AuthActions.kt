@@ -17,8 +17,9 @@ import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.utils.MySharedPreferences
 import java.lang.Exception
 
-object FirebaseAuthActions {
+object AuthActions {
 
+    //TODO: Removal
     /**
      * Runs through initial Auth steps. Begins by signing in anonymously if the user is not
      * already signed into an account. If the user is signed in, but they haven't verified their
@@ -86,7 +87,9 @@ object FirebaseAuthActions {
         }
     }
 
-
+    /**
+     *  Attempts to sign user in with their google account
+     */
     fun handleGoogleSignInResult2(data: Intent?): Task<AuthResult>? {
         Log.d(TAG, "Handling Google Sign In Result...")
         val task = GoogleSignIn.getSignedInAccountFromIntent(data)
@@ -100,44 +103,6 @@ object FirebaseAuthActions {
             null
         }
     }
-
-    /**
-     *  Attempts to sign user in with their google account
-     */
-    fun handleGoogleSignInResult(data: Intent?) : Exception? {
-        Log.d("TEST###", "Handling Google Sign In Result...")
-        val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-        try {
-            val account = task.getResult(ApiException::class.java)
-            val credential = GoogleAuthProvider.getCredential(account!!.idToken, null)
-            FirebaseAuth.getInstance().signInWithCredential(credential).addOnCompleteListener { authTask ->
-                if (authTask.isSuccessful)
-                    Log.d("TEST###", "user display name: ${FirebaseAuth.getInstance().currentUser?.displayName}")
-                else
-                    Log.w("TEST###", "failed to log in with google... ${authTask.exception}")
-            }
-        } catch (e : Exception) {
-            return e.also { Log.e(TAG, "Google sign in failed", e) }
-        }
-
-        return null
-    }
-
-    /**
-     * Shows a flashBar view notifying the user that signing in with Google has failed.
-     */
-    fun showSignInWithGoogleError(activity: AppCompatActivity) {
-        Flashbar.Builder(activity)
-            .title(R.string.err_sign_in_title)
-            .message(R.string.err_sign_in_google_desc)
-            .primaryActionText(android.R.string.ok)
-            .primaryActionTapListener(object : Flashbar.OnActionTapListener {
-                override fun onActionTapped(bar: Flashbar) { bar.dismiss() }
-            })
-            .build()
-            .show()
-    }
-
 
     fun createAccount(emailString: String, passwordString: String): Task<AuthResult> {
         return FirebaseAuth.getInstance().createUserWithEmailAndPassword(emailString, passwordString)

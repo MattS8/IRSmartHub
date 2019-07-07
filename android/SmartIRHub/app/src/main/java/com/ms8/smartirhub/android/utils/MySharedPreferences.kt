@@ -2,7 +2,7 @@ package com.ms8.smartirhub.android.utils
 
 import android.content.Context
 import com.google.gson.Gson
-import com.ms8.smartirhub.android.data.User
+import com.ms8.smartirhub.android.models.firestore.User
 
 object MySharedPreferences {
     fun setUser(context: Context, user : User?) {

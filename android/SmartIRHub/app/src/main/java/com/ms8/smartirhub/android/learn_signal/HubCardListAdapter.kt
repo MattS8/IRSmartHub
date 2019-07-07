@@ -1,8 +1,6 @@
 package com.ms8.smartirhub.android.learn_signal
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.Intent
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -12,12 +10,9 @@ import androidx.databinding.ObservableBoolean
 import androidx.databinding.ObservableMap
 import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.data.Hub
+import com.ms8.smartirhub.android.models.firestore.Hub
 import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.databinding.VHubCardBinding
-import com.ms8.smartirhub.android.setup_hub.HubSetupMainActivity
-import com.ms8.smartirhub.android.setup_hub.HubSetupMainActivity.Companion.RC_HUB_SETUP_MAIN
-import java.lang.ref.WeakReference
 
 //TODO remove this weak reference
 class HubCardListAdapter : RecyclerView.Adapter<HubCardListAdapter.HubCardViewHolder>() {

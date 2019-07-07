@@ -12,6 +12,7 @@ import androidx.databinding.ObservableList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
+import com.ms8.smartirhub.android.create_button._old.CBStyleActivity
 import com.ms8.smartirhub.android.create_command.ActionSequenceAdapter
 import com.ms8.smartirhub.android.create_command.CC_ChooseIrSignalActivity
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.BackWarningSheet
@@ -19,12 +20,13 @@ import com.ms8.smartirhub.android.custom_views.bottom_sheets.SimpleListDescSheet
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.SimpleListDescSheet.Companion.REQ_EDIT_ACTION
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.SimpleListDescSheet.Companion.REQ_NEW_ACTION
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.PickNameSheet
-import com.ms8.smartirhub.android.data.Command
-import com.ms8.smartirhub.android.data.RemoteProfile
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Command
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.ADD_TO_END
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ACreateButtonWalkthroughBinding
 import com.ms8.smartirhub.android.databinding.VChooseNameSheetBinding
 import com.ms8.smartirhub.android.databinding.VSimpleListDescSheetBinding
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile
 import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity
 import com.ms8.smartirhub.android.utils.MyValidators.ButtonNameValidator
 
@@ -235,7 +237,7 @@ class CBWalkThroughActivity : AppCompatActivity() {
             REQ_STYLE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     TempData.tempButton?.command?.let {
-                        TempData.tempRemoteProfile.addButton(TempData.tempButton!!, intent.getIntExtra(EXTRA_BUTTON_POS, -1))
+                        TempData.tempRemoteProfile.addButton(TempData.tempButton!!, intent.getIntExtra(EXTRA_BUTTON_POS, ADD_TO_END))
                         TempData.tempButton = null
                         // Only finish if TempData has a valid button
                         setResult(Activity.RESULT_OK)

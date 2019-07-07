@@ -2,12 +2,7 @@ package com.ms8.smartirhub.android
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import androidx.databinding.DataBindingUtil
-import androidx.databinding.Observable
-import androidx.databinding.ObservableArrayMap
-import androidx.databinding.ObservableMap
-import com.ms8.smartirhub.android.data.RemoteProfile
 import com.ms8.smartirhub.android.databinding.ACreateButtonWalkthroughBinding
 
 class TestViewActivity : AppCompatActivity() {

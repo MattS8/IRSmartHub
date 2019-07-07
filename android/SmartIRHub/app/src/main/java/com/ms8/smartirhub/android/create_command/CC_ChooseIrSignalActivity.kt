@@ -11,10 +11,9 @@ import androidx.databinding.ObservableMap
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.data.IrSignal
+import com.ms8.smartirhub.android.models.firestore.IrSignal
 import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.databinding.ACcChooseIrSignalBinding
-import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity
 import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity.Companion.NEW_IR_SIGNAL_UID
 import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity.Companion.REQ_NEW_IR_SIGNAL
@@ -48,12 +47,12 @@ class CC_ChooseIrSignalActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        LocalData.irSignals.addOnMapChangedCallback(irSignalListner)
+        LocalData.signals.addOnMapChangedCallback(irSignalListner)
     }
 
     override fun onPause() {
         super.onPause()
-        LocalData.irSignals.removeOnMapChangedCallback(irSignalListner)
+        LocalData.signals.removeOnMapChangedCallback(irSignalListner)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

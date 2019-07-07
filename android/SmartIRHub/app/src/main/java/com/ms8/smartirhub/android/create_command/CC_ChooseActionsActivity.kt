@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.create_command.CC_ChooseIrSignalActivity.Companion.REQ_EDIT_ACTION
 import com.ms8.smartirhub.android.create_command.CC_ChooseIrSignalActivity.Companion.REQ_NEW_ACTION
-import com.ms8.smartirhub.android.data.Command
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Command
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ACcChooseActionBinding
 import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity

@@ -7,12 +7,12 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.PagerAdapter
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.main_view.fragments.MainViewFragment
+import com.ms8.smartirhub.android.main_view.fragments.MainFragment
 
 class MainViewAdapter(fm: FragmentManager, behavior: Int, private var navPosition: Int, private var baseItemId: Long) : FragmentPagerAdapter(fm, behavior) {
-    private var commandsFragList: MutableList<MainViewFragment> = ArrayList()
-    private var remotesFragList: MutableList<MainViewFragment> = ArrayList()
-    private var devicesFragList: MutableList<MainViewFragment> = ArrayList()
+    private var commandsFragList: MutableList<MainFragment> = ArrayList()
+    private var remotesFragList: MutableList<MainFragment> = ArrayList()
+    private var devicesFragList: MutableList<MainFragment> = ArrayList()
 
     @SuppressLint("LogNotTimber")
     override fun getItem(position: Int): Fragment {
@@ -47,7 +47,7 @@ class MainViewAdapter(fm: FragmentManager, behavior: Int, private var navPositio
         return baseItemId + position
     }
 
-    fun addFragment(fragment: MainViewFragment, list : ViewPagerList) {
+    fun addFragment(fragment: MainFragment, list : ViewPagerList) {
         when (list) {
             Companion.ViewPagerList.COMMANDS -> commandsFragList.add(fragment)
             Companion.ViewPagerList.REMOTES -> remotesFragList.add(fragment)

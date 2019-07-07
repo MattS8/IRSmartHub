@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.data.IrSignal
+import com.ms8.smartirhub.android.models.firestore.IrSignal
 import com.ms8.smartirhub.android.databinding.VIrSignalItemBinding
 
 class IrSignalAdapter: RecyclerView.Adapter<IrSignalAdapter.IrActionViewHolder>() {

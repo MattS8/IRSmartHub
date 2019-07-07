@@ -10,10 +10,8 @@ import android.util.Log
 import androidx.databinding.ObservableArrayMap
 import androidx.databinding.ObservableMap
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.ms8.smartirhub.android.data.User
 import com.ms8.smartirhub.android.databinding.TestActivityBinding
-import com.ms8.smartirhub.android.firebase.FirebaseAuthActions
+import com.ms8.smartirhub.android.firebase.AuthActions
 import com.ms8.smartirhub.android.firebase.FirestoreActions
 
 class TestActivity : AppCompatActivity() {
@@ -51,7 +49,6 @@ class TestActivity : AppCompatActivity() {
         binding.btnTestGetUserFromUID.setOnClickListener { testGetUserQuery() }
         binding.btnViewToken.setOnClickListener { printUserToken() }
         binding.btnConnectToIRHub.setOnClickListener { testConnectToIRHub() }
-        binding.btnTestMakeUser.setOnClickListener { testMakeUser() }
         binding.btnTestArrayMap.setOnClickListener { testObservableMapCallback() }
 
         observableMap.addOnMapChangedCallback(callback)
@@ -84,14 +81,6 @@ class TestActivity : AppCompatActivity() {
                 step = 0
             }
         }
-    }
-
-    private fun testMakeUser() {
-        val user = User(FirebaseAuth.getInstance().currentUser!!.uid, "testUser009")
-        FirebaseFirestore.getInstance().collection("users").document(user.username).set(user)
-            .addOnCompleteListener {
-                Log.d("T#", "done adding new user... success? ${it.isSuccessful}")
-            }
     }
 
     private fun connectToIRHub() {
@@ -145,7 +134,7 @@ class TestActivity : AppCompatActivity() {
 
     private fun testCreateUser() {
         Log.d("TEST####", "Creating account with email: matthew.steinhardt@gmail.com password: F4d29095dc")
-        FirebaseAuthActions.createAccount("matthew.steinhardt@gmail.com", "F4d29095dc")
+        AuthActions.createAccount("matthew.steinhardt@gmail.com", "F4d29095dc")
             .addOnSuccessListener {
                 Log.d("TEST####", "Success!")
                 testCreateUserDB()

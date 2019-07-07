@@ -1,16 +1,17 @@
-package com.ms8.smartirhub.android.data
+package com.ms8.smartirhub.android.models.firestore
 
 import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.IgnoreExtraProperties
 
 @IgnoreExtraProperties
 class Hub {
-    var name = ""
-    var owner = ""
-    var ownerUsername = ""
+    var name            : String = ""
+    var owner           : String = ""
+    var ownerUsername   : String = ""
 
     @Exclude
-    var uid = ""
+    var uid             : String = ""
+
 
     override fun equals(other: Any?): Boolean {
         return other != null && other is Hub && uid == other.uid
