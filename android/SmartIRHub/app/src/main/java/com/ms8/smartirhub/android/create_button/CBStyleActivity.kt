@@ -12,7 +12,7 @@ class CBStyleActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = DataBindingUtil.setContentView(this, R.layout.a_create_button_style)
+        //binding = DataBindingUtil.setContentView(this, R.layout.a_create_button_style)
 
         //TODO: Show list of button styles to choose from
         //REPLACE AFTER IMPLEMENTATION:

@@ -19,10 +19,12 @@ import com.ms8.smartirhub.android.setup_hub.HubSetupMainActivity
 import com.ms8.smartirhub.android.setup_hub.HubSetupMainActivity.Companion.RC_HUB_SETUP_MAIN
 import java.lang.ref.WeakReference
 
-class HubCardListAdapter(var activity: WeakReference<Activity>) : RecyclerView.Adapter<HubCardListAdapter.HubCardViewHolder>() {
+//TODO remove this weak reference
+class HubCardListAdapter : RecyclerView.Adapter<HubCardListAdapter.HubCardViewHolder>() {
     val list = ArrayList<Hub>(LocalData.hubs.values)
     var selectedItem = 0
     var setupNewHub : ObservableBoolean = ObservableBoolean(false)
+    var callback: HubCardListAdapter.Callback? = null
 
     private val listener = object : ObservableMap.OnMapChangedCallback<ObservableMap<String, Hub>, String, Hub>() {
         @SuppressLint("LogNotTimber")
@@ -89,9 +91,7 @@ class HubCardListAdapter(var activity: WeakReference<Activity>) : RecyclerView.A
                     owner = holder.itemView.context.getString(R.string.setup_new_hub_desc)
                 }
                 holder.bind(hub, selectedItem == position)
-                holder.binding.hubCard.setOnClickListener {
-                    activity.get()?.startActivityForResult(Intent(activity.get(), HubSetupMainActivity::class.java), RC_HUB_SETUP_MAIN)
-                }
+                holder.binding.hubCard.setOnClickListener {callback?.newHubClicked() }
 
                 // override string concatenation done in databinding
                 holder.binding.tvOwner.text = hub.owner
@@ -144,5 +144,9 @@ class HubCardListAdapter(var activity: WeakReference<Activity>) : RecyclerView.A
                 }
             }
         }
+    }
+
+    interface Callback {
+        fun newHubClicked()
     }
 }

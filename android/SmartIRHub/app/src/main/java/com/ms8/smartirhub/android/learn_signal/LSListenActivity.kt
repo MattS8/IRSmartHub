@@ -6,7 +6,6 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
-import android.os.PersistableBundle
 import android.util.Log
 import android.view.View
 import android.view.animation.DecelerateInterpolator
@@ -377,7 +376,7 @@ class LSListenActivity : AppCompatActivity() {
     companion object {
         const val ANIM_DURATION = 750
         const val TIMEOUT_DURATION = 15000
-        const val IS_LISTENING = "IS_LISTENING"
+        const val IS_LISTENING = "KEY_LSS_BOOLS"
     }
 }
 
@@ -388,8 +387,8 @@ class LSListenActivity : AppCompatActivity() {
 */
 private fun LSListenActivity.showUnknownError(e: Exception?) {
     binding.btnTestSignal.revertAnimation()
-    bottomErrorSheet.sheetTitle = getString(R.string.err_unknown_title)
-    bottomErrorSheet.description = getString(R.string.err_unknown_desc)
+    bottomErrorSheet.sheetTitle = getString(R.string.err_unknown_sig_title)
+    bottomErrorSheet.description = getString(R.string.err_unknown_sig_desc)
     bottomErrorSheet.show(supportFragmentManager, "Bottom_sheet_error_timeout")
 
     e?.let { Log.e("LSListenActivity", "Unknown Error: $it") }

@@ -10,17 +10,21 @@ import com.andrefrsousa.superbottomsheet.SuperBottomSheetFragment
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.databinding.VSimpleListDescSheetBinding
 
-class SimpleListDescSheet : SuperBottomSheetFragment() {
-    private var binding: VSimpleListDescSheetBinding? = null
+open class SimpleListDescSheet : SuperBottomSheetFragment() {
+    var binding: VSimpleListDescSheetBinding? = null
 
-    var isSaveEnabled: Boolean = false
+    var hasSecondaryAction: Boolean = true
+    set(value) {
+        field = value
+        binding?.btnClearActions?.isEnabled = field
+        binding?.btnClearActions?.visibility = if (field) View.VISIBLE else View.GONE
+    }
+
+    var isSaveEnabled: Boolean = true
     set(value) {
         field = value
         binding?.btnSaveCommand?.isEnabled = field
     }
-
-    var adapter: RecyclerView.Adapter<*>? = null
-    var layoutManager: RecyclerView.LayoutManager? = null
 
     var sheetTitle = ""
         set(value) {
@@ -43,33 +47,49 @@ class SimpleListDescSheet : SuperBottomSheetFragment() {
 
     var callback: SimpleListDescSheetCallback? = null
 
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putStringArrayList(KEY_SHEET_STRS, arrayListOf(sheetTitle, helpTitle, helpDesc))
-        outState.putBoolean(KEY_SHEET_BOOLS, isSaveEnabled)
+        outState.putBooleanArray(KEY_SHEET_BOOLS, BooleanArray(2).apply {
+            set(0, isSaveEnabled)
+            set(1, hasSecondaryAction)
+        })
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         super.onCreateView(inflater, container, savedInstanceState)
         binding = DataBindingUtil.inflate(inflater, R.layout.v_simple_list_desc_sheet, container, false)
 
-        val strList = savedInstanceState?.getStringArrayList(KEY_SHEET_STRS)
-        savedInstanceState?.getBoolean(KEY_SHEET_BOOLS)?.let { isSaveEnabled = it }
+        // Restore state
+        savedInstanceState?.let { s ->
+            s.getBooleanArray(KEY_SHEET_BOOLS)?.let {
+                isSaveEnabled = it[0]
+                hasSecondaryAction = it[1]
+            }
+            s.getStringArrayList(KEY_SHEET_STRS)?.let {
+                sheetTitle = it[0]
+                helpTitle = it[1]
+                helpDesc = it[2]
+            }
+        }
 
+        // Set up layout
         binding!!.let { b ->
-            b.sheetList.layoutManager = layoutManager
-            b.sheetList.adapter = adapter
-
-            b.tvTitle.text = strList?.get(0) ?: if (sheetTitle != "") sheetTitle else context?.getString(R.string.command_title)
-            b.tvListHelpTitle.text = strList?.get(1) ?: helpTitle
+            b.sheetList.adapter = callback?.getAdapter()
+            b.sheetList.layoutManager = callback?.getLayoutManager()
+            b.tvTitle.text = sheetTitle
+            b.tvListHelpTitle.text = helpTitle
             b.tvListHelpTitle.visibility = if (b.tvListHelpTitle.text == "") View.GONE else View.VISIBLE
-            b.tvListHelpDesc.text = strList?.get(2) ?: helpDesc
+            b.tvListHelpDesc.text = helpDesc
             b.tvListHelpDesc.visibility = if (b.tvListHelpDesc.text == "") View.GONE else View.VISIBLE
 
-            b.btnSaveCommand.setOnClickListener { if (callback != null) callback?.onSavePressed() else dismiss() }
-            b.btnClearActions.setOnClickListener { if (callback != null) callback?.onCancelPress() else dismiss() }
+            b.btnSaveCommand.setOnClickListener { if (callback != null) callback?.onSavePressed(this, b) else dismiss() }
+            b.btnClearActions.setOnClickListener { if (callback != null) callback?.onCancelPress(this, b) else dismiss() }
 
             b.btnSaveCommand.isEnabled = isSaveEnabled
+            b.btnClearActions.isEnabled = hasSecondaryAction
+            b.btnClearActions.visibility = if (hasSecondaryAction) View.VISIBLE else View.GONE
         }
 
         callback?.onCreateView(binding!!)
@@ -77,12 +97,12 @@ class SimpleListDescSheet : SuperBottomSheetFragment() {
     }
 
     interface SimpleListDescSheetCallback {
-        fun onSavePressed()
-        fun onCancelPress()
+        fun onSavePressed(simpleListDescSheet: SimpleListDescSheet, binding: VSimpleListDescSheetBinding)
+        fun onCancelPress(simpleListDescSheet: SimpleListDescSheet, binding: VSimpleListDescSheetBinding)
         fun onCreateView(binding: VSimpleListDescSheetBinding)
+        fun getLayoutManager() : RecyclerView.LayoutManager
+        fun getAdapter() : RecyclerView.Adapter<*>
     }
-
-
 
     companion object {
         const val REQ_NEW_ACTION = 50

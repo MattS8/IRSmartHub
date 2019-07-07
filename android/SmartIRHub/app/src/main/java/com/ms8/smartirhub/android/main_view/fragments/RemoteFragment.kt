@@ -49,7 +49,7 @@ class RemoteFragment : MainViewFragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQ_NEW_BUTTON) {
-            // Only need to worry about enabling "create new button", the tempButton
+            // Only need to worry about enabling "create new button". The tempButton
             //  should already be added at the end of a successful process
             waitingForCreateButtonActivity = false
         } else {

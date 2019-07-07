@@ -9,4 +9,5 @@
     <color name="colorAccent">#607D8B</color>
     <color name="colorControlNormalWhite">#AAFFFFFF</color>
     <color name="colorHeader">#AAFFFFFF</color>
+    <color name="colorAccentDark">#425D6B</color>
 </resources>

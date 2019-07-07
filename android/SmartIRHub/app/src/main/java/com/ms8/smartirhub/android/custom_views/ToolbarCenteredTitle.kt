@@ -28,7 +28,7 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
 
         _titleTextView = TextView(context)
         _titleTextView.text = titleStr
-        TypefaceCache.get("fonts/roboto_light.ttf", context)?.let { _titleTextView.typeface = it }
+        TypefaceCache.get("font/roboto_light.ttf", context)?.let { _titleTextView.typeface = it }
         TextViewCompat.setTextAppearance(_titleTextView, R.style.AppTheme_TextAppearance_ToolbarTitle)
         addView(_titleTextView)
     }

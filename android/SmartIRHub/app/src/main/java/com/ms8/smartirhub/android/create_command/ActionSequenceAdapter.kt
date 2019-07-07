@@ -10,7 +10,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.data.Command
+import com.ms8.smartirhub.android.data.Command.Companion.DEFAULT_HUB
 import com.ms8.smartirhub.android.database.LocalData
+import com.ms8.smartirhub.android.database.TempData
 
 class ActionSequenceAdapter(var callback: ActionSequenceAdapterCallbacks?) : RecyclerView.Adapter<ActionSequenceAdapter.ActionViewHolder>() {
     var actionList = ArrayList<Command.Action>()
@@ -35,11 +37,10 @@ class ActionSequenceAdapter(var callback: ActionSequenceAdapterCallbacks?) : Rec
             itemCount - 1 -> holder.itemView.setOnClickListener { callback?.addNewAction() }
         // Action Sequence Item
             else -> {
-                holder.itemView.setOnClickListener { callback?.startEditAction(actionList[position], holder.adapterPosition) }
+                holder.itemView.setOnClickListener { callback?.startEditAction(actionList[holder.adapterPosition], holder.adapterPosition) }
                 holder.bindAction(actionList[position])
                 holder.itemView.findViewById<ImageButton>(R.id.btnDeleteAction).setOnClickListener {
-                    actionList.removeAt(position)
-                    notifyItemRemoved(position)
+                    TempData.tempButton?.command?.actions?.removeAt(holder.adapterPosition)
                 }
                 // Show delay input for actions with additional actions after
                 if (position > 0 && position < itemCount - 2) {
@@ -62,7 +63,6 @@ class ActionSequenceAdapter(var callback: ActionSequenceAdapterCallbacks?) : Rec
                 }
                 // Otherwise hide those views
                 else {
-                    
                     holder.itemView.findViewById<View>(R.id.view).visibility = View.GONE
                     holder.itemView.findViewById<View>(R.id.view2).visibility = View.GONE
                     holder.itemView.findViewById<TextView>(R.id.tvDelay).visibility = View.GONE
@@ -83,7 +83,8 @@ class ActionSequenceAdapter(var callback: ActionSequenceAdapterCallbacks?) : Rec
 
         fun bindAction(action : Command.Action) {
             itemView.findViewById<TextView>(R.id.tvActionTitle).text = LocalData.irSignals[action.irSignal]?.name
-            val desc = itemView.context.getString(R.string.send_signal_to) + " " + LocalData.hubs[action.hubUID]
+            val targetHub = if (action.hubUID == DEFAULT_HUB) LocalData.hubs[LocalData.user!!.defaultHub] ?: "Default Hub" else action.hubUID
+            val desc = itemView.context.getString(R.string.send_signal_to) + " " + targetHub
             itemView.findViewById<TextView>(R.id.tvActionDesc).text = desc
         }
     }

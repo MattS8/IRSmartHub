@@ -55,7 +55,8 @@ object FirestoreActions {
                                         try {
                                             val template = RemoteProfileTemplate()
                                             template.name = docChange.document["name"] as String
-                                            template.remoteProfile = docChange.document["remoteProfiles"] as String
+                                            Log.d("TEST", "adding template ${template.name}")
+                                            template.remoteProfile = docChange.document["remoteProfile"] as String
                                             template.previewURL = docChange.document["previewURL"] as String
                                             template.uid = docChange.document.id
                                             LocalData.remoteProfileTemplates[docChange.document.id] = template
@@ -491,10 +492,10 @@ object FirestoreActions {
 /* ----------------------------------------------- Storing Functions ----------------------------------------------- */
 
     fun addIrSignal(): Task<DocumentReference> {
-        val username = LocalData.user!!.username
         val irSignal = TempData.tempSignal!!
-        return FirebaseFirestore.getInstance().collection("users").document(username).collection("irSignals")
-            .add(irSignal)
+        val uid = FirebaseAuth.getInstance().currentUser!!.uid
+        return FirebaseFirestore.getInstance().collection("signals")
+            .add(irSignal.toFirebaseObject(uid))
     }
 
     fun addUser(username: String) : Task<Void> {

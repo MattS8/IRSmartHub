@@ -22,12 +22,11 @@ import kotlin.math.hypot
 
 class LSSelectHubActivity : AppCompatActivity() {
     lateinit var binding: ALearnSigGetHubBinding
-    private val hubCardListAdapter = HubCardListAdapter(WeakReference(this))
+    private val hubCardListAdapter = HubCardListAdapter()
 
 
     override fun onResume() {
         super.onResume()
-        hubCardListAdapter.activity = WeakReference(this)
         hubCardListAdapter.listen(true)
     }
 

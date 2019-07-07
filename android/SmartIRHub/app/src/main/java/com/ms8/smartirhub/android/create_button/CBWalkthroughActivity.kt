@@ -23,7 +23,10 @@ import com.ms8.smartirhub.android.data.Command
 import com.ms8.smartirhub.android.data.RemoteProfile
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ACreateButtonWalkthroughBinding
+import com.ms8.smartirhub.android.databinding.VChooseNameSheetBinding
+import com.ms8.smartirhub.android.databinding.VSimpleListDescSheetBinding
 import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity
+import com.ms8.smartirhub.android.utils.MyValidators.ButtonNameValidator
 
 class CBWalkThroughActivity : AppCompatActivity() {
     lateinit var binding: ACreateButtonWalkthroughBinding
@@ -38,14 +41,26 @@ class CBWalkThroughActivity : AppCompatActivity() {
 */
 
     private var editingPosition = -1
-    private val pickActionsSheet = SimpleListDescSheet().apply {
-        adapter = pickActionsSheetAdapter
-        layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-    }
+    val pickActionsSheetAdapter = ActionSequenceAdapter(object : ActionSequenceAdapter.ActionSequenceAdapterCallbacks {
+        override fun addNewAction() {
+            startActivityForResult(Intent(this@CBWalkThroughActivity, CC_ChooseIrSignalActivity::class.java),
+                REQ_NEW_ACTION
+            )
+        }
+
+        override fun startEditAction(action: Command.Action, position: Int) {
+            editingPosition = position
+            startActivityForResult(Intent(this@CBWalkThroughActivity, CC_ChooseIrSignalActivity::class.java),
+                REQ_EDIT_ACTION
+            )
+        }
+    })
+    private val pickActionsSheet = SimpleListDescSheet()
 
     private val commandListener = object : ObservableList.OnListChangedCallback<ObservableArrayList<Command.Action>>() {
         override fun onChanged(sender: ObservableArrayList<Command.Action>) {
             pickActionsSheetAdapter.actionList = ArrayList(sender)
+            pickActionsSheetAdapter.notifyDataSetChanged()
             pickActionsSheet.isSaveEnabled = sender.size > 0
         }
 
@@ -73,22 +88,6 @@ class CBWalkThroughActivity : AppCompatActivity() {
             pickActionsSheet.isSaveEnabled = sender.size > 0
         }
     }
-
-    private val actionSequenceAdapterCallback = object : ActionSequenceAdapter.ActionSequenceAdapterCallbacks {
-        override fun addNewAction() {
-            startActivityForResult(Intent(this@CBWalkThroughActivity, CC_ChooseIrSignalActivity::class.java),
-                REQ_NEW_ACTION
-            )
-        }
-
-        override fun startEditAction(action: Command.Action, position: Int) {
-            editingPosition = position
-            startActivityForResult(Intent(this@CBWalkThroughActivity, CC_ChooseIrSignalActivity::class.java),
-                REQ_EDIT_ACTION
-            )
-        }
-    }
-    val pickActionsSheetAdapter = ActionSequenceAdapter(actionSequenceAdapterCallback)
 
 /*
     ----------------------------------------------
@@ -133,6 +132,17 @@ class CBWalkThroughActivity : AppCompatActivity() {
         super.onResume()
         TempData.tempButton?.command?.actions?.addOnListChangedCallback(commandListener)
         pickNameSheet.callback = object : PickNameSheet.Callback {
+            override fun onSavePressed(sheetBinding: VChooseNameSheetBinding?) {
+                sheetBinding?.txtInput?.error = ""
+                val isValidName = sheetBinding?.txtInput?.editText!!.text.toString().ButtonNameValidator()
+                    .addErrorCallback { sheetBinding.txtInput.error = getString(R.string.err_invalid_button_name) }
+                    .check()
+                if (isValidName) {
+                    TempData.tempButton?.name = sheetBinding.txtInput.editText!!.text.toString()
+                    pickNameSheet.dismiss()
+                }
+            }
+
             override fun onDismiss() {
                 determineWalkThroughState()
             }
@@ -151,6 +161,33 @@ class CBWalkThroughActivity : AppCompatActivity() {
 
         if (TempData.tempButton == null)
             TempData.tempButton = RemoteProfile.Button()
+
+        //Set up PickNameSheet
+        pickNameSheet.nameDesc = getString(R.string.remember_button_name_desc)
+
+        //Set up pickActionsSheet
+        pickActionsSheet.sheetTitle = this@CBWalkThroughActivity.getString(R.string.command_title)
+        pickActionsSheet.callback = object : SimpleListDescSheet.SimpleListDescSheetCallback {
+            override fun onSavePressed(simpleListDescSheet: SimpleListDescSheet, binding: VSimpleListDescSheetBinding) {
+                simpleListDescSheet.dismiss()
+                determineWalkThroughState()
+            }
+
+            override fun onCancelPress(simpleListDescSheet: SimpleListDescSheet, binding: VSimpleListDescSheetBinding) {
+                simpleListDescSheet.dismiss()
+                determineWalkThroughState()
+            }
+
+            override fun onCreateView(binding: VSimpleListDescSheetBinding) {}
+
+            override fun getLayoutManager(): RecyclerView.LayoutManager {
+                return LinearLayoutManager(this@CBWalkThroughActivity, RecyclerView.VERTICAL, false)
+            }
+
+            override fun getAdapter(): RecyclerView.Adapter<*> {
+                return pickActionsSheetAdapter
+            }
+        }
 
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -176,7 +213,11 @@ class CBWalkThroughActivity : AppCompatActivity() {
             REQ_NEW_ACTION -> {
                 if (resultCode == Activity.RESULT_OK) {
                     val newIrSignalUID = data?.getStringExtra(LSWalkThroughActivity.NEW_IR_SIGNAL_UID) ?: return
-                    TempData.tempButton?.command?.actions?.add(Command.Action().apply { irSignal =  newIrSignalUID})
+                    Log.d("TEST", "got new signal with uid: $newIrSignalUID")
+                    TempData.tempButton!!.command.actions.add(Command.Action().apply {
+                        irSignal =  newIrSignalUID })
+                    pickActionsSheetAdapter.actionList = ArrayList(TempData.tempButton?.command?.actions ?: ArrayList())
+                    pickActionsSheetAdapter.notifyDataSetChanged()
                 }
             }
             REQ_EDIT_ACTION -> {

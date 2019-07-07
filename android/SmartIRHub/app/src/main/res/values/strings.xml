@@ -139,8 +139,8 @@
     <string name="err_timeout_desc">The hub didn\'t recognize any valid IR signals. Ensure that you selected the correct
         hub and please try again.
     </string>
-    <string name="err_unknown_title">Error (Code: 800)</string>
-    <string name="err_unknown_desc">Something went wrong while listening for an IR signal. Please try again.</string>
+    <string name="err_unknown_sig_title">Error (Code: 800)</string>
+    <string name="err_unknown_sig_desc">Something went wrong while listening for an IR signal. Please try again.</string>
     <string name="save">Save</string>
     <string name="help_name_sig_desc">Try describing what the signal does in 1-3 words. \n\nFor example: If this signal
         increases the volume of a TV, try naming it TV VOL UP.
@@ -234,4 +234,7 @@
     <string name="pair_signal">Pair IR Signal</string>
     <string name="pair_signal_title">Pair Signal:</string>
     <string name="signal_sent">Signal was sent to the IR Smart Hub!</string>
+    <string name="select">Select</string>
+    <string name="err_unknown_desc">Something went wrong. Please try again.</string>
+    <string name="new_remote">New Remote</string>
 </resources>

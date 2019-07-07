@@ -14,6 +14,7 @@ import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.data.IrSignal
 import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.databinding.ACcChooseIrSignalBinding
+import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity
 import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity.Companion.NEW_IR_SIGNAL_UID
 import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity.Companion.REQ_NEW_IR_SIGNAL
@@ -66,6 +67,7 @@ class CC_ChooseIrSignalActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -77,6 +79,8 @@ class CC_ChooseIrSignalActivity : AppCompatActivity() {
                 if (newIrUID != "") {
                     setResult(Activity.RESULT_OK, Intent().putExtra(NEW_IR_SIGNAL_UID, newIrUID))
                     finish()
+                } else {
+                    Log.d("TEST", "now new signal gotten")
                 }
             } else {
                 Log.d("ChooseIrSignal", "Result was not ok: $resultCode")

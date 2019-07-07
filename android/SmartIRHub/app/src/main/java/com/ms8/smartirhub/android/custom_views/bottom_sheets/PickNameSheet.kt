@@ -18,7 +18,7 @@ import org.jetbrains.anko.sdk27.coroutines.onFocusChange
 
 class PickNameSheet : SuperBottomSheetFragment() {
 
-    private var binding: VChooseNameSheetBinding? = null
+    var binding: VChooseNameSheetBinding? = null
     var callback: Callback? = null
 
     var btnName = ""
@@ -96,7 +96,7 @@ class PickNameSheet : SuperBottomSheetFragment() {
             b.tvTipsDescExampleTitle.visibility = if (b.tvTipsDescExampleTitle.text == "") View.GONE else View.VISIBLE
             b.txtInput.hint = strList?.get(6) ?: nameInputHint
 
-            b.btnPickName.setOnClickListener { checkName() }
+            b.btnPickName.setOnClickListener { if (callback != null) callback?.onSavePressed(binding) else dismiss() }
         }
 
         return binding!!.root
@@ -184,6 +184,7 @@ class PickNameSheet : SuperBottomSheetFragment() {
 
     interface Callback {
         fun onDismiss()
+        fun onSavePressed(sheetBinding: VChooseNameSheetBinding?)
     }
 
     companion object {

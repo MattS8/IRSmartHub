@@ -34,6 +34,7 @@
                     app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintHorizontal_bias="0.5" android:layout_marginStart="16dp"
                     tools:text="Set up by: Matt Steinhardt"
+                    android:textColor="@color/colorControlNormalWhite"
                     android:layout_marginEnd="16dp" android:layout_marginBottom="16dp"/>
 
             <TextView
@@ -47,6 +48,7 @@
                     android:textAppearance="@style/AppTheme.TextAppearance.SubHeader"
                     tools:text="Some Hub Name"
                     android:text="@{hub.name}"
+                    android:textColor="@color/white"
                     app:layout_constraintBottom_toTopOf="@+id/tvOwner" app:layout_constraintVertical_bias="0.0"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
 

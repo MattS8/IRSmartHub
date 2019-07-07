@@ -51,64 +51,67 @@
                 android:paddingTop="16dp"
                 android:minHeight="350dp"
                 app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintVertical_chainStyle="spread_inside"
                 app:layout_constraintBottom_toTopOf="@+id/tvListHelpTitle"
-                app:layout_constraintVertical_bias="0"
-                app:layout_constraintHorizontal_bias="0.5" app:layout_constraintTop_toBottomOf="@+id/tvTitle"
-                android:layout_marginTop="8dp"/>
+                android:layout_marginTop="8dp" app:layout_constraintTop_toBottomOf="@+id/tvTitle"
+                app:layout_constraintVertical_bias="0.0"/>
 
 
         <!-- Info -->
         <TextView
-                tools:visibility="gone"
+                tools:visibility="visible"
                 android:text="@string/dont_see_hub_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/tvListHelpTitle" app:layout_constraintStart_toStartOf="@+id/guidelineStart"
-                android:textAppearance="@style/AppTheme.TextAppearance.Header" android:layout_marginTop="8dp"
-                app:layout_constraintTop_toBottomOf="@+id/sheetList"
+                android:textAppearance="@style/AppTheme.TextAppearance.Header"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_goneMarginTop="8dp"
-                app:layout_constraintEnd_toStartOf="@+id/guidelineEnd" android:layout_marginBottom="8dp"
-                app:layout_constraintVertical_bias="0.0" app:layout_constraintBottom_toTopOf="@+id/tvListHelpDesc"/>
+                app:layout_constraintEnd_toStartOf="@+id/guidelineEnd"
+                app:layout_constraintTop_toBottomOf="@+id/sheetList"
+                app:layout_constraintBottom_toTopOf="@+id/tvListHelpDesc"/>
 
         <TextView
-                tools:visibility="gone"
+                tools:visibility="visible"
                 android:text="@string/dont_see_hub_desc"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/tvListHelpDesc" app:layout_constraintStart_toStartOf="@+id/guidelineStart"
-                app:layout_constraintTop_toBottomOf="@+id/tvListHelpTitle"
-                app:layout_constraintEnd_toStartOf="@+id/guidelineEnd" android:layout_marginTop="4dp"
-                app:layout_constraintHorizontal_bias="0.0" android:textColor="@color/white"/>
+                app:layout_constraintEnd_toStartOf="@+id/guidelineEnd"
+                app:layout_constraintHorizontal_bias="0.5" android:textColor="@color/white"
+                android:layout_marginTop="8dp"
+                app:layout_constraintTop_toBottomOf="@+id/tvListHelpTitle" app:layout_constraintVertical_bias="0.0"
+                app:layout_constraintBottom_toTopOf="@+id/btnSaveCommand" android:layout_marginBottom="8dp"/>
 
         <Button
                 android:text="@string/save"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 style="@style/AppTheme.Button.SplashSignIn.Colored" android:minWidth="168dp"
-                android:id="@+id/btnSaveCommand" android:layout_marginBottom="24dp"
-                app:layout_constraintBottom_toBottomOf="parent"
+                android:id="@+id/btnSaveCommand"
                 app:layout_constraintEnd_toStartOf="@+id/guidelineEnd"
                 android:textColor="@color/white"
-                android:backgroundTint="@color/accent"
-                android:layout_marginTop="32dp"
-                app:layout_constraintTop_toBottomOf="@id/tvListHelpDesc" app:layout_constraintVertical_bias="1.0"
+                android:backgroundTint="@color/colored_button_bg"
                 android:layout_marginEnd="8dp" app:layout_constraintStart_toEndOf="@+id/btnClearActions"
-                app:layout_constraintHorizontal_bias="0.5"/>
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tvListHelpDesc" android:layout_marginBottom="24dp"
+                android:layout_marginTop="16dp"/>
 
         <Button
                 android:text="@string/clear_actions"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 style="@style/Widget.AppCompat.Button.Borderless" android:minWidth="168dp"
-                android:id="@+id/btnClearActions" android:layout_marginBottom="24dp"
-                app:layout_constraintBottom_toBottomOf="parent"
+                android:id="@+id/btnClearActions"
+                app:layout_constraintBottom_toBottomOf="@+id/btnSaveCommand"
                 app:layout_constraintEnd_toStartOf="@+id/btnSaveCommand"
                 android:textColor="@color/white"
                 android:backgroundTint="@color/accent"
-                app:layout_constraintVertical_bias="1.0"
                 app:layout_constraintStart_toStartOf="@+id/guidelineStart" app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintTop_toTopOf="@+id/btnSaveCommand"/>
+                app:layout_constraintTop_toTopOf="@+id/btnSaveCommand"
+                app:layout_constraintHorizontal_chainStyle="spread"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -1,23 +1,21 @@
 package com.ms8.smartirhub.android.custom_views.bottom_sheets
 
-import android.animation.ObjectAnimator
+import android.animation.Animator
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
-import android.os.PersistableBundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.DecelerateInterpolator
 import androidx.databinding.DataBindingUtil
 import com.andrefrsousa.superbottomsheet.SuperBottomSheetFragment
 import com.andrognito.flashbar.Flashbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.data.HubResult
@@ -32,11 +30,13 @@ import java.lang.Exception
 class LearnSignalSheet : SuperBottomSheetFragment() {
     var binding : VLearnSigSheetBinding? = null
 
+    var callback: Callback? = null
 
     /* State Variables */
-    private var hubUID: String = ""
+    var hubUID: String = ""
     private var isListeningForResult = false
     private var isListeningForRawData = false
+    private var isListeningForTestSignal = false
 
     /**
      * This listener is set whenever a hubResult is successfully parsed and a
@@ -68,7 +68,7 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
 
                 // Stop loading button and clean up listener data
                 binding?.btnStartListening?.revertAnimation()
-                isListeningForResult = false
+                isListeningForRawData = false
 
                 // Remove rawData from hub's endpoint
                 RealtimeDatabaseFunctions.getRawData(hubUID).removeValue()
@@ -97,7 +97,7 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
 
         @SuppressLint("LogNotTimber")
         override fun onDataChange(dataSnapshot: DataSnapshot) {
-            Log.d("LSListenActivity", "datasnapshot = $dataSnapshot")
+            Log.d("LSheet", "datasnapshot = $dataSnapshot")
             // Could be null of first call
             val hubResult : HubResult = RealtimeDatabaseFunctions.parseHubResult(dataSnapshot.value) ?: return
 
@@ -129,6 +129,8 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
                             repeat = false //TODO determine if this is needed at all
                         }
                     RealtimeDatabaseFunctions.getHubResults(hubUID).removeEventListener(this)
+
+                    isListeningForResult = false
                     listenForRawData()
                 }
                 // Unexpected IR result
@@ -150,7 +152,12 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putBooleanArray(IS_LISTENING, BooleanArray(2).apply { set(0, isListeningForResult); set(1, isListeningForRawData) })
+        outState.putBooleanArray(KEY_LSS_BOOLS, BooleanArray(4).apply {
+            set(0, isListeningForResult)
+            set(1, isListeningForRawData)
+            set(2, isListeningForTestSignal)
+        })
+        outState.putString(KEY_HUB_UID, hubUID)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -158,18 +165,25 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
 
         binding = DataBindingUtil.inflate(inflater, R.layout.v_learn_sig_sheet, container, false)
 
+        /* -- Restore State --*/
+        savedInstanceState?.getString(KEY_HUB_UID)?.let { hubUID = it }
+
         binding!!.let { b ->
             b.btnTestSignal.setOnClickListener { testSignal() }
             b.btnRetry.setOnClickListener { retry() }
+            b.btnShowAdvancedInfo.setOnClickListener { showAdvancedLayout() }
         }
 
-        hideErrorLayout()
 
         val len = TempData.tempSignal?.rawData?.size ?: -1
-        if (len > 0)
+        if (len > 0) {
+            Log.d("TEST", "Showing learned layout")
             showLearnedLayout(false)
-        else
+        }
+        else {
+            Log.d("TEST", "Hiding learned layout")
             hideLearnedLayout(false)
+        }
 
         return binding!!.root
     }
@@ -194,16 +208,38 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
         Layout Functions
     ----------------------------------------------
 */
-    private fun showLearnedLayout(animate: Boolean) {
-        // Set data text
 
+    fun onBackPressed() : Boolean {
+        Log.d("TEST", "onBackPressed")
+        return when {
+            isListeningForResult or isListeningForRawData -> {
+                isListeningForResult = false
+                isListeningForRawData = false
+                binding?.btnStartListening?.revertAnimation()
+                true
+            }
+            isListeningForTestSignal -> {
+                isListeningForTestSignal = false
+                binding?.btnTestSignal?.revertAnimation()
+                true
+            }
+            else -> false
+        }
+    }
+
+    private fun showAdvancedLayout() {
+        startActivity(Intent(activity, AdvancedSignalInfoActivity::class.java))
+    }
+
+    private fun showLearnedLayout(animate: Boolean) {
+        Log.d("TEST", "Showing learned layout")
         binding?.let {
             TempData.tempSignal?.let { irSignal ->
                 it.tvSigType.text = irSignal.encodingType.toString()
                 it.tvSigCode.text = irSignal.code
             }
             // Set Listening Button to Save
-            it.btnStartListening.text = (getString(R.string.save))
+            it.btnStartListening.text = getString(R.string.save)
             it.btnStartListening.setOnClickListener { saveRecordedSignal() }
             // Enable Advanced Info button
             it.btnShowAdvancedInfo.isEnabled = true
@@ -214,19 +250,23 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
             it.btnTestSignal.isEnabled = true
 
             // Show Learned Info Layout, Advanced Info button, and Test Signal button
+            it.learnedSignalLayout.visibility = View.VISIBLE
             if (animate) {
-                ObjectAnimator.ofFloat(it.learnedSignalLayout, "alpha", 1f).apply {
-                    duration = LSListenActivity.ANIM_DURATION.toLong()
-                    interpolator = DecelerateInterpolator()
-                }.start()
-                ObjectAnimator.ofFloat(it.btnShowAdvancedInfo, "alpha", 1f).apply {
-                    duration = LSListenActivity.ANIM_DURATION.toLong()
-                    interpolator = DecelerateInterpolator()
-                }.start()
-                ObjectAnimator.ofFloat(it.btnTestSignal, "alpha", 1f).apply {
-                    duration = LSListenActivity.ANIM_DURATION.toLong()
-                    interpolator = DecelerateInterpolator()
-                }.start()
+                val interpolator = AccelerateDecelerateInterpolator()
+                it.learnedSignalLayout.animate().alpha(1f).setDuration(ANIM_DURATION).setInterpolator(interpolator)
+                    .setListener(object : Animator.AnimatorListener {
+                        override fun onAnimationRepeat(p0: Animator?) {}
+
+                        override fun onAnimationEnd(p0: Animator?) { binding?.infoLayout?.invalidate() }
+
+                        override fun onAnimationCancel(p0: Animator?) {}
+
+                        override fun onAnimationStart(p0: Animator?) {}
+
+                    })
+                    .start()
+                it.btnShowAdvancedInfo.animate().alpha(1f).setDuration(ANIM_DURATION).setInterpolator(interpolator).start()
+                it.btnTestSignal.animate().alpha(1f).setDuration(ANIM_DURATION).setInterpolator(interpolator).start()
             } else {
                 it.learnedSignalLayout.alpha = 1f
                 it.btnShowAdvancedInfo.alpha = 1f
@@ -236,6 +276,7 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
     }
 
     private fun hideLearnedLayout(animate: Boolean) {
+        Log.d("TEST", "hideLearnedLayout  animate = $animate")
         binding?.let {
             // Disabled Advanced Info button
             it.btnShowAdvancedInfo.isEnabled = false
@@ -250,20 +291,24 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
 
             // Hide Learned Info Layout, Advanced Info button, and Test Signal button
             if (animate) {
-                ObjectAnimator.ofFloat(it.learnedSignalLayout, "alpha", 0f).apply {
-                    duration = ANIM_DURATION.toLong()
-                    interpolator = DecelerateInterpolator()
-                }.start()
-                ObjectAnimator.ofFloat(it.btnShowAdvancedInfo, "alpha", 0f).apply {
-                    duration = ANIM_DURATION.toLong()
-                    interpolator = DecelerateInterpolator()
-                }.start()
-                ObjectAnimator.ofFloat(it.btnTestSignal, "alpha", 0f).apply {
-                    duration = ANIM_DURATION.toLong()
-                    interpolator = DecelerateInterpolator()
-                }.start()
+                val interpolator = AccelerateDecelerateInterpolator()
+                it.learnedSignalLayout.animate().alpha(0f).setDuration(ANIM_DURATION).setInterpolator(interpolator)
+                    .setListener(object : Animator.AnimatorListener {
+                        override fun onAnimationRepeat(p0: Animator?) {}
+
+                        override fun onAnimationEnd(p0: Animator?) { binding?.learnedSignalLayout?.visibility = View.GONE }
+
+                        override fun onAnimationCancel(p0: Animator?) {}
+
+                        override fun onAnimationStart(p0: Animator?) {}
+
+                    })
+                    .start()
+                it.btnShowAdvancedInfo.animate().alpha(0f).setDuration(ANIM_DURATION).setInterpolator(interpolator).start()
+                it.btnTestSignal.animate().alpha(0f).setDuration(ANIM_DURATION).setInterpolator(interpolator).start()
             } else {
                 it.learnedSignalLayout.alpha = 0f
+                it.learnedSignalLayout.visibility = View.GONE
                 it.btnShowAdvancedInfo.alpha = 0f
                 it.btnTestSignal.alpha = 0f
             }
@@ -271,17 +316,50 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
     }
 
     private fun showErrorLayout(errorTitle: String, errorDesc: String) {
+        Log.d("TEST", "showing Error Layout")
         binding?.let { b ->
             b.btnTestSignal.revertAnimation()
-            b.btnTestSignal.revertAnimation()
+            b.btnStartListening.revertAnimation()
             b.tvErrorTitle.text = errorTitle
             b.tvErrorDesc.text = errorDesc
-            b.learnedSignalLayout.animate().alpha(1f).setDuration(350).setInterpolator(AccelerateDecelerateInterpolator()).start()
+            b.errorLayout.visibility = View.VISIBLE
+            b.infoLayout.invalidate()
+            b.errorLayout.animate().alpha(1f).setDuration(ANIM_DURATION).setInterpolator(AccelerateDecelerateInterpolator())
+                .setListener(object : Animator.AnimatorListener {
+                    override fun onAnimationRepeat(p0: Animator?) {
+
+                    }
+
+                    override fun onAnimationEnd(p0: Animator?) {
+                        binding?.infoLayout?.invalidate()
+                    }
+
+                    override fun onAnimationCancel(p0: Animator?) {
+                        binding?.infoLayout?.invalidate()
+                    }
+
+                    override fun onAnimationStart(p0: Animator?) {
+                    }
+
+                })
+               .start()
         }
     }
 
     private fun hideErrorLayout() {
-        binding?.learnedSignalLayout?.animate()?.alpha(0f)?.setDuration(350)?.setInterpolator(AccelerateDecelerateInterpolator())?.start()
+        Log.d("TEST", "hiding Error Layout")
+        binding?.errorLayout?.animate()?.alpha(0f)?.setDuration(ANIM_DURATION)?.setInterpolator(AccelerateDecelerateInterpolator())
+            ?.setListener(object : Animator.AnimatorListener {
+                override fun onAnimationRepeat(p0: Animator?) {}
+
+                override fun onAnimationEnd(p0: Animator?) { binding?.errorLayout?.visibility = View.GONE }
+
+                override fun onAnimationCancel(p0: Animator?) {}
+
+                override fun onAnimationStart(p0: Animator?) {}
+
+            })
+            ?.start()
     }
 
 /*
@@ -292,26 +370,36 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
 
     @SuppressLint("LogNotTimber")
     private fun showUnknownError(e: Exception?) {
-        showErrorLayout(getString(R.string.err_unknown_title), getString(R.string.err_unknown_desc))
+        context?.let {
+            showErrorLayout(getString(R.string.err_unknown_sig_title), getString(R.string.err_unknown_sig_desc))
+        }
 
         e?.let { Log.e("LSListenActivity", "Unknown Error: $it") }
     }
 
     private fun showNoResponseError() {
-        showErrorLayout(getString(R.string.err_no_response_title), getString(R.string.err_no_response_desc))
+        context?.let {
+            showErrorLayout(getString(R.string.err_no_response_title), getString(R.string.err_no_response_desc))
+        }
     }
     private fun showHubBusyError() {
-        showErrorLayout(getString(R.string.err_hub_busy_title), getString(R.string.err_hub_busy_desc))
+        context?.let {
+            showErrorLayout(getString(R.string.err_hub_busy_title), getString(R.string.err_hub_busy_desc))
+        }
     }
     private fun showOverflowError() {
-        showErrorLayout(getString(R.string.err_overflow_title), getString(R.string.err_overflow_desc))
+        context?.let {
+            showErrorLayout(getString(R.string.err_overflow_title), getString(R.string.err_overflow_desc))
+        }
     }
     private fun showTimeoutError() {
-        showErrorLayout(getString(R.string.err_timeout_title), getString(R.string.err_timeout_desc))
+        context?.let {
+            showErrorLayout(getString(R.string.err_timeout_title), getString(R.string.err_timeout_desc))
+        }
     }
 
     private fun timedOut() {
-        if (isListeningForResult) {
+        if (isListeningForResult || isListeningForRawData) {
             showNoResponseError()
         }
     }
@@ -329,6 +417,7 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
     }
 
     private fun saveRecordedSignal() {
+        callback?.onSaveSignal()
         dismiss()
     }
 
@@ -356,18 +445,22 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
 
     private fun testSignal() {
         TempData.tempSignal?.let { irSignal ->
+            isListeningForTestSignal = true
             binding?.btnTestSignal?.startAnimation()
             RealtimeDatabaseFunctions.sendNoneAction(hubUID)
                 .addOnFailureListener {e -> showUnknownError(e) }
                 .addOnSuccessListener {
-                    RealtimeDatabaseFunctions.sendSignalToHub(hubUID, irSignal)
-                        .addOnSuccessListener {
-                            binding?.btnTestSignal?.revertAnimation()
-                            this@LearnSignalSheet.activity?.let { a ->
-                                Flashbar.Builder(a).message(R.string.signal_sent)
+                    if (isListeningForTestSignal) {
+                        RealtimeDatabaseFunctions.sendSignalToHub(hubUID, irSignal)
+                            .addOnSuccessListener {
+                                isListeningForTestSignal = false
+                                binding?.btnTestSignal?.revertAnimation()
+                                this@LearnSignalSheet.activity?.let { a ->
+                                    Flashbar.Builder(a).message(R.string.signal_sent).show()
+                                }
                             }
-                        }
-                        .addOnFailureListener {e -> showUnknownError(e) }
+                            .addOnFailureListener {e -> showUnknownError(e) }
+                    }
                 }
         }
     }
@@ -414,10 +507,15 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
             .addValueEventListener(rawDataListener)
     }
 
+    interface Callback {
+        fun onSaveSignal()
+    }
+
     companion object {
-        const val ANIM_DURATION = 750
+        const val ANIM_DURATION: Long = 750
         const val TIMEOUT_DURATION = 15000
-        const val IS_LISTENING = "IS_LISTENING"
+        const val KEY_LSS_BOOLS = "KEY_LSS_BOOLS"
+        const val KEY_HUB_UID = "KEY_HUB_UID"
     }
 
 }

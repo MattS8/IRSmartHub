@@ -201,7 +201,7 @@ class MainViewActivity : AppCompatActivity() {
                 //pagerAdapter.setFragments(remotesFragments)
                 when (state.viewPagerPosition) {
                     VP_FAV_REMOTE -> {
-                        val title = if (TempData.tempRemoteProfile.name == "") getString(R.string.favorite_remote) else TempData.tempRemoteProfile.name
+                        val title = if (TempData.tempRemoteProfile.name == "") getString(R.string.new_remote) else TempData.tempRemoteProfile.name
                         binding.toolbar.title = title
                     }
                     VP_ALL_REMOTES -> {

@@ -70,6 +70,7 @@
                     app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintVertical_bias="0.0"
                     app:layout_constraintHorizontal_bias="0.5"
                     tools:text="Custom Ir Signal"
+                    android:textColor="@color/white"
                     android:textAppearance="@style/AppTheme.TextAppearance.SplashHeader" android:textSize="16sp"
                     app:layout_constraintStart_toEndOf="@+id/btnDeleteAction"/>
             <TextView
@@ -81,6 +82,7 @@
                     app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintVertical_bias="0.0"
                     app:layout_constraintHorizontal_bias="0.0"
                     tools:text="send to: Test IRSmartHub"
+                    android:textColor="@color/colorControlNormalWhite"
                     app:layout_constraintTop_toBottomOf="@+id/tvActionTitle" android:layout_marginTop="8dp"
                     app:layout_constraintStart_toStartOf="@+id/tvActionTitle"/>
             <ImageButton
