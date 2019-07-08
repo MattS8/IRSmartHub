@@ -160,6 +160,7 @@ void ArduinoIRFunctions::sendSignal(uint16_t* rawData, uint16_t rawLen, bool bRe
 
 	irSender.sendRaw(rawData, rawLen, SEND_FREQUENCY);
 
+	digitalWrite(IR_BLAST_PIN, ON);
 #ifdef IR_DEBUG_IR_FUNC
 
 #endif // IR_DEBUG_IR_FUNC
