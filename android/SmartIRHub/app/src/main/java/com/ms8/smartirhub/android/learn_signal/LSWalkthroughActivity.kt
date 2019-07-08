@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.*
+import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ACreateButtonWalkthroughBinding
 import com.ms8.smartirhub.android.databinding.VChooseNameSheetBinding
@@ -286,6 +287,7 @@ class LSWalkThroughActivity : AppCompatActivity() {
             .addOnSuccessListener {
                 Log.d("TEST", "New uid: ${it.id}")
                 setResult(Activity.RESULT_OK, Intent().putExtra(NEW_IR_SIGNAL_UID, it.id))
+                //LocalData.signals[it.id] = TempData.tempSignal
                 TempData.tempSignal = null
                 finish()
             }

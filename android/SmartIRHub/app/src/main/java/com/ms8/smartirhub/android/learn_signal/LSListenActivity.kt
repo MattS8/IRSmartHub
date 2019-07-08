@@ -338,8 +338,7 @@ class LSListenActivity : AppCompatActivity() {
 /* ------------------------------------------------ OnClick Functions ------------------------------------------------ */
 
     private fun retry() {
-        TempData.tempSignal?.rawData = HashMap()
-        TempData.tempSignal?.rawLength = 0
+        TempData.tempSignal?.resetData()
 
         beginListeningProcess()
     }

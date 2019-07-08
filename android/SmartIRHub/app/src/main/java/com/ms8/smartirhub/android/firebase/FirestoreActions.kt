@@ -176,59 +176,70 @@ object FirestoreActions {
             .addOnSuccessListener {listOfTasks ->
                 Log.d("getSignals(remote)", "Got all signals!")
                 try {
-                    listOfTasks.forEach {
-                        Log.d("getSignals(remote)", "parsing...")
-                        if (it.isSuccessful) {
-                            parseIrSignal(it.result, it.result?.id)?.let {sig ->
-                                LocalData.signals[sig.uid] = sig
-                            }
-                        }
-                    }
-                    remoteProfile?.let { prof ->
-                        LocalData.remoteProfiles.remove(prof.uid)
-                        LocalData.remoteProfiles[prof.uid] = prof
-                    }
-                } catch (e : Exception) {Log.e("getSignals", "$e")}
+//                    listOfTasks.forEach {
+//                        Log.d("getSignals(remote)", "parsing...")
+//                        if (it.isSuccessful) {
+//                            parseIrSignal(it.result, it.result?.id)?.let {sig ->
+//                                Log.d("TEST", "signal: ${sig.name} | ${sig.rawLength} | ${sig.uid} | ${sig.rawData[0]}")
+//                                LocalData.signals[sig.uid] = sig
+//                            }
+//                        } else {
+//                            Log.w("TEST", "Not successful")
+//                        }
+//                    }
+//                    remoteProfile?.let { prof ->
+//                        LocalData.remoteProfiles.remove(prof.uid)
+//                        LocalData.remoteProfiles[prof.uid] = prof
+//                    }
+                } catch (e : Exception) {
+                    Log.e("getSignals", "$e")
+                }
 
                 try {
-                    Log.d("getSignals(remote)", "parsing... (remoteProfile = ${remoteProfile?.name ?: "ITS NULL"})")
-                    val docsnap: DocumentSnapshot = listOfTasks[0] as DocumentSnapshot
-                    val signal = parseIrSignal(docsnap, docsnap.id)
-                    signal?.let {irSig ->
-                        LocalData.signals.remove(irSig.uid)
-                        LocalData.signals[irSig.uid] = irSig
-                    }
-                    Log.d("getSignals(remote)", "Here...")
-                    remoteProfile?.let { prof ->
-                        Log.d("getSignals(remote)", "adding remote profile")
-                        LocalData.remoteProfiles.remove(prof.uid)
-                        LocalData.remoteProfiles[prof.uid] = prof
+                    for (i in 0 until listOfTasks.size) {
+                        Log.d("getSignals(remote)", "parsing... (remoteProfile = ${remoteProfile?.name ?: "ITS NULL"})")
+                        val docsnap: DocumentSnapshot = listOfTasks[i] as DocumentSnapshot
+                        //val signal = parseIrSignal(docsnap, docsnap.id)
+                        val signal = docsnap.toObject(IrSignal::class.java)
+                        signal?.let {irSig ->
+                            Log.d("TEST", "signal: ${irSig.name} | ${irSig.rawLength} | ${irSig.uid} | ${irSig.rawData[0]}")
+                            LocalData.signals.remove(irSig.uid)
+                            LocalData.signals[irSig.uid] = irSig
+                        }
+                        remoteProfile?.let { prof ->
+                            Log.d("getSignals(remote)", "adding remote profile")
+                            LocalData.remoteProfiles.remove(prof.uid)
+                            LocalData.remoteProfiles[prof.uid] = prof
+                        }
                     }
                 } catch (e : Exception) {Log.e("getSignals", "$e")}
-
             }
     }
 
-    @SuppressLint("LogNotTimber")
-    @Suppress("UNCHECKED_CAST")
-    private fun parseIrSignal(result: DocumentSnapshot?, id: String?): IrSignal? {
-        var signal: IrSignal? = null
-        try {
-            val irMap = result!!
-            signal = IrSignal().apply {
-                this.repeat = irMap["repeat"] as Boolean
-                this.code = irMap["code"] as String
-                this.encodingType = (irMap["encodingType"] as Number).toInt()
-                this.rawLength = (irMap["rawLength"] as Number).toInt()
-                this.name = irMap["name"] as String
-                this.uid = id!!
-                this.rawData = HashMap(irMap["rawData"] as Map<Int, String>)
-            }
-        } catch (e : Exception) { Log.e("parseIrSignal", "$e") }
-
-        Log.d("parseIrSignal", "Parse successful! (${signal?.uid})")
-        return signal
+    fun getIrSignal(irSignal: String): Task<DocumentSnapshot> {
+        return FirebaseFirestore.getInstance().collection("signals").document(irSignal).get()
     }
+
+//    @SuppressLint("LogNotTimber")
+//    @Suppress("UNCHECKED_CAST")
+//    private fun parseIrSignal(result: DocumentSnapshot?, id: String?): IrSignal? {
+//        var signal: IrSignal? = null
+//        try {
+//            val irMap = result!!
+//            signal = IrSignal().apply {
+//                this.repeat = irMap["repeat"] as Boolean
+//                this.code = irMap["code"] as String
+//                this.encodingType = (irMap["encodingType"] as Number).toInt()
+//                this.rawLength = (irMap["rawLength"] as Number).toInt()
+//                this.name = irMap["name"] as String
+//                this.uid = id!!
+//                this.rawData = HashMap(irMap["rawData"] as Map<Int, String>)
+//            }
+//        } catch (e : Exception) { Log.e("parseIrSignal", "$e") }
+//
+//        Log.d("parseIrSignal", "Parse successful! (${signal?.uid})")
+//        return signal
+//    }
 
 
 /*
@@ -260,15 +271,24 @@ object FirestoreActions {
                     exception != null -> { Log.e("listenToUserData", "snapshot error ($exception)") }
                     !snapshot!!.exists() -> {Log.d("listenToUserData", "User data is null")}
                     snapshot.id != TEST_USER -> {
-                        val userData = User().apply {
-                            val data = snapshot.data ?: return@addSnapshotListener
-                            this.groups = ObservableArrayList<String>().apply { addAll(data["groups"] as ArrayList<String>) }
-                            this.uid = uid
-                            this.username = snapshot.id
-                        }
-                        LocalData.user = userData
-                        listenToGroupData()
-                        // TODO: Listen to group invitations
+                        try {
+                            val userData = snapshot.toObject(User::class.java) ?: return@addSnapshotListener
+                            userData.username = snapshot.id
+                            userData.groups = ObservableArrayList<String>().apply { addAll(snapshot.data!!["groups"] as ArrayList<String>) }
+    //                        val userData = User().apply {
+    //                            val data = snapshot.data ?: return@addSnapshotListener
+    //                            this.groups = ObservableArrayList<String>().apply { addAll(data["groups"] as ArrayList<String>) }
+    //                            this.uid = uid
+    //                            this.username = snapshot.id
+    //                        }
+                            if (userData.uid == uid) {
+                                LocalData.user = userData
+                                listenToGroupData()
+                                // TODO: Listen to group invitations
+                            } else {
+                                Log.e("listenToUserData", "Listening to user who isn't currently logged in. (userData.uid = ${userData.uid}) (currentUser.uid = $uid)")
+                            }
+                        } catch (e : Exception) { Log.e("listenToUserData", "$e") }
                     }
                 }
             }
@@ -573,7 +593,7 @@ object FirestoreActions {
 
 
     const val TEST_REMOTE_PROFILE_TEMPLATE = "_TEST_TEMPLATE"
-    const val TEST_USER = "_TEST_USER"
+    const val TEST_USER = "TEST_USER"
     const val TEST_GROUP = "_TEST_GROUP"
     const val TEST_REMOTE_PROFILE = "_TEST_REMOTE_PROFILE"
 }

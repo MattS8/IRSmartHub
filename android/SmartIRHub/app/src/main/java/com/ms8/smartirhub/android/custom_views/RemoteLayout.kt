@@ -29,11 +29,6 @@ class RemoteLayout(context: Context, attrs : AttributeSet) : RecyclerView(contex
         field = value
         (adapter as RemoteAdapter).buttonCallback = field
     }
-    var defaultHub: String? = null
-    set(value) {
-        field = value
-        (adapter as RemoteAdapter).defaultHub = field
-    }
 
     private val buttonListener = object : ObservableList.OnListChangedCallback<ObservableList<Button>>() {
         override fun onChanged(sender: ObservableList<Button>?) {
@@ -65,7 +60,7 @@ class RemoteLayout(context: Context, attrs : AttributeSet) : RecyclerView(contex
 
     init {
         layoutManager = StaggeredGridLayoutManager(BUTTON_SPAN, StaggeredGridLayoutManager.VERTICAL)
-        adapter = RemoteAdapter(defaultHub, buttonCallback)
+        adapter = RemoteAdapter(buttonCallback)
         TempData.tempRemoteProfile.buttons.addOnListChangedCallback(buttonListener)
         clipToPadding = false
         clipChildren = false
@@ -89,7 +84,7 @@ class RemoteLayout(context: Context, attrs : AttributeSet) : RecyclerView(contex
         adapter?.notifyDataSetChanged()
     }
 
-    class RemoteAdapter(var defaultHub: String?, var buttonCallback: RemoteLayoutButtonCallback?) : RecyclerView.Adapter<ButtonViewHolder>() {
+    class RemoteAdapter(var buttonCallback: RemoteLayoutButtonCallback?) : RecyclerView.Adapter<ButtonViewHolder>() {
         @SuppressLint("LogNotTimber")
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ButtonViewHolder {
            val v = when (viewType) {
@@ -139,7 +134,7 @@ class RemoteLayout(context: Context, attrs : AttributeSet) : RecyclerView(contex
                     holder.itemView.setOnClickListener { buttonCallback?.createNewButton() }
                 }
                 else -> {
-                    holder.bind(TempData.tempRemoteProfile.buttons[position], defaultHub)
+                    holder.bind(TempData.tempRemoteProfile.buttons[position])
                 }
             }
         }
@@ -158,10 +153,10 @@ class RemoteLayout(context: Context, attrs : AttributeSet) : RecyclerView(contex
     class ButtonViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView) {
         var button : Button? = null
 
-        fun bind(button: Button, defaultHub: String?) {
+        fun bind(button: Button) {
             this.button = button
             itemView.findViewById<TextView>(R.id.btnRmtInnerView).text = button.name
-            itemView.setOnClickListener { RealtimeDatabaseFunctions.sendCommandToHub(button.command, defaultHub) }
+            itemView.setOnClickListener { RealtimeDatabaseFunctions.sendCommandToHub(button.command) }
         }
     }
 

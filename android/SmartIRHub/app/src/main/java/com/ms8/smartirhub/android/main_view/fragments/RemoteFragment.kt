@@ -68,7 +68,6 @@ class RemoteFragment : MainFragment() {
 
         // Set up remote layout
         binding.remoteLayout.buttonCallback = remoteLayoutCallback
-        binding.remoteLayout.defaultHub = LocalData.user?.defaultHub
 
         return binding.root
     }

@@ -27,14 +27,17 @@ object RealtimeDatabaseFunctions {
     fun sendSignalToHub(hubUID: String, irSignal: IrSignal): Task<Void> {
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
 
+        Log.d("TEST", "Sending Signal to $hubUID")
         FirebaseDatabase.getInstance().reference
             .child("devices")
             .child(hubUID)
             .child("rawData")
-            .setValue(
-                HashMap<String, String>().apply {
-                    irSignal.rawData.keys.forEach { key -> set(key.toString(), irSignal.rawData[key] ?: "") }
-                }
+            .setValue(ArrayList<String>()
+                .apply {
+                    for (i in 0 until irSignal.rawData.size) {
+                        add(irSignal.rawData[i])
+                    }
+                 }
             )
 
         return FirebaseDatabase.getInstance().reference
@@ -82,13 +85,14 @@ object RealtimeDatabaseFunctions {
     }
 
     @SuppressLint("LogNotTimber")
-    fun sendCommandToHub(command: Command?, defaultHub: String?) {
+    fun sendCommandToHub(command: Command?) {
+        Log.d("sendCommandToHub", "defaultHub = ${LocalData.user?.defaultHub}")
         doAsync {
             when (command) {
                 null -> { Log.w("sendCommandToHub", "call with null command") }
                 else -> {
                     val actions = ArrayList(command.actions)
-                    sendNextSignalToHub(actions, defaultHub ?: "")
+                    sendNextSignalToHub(actions, LocalData.user?.defaultHub ?: "")
                 }
             }
         }
@@ -104,15 +108,46 @@ object RealtimeDatabaseFunctions {
             return
 
         val action = actions.removeAt(0)
-        when (val destHub = if (action.hubUID == DEFAULT_HUB) defaultHubUID else action.hubUID) {
+        val destHub = if (action.hubUID == DEFAULT_HUB) defaultHubUID else action.hubUID
+        Log.d("TEST", "DestHub = $destHub (defaultHubUID = $defaultHubUID)")
+        when (destHub) {
             "" -> { Log.e("sendCommandToHub", "empty default hubUID for action ${LocalData.signals[action.irSignal]?.name}") }
             else -> {
                 when (val signal = LocalData.signals[action.irSignal]) {
-                    null -> Log.e("sendCommandToHub", "Null irSignal passed for action ${action.irSignal}")
+                    null -> {
+                        Log.e("sendCommandToHub", "Null irSignal passed for action ${action.irSignal}")
+                        FirestoreActions.getIrSignal(action.irSignal)
+                            .addOnFailureListener { Log.e("sendCommandToHub", "$it") }
+                            .addOnSuccessListener {
+                                if (it.data == null)
+                                    Log.d("sendCommandToHub", "data was null (exists = ${it.exists()}")
+                                val sig = it.toObject(IrSignal::class.java)
+                                    ?.apply {
+                                        uid = action.irSignal
+                                    } ?: run { Log.d("sendCommandToHub", "Didn't find signal ${it.id}"); return@addOnSuccessListener}
+                                Log.d("sendCommandToHub", "Got missing IR Signal: ${sig.uid}")
+                                LocalData.signals[sig.uid] = sig
+                                Log.d("sendNextSignalToHub", "Send sig: $sig")
+                                sendSignalToHub(destHub, sig)
+                                    .addOnFailureListener {  Log.e("sendCommandToHub", "Failed to send ${LocalData.signals[action.irSignal]?.name} to hub $destHub")}
+                                    .addOnSuccessListener {
+                                        Log.d("TEST", "Action sent!")
+                                        //TODO: Change action backend implementation to better support a list of actions that the Hub reads at its own pace, one at a time
+                                        if (actions.size > 0)
+                                            Timer().schedule(object : TimerTask() {
+                                                override fun run() {
+                                                    sendNextSignalToHub(actions, defaultHubUID)
+                                                }
+                                            }, actions[0].delay.toLong())
+                                    }
+                            }
+                    }
                     else -> {
+                        Log.d("sendNextSignalToHub", "Send sig: $signal")
                         sendSignalToHub(destHub, signal)
                             .addOnFailureListener {  Log.e("sendCommandToHub", "Failed to send ${LocalData.signals[action.irSignal]?.name} to hub $destHub")}
                             .addOnSuccessListener {
+                                Log.d("TEST", "Action sent!")
                                 //TODO: Change action backend implementation to better support a list of actions that the Hub reads at its own pace, one at a time
                                 if (actions.size > 0)
                                     Timer().schedule(object : TimerTask() {
@@ -154,21 +189,19 @@ object RealtimeDatabaseFunctions {
 
     @SuppressLint("UseSparseArrays", "LogNotTimber")
     @Suppress("UNCHECKED_CAST")
-    fun parseRawData(value: Any?): HashMap<Int, String>? {
+    fun parseRawData(value: Any?): ArrayList<String>? {
         try {
             val tempMap = value as HashMap<Any, Any>
             tempMap.remove("numChunks")
-            return tempMap as HashMap<Int, String>?
+            return ArrayList<String>()
+                .apply {
+                    for (i in 0 until tempMap.size)
+                        add(tempMap[i] as String)
+                }
         } catch (e : Exception) { Log.e("parseRawData", "$e")}
 
         try {
-            val arrayList = value as ArrayList<String>
-            val map = HashMap<Int, String>()
-            for (i in 0 until arrayList.size) {
-                map[i] = arrayList[i]
-            }
-
-            return map
+            return value as ArrayList<String>
         }
         catch (e : Exception) { Log.e("parseRawData", "$e")}
 

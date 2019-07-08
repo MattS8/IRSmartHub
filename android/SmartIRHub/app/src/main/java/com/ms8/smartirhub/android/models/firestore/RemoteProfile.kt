@@ -62,8 +62,7 @@ class RemoteProfile: Observable {
     class Button {
         var name    : String    = ""
         var style   : Int       = 1
-        var command : Command =
-            Command()
+        var command : Command = Command()
 
         companion object {
             const val STYLE_CREATE_BUTTON = 0
@@ -83,8 +82,7 @@ class RemoteProfile: Observable {
         var actions : ObservableArrayList<Action> = ObservableArrayList()
 
         class Action {
-            var hubUID      : String    =
-                DEFAULT_HUB
+            var hubUID      : String    = DEFAULT_HUB
             var irSignal    : String    = ""
             var delay       : Int       = 0
         }

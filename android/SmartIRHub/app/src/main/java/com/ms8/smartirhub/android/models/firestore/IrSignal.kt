@@ -7,7 +7,7 @@ import com.google.firebase.firestore.IgnoreExtraProperties
 @SuppressLint("UseSparseArrays")
 @IgnoreExtraProperties
 class IrSignal {
-    var rawData         : HashMap<Int, String>  = HashMap()
+    var rawData         : ArrayList<String>     = ArrayList()
     var name            : String                = ""
     var code            : String                = ""
     var repeat          : Boolean               = false
@@ -19,7 +19,7 @@ class IrSignal {
 
 
     fun resetData() {
-        rawData = HashMap()
+        rawData = ArrayList()
         rawLength = 0
         encodingType = 0
         code = ""
@@ -45,12 +45,21 @@ class IrSignal {
         firebaseObject["encodingType"] = encodingType
         firebaseObject["code"] = code
         firebaseObject["repeat"] = repeat
-        firebaseObject["rawData"] = HashMap<String, String>().apply {
+//        firebaseObject["rawData"] = HashMap<String, String>().apply {
+//            for (i in 0 until rawData.size) {
+//                set(i.toString(), rawData[i] ?: "")
+//            }
+//        }
+        firebaseObject["rawData"] = ArrayList<String>().apply {
             for (i in 0 until rawData.size) {
-                set(i.toString(), rawData[i] ?: "")
+                add(rawData[i])
             }
         }
 
         return firebaseObject
+    }
+
+    override fun toString(): String {
+        return "Signal: (name = $name, code = $code, encodingType = $encodingType, rawLength = $rawLength, rawdata = ${rawDataToString()}, repeat = $repeat)"
     }
 }
