@@ -29,6 +29,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.QuerySnapshot
 import com.ms8.smartirhub.android.R
+import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.TestRemoteLayout
 import com.ms8.smartirhub.android.models.firestore.Group
 import com.ms8.smartirhub.android.models.firestore.User
 import com.ms8.smartirhub.android.database.LocalData
@@ -653,7 +654,7 @@ private fun moveLogoUp(animate: Boolean) {
             val groupSize = LocalData.user?.groups?.size ?: -1
             if (LocalData.user != null && groupSize == LocalData.groups.size) {
                 Log.d("UserGroupListener", "Done fetching user groups... (${LocalData.user!!.groups.size} == ${LocalData.groups.size}")
-                context?.startActivity(Intent(context, MainViewActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
+                context?.startActivity(Intent(context, TestRemoteLayout::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
                 context?.finish()
             }
         }

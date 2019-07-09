@@ -1,8 +1,9 @@
-package com.ms8.smartirhub.android
+package com.ms8.smartirhub.android._tests.dev_playground.misc
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.databinding.DataBindingUtil
+import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.databinding.ACreateButtonWalkthroughBinding
 
 class TestViewActivity : AppCompatActivity() {

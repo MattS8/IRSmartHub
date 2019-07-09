@@ -1,4 +1,4 @@
-package com.ms8.smartirhub.android
+package com.ms8.smartirhub.android._tests.dev_playground.misc
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -10,6 +10,7 @@ import android.util.Log
 import androidx.databinding.ObservableArrayMap
 import androidx.databinding.ObservableMap
 import com.google.firebase.auth.FirebaseAuth
+import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.databinding.TestActivityBinding
 import com.ms8.smartirhub.android.firebase.AuthActions
 import com.ms8.smartirhub.android.firebase.FirestoreActions
@@ -113,7 +114,8 @@ class TestActivity : AppCompatActivity() {
         ActivityCompat.requestPermissions(
             this,
             arrayOf(Manifest.permission.RECORD_AUDIO),
-            REQ_WIFI_STATE)
+            REQ_WIFI_STATE
+        )
     }
 
     private fun printUserToken() {

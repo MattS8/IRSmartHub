@@ -95,4 +95,7 @@ dependencies {
     //Expandable RecyclerView
     implementation 'com.xwray:groupie:2.3.0'
     implementation 'com.xwray:groupie-databinding:2.3.0'
+
+    //Potential Remote Layout Base
+    implementation 'com.ernestoyaquello.dragdropswiperecyclerview:drag-drop-swipe-recyclerview:0.4.1'
 }
