@@ -1,100 +1,205 @@
 package com.ms8.smartirhub.android._tests.dev_playground.remote_layout
 
 import android.content.Context
+import android.os.Parcel
+import android.os.Parcelable
 import android.util.AttributeSet
-import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.TextView
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import androidx.recyclerview.widget.StaggeredGridLayoutManager.GAP_HANDLING_NONE
-import com.ernestoyaquello.dragdropswiperecyclerview.DragDropSwipeAdapter
-import com.ernestoyaquello.dragdropswiperecyclerview.DragDropSwipeRecyclerView
+import androidx.databinding.ObservableArrayList
+import androidx.databinding.ObservableList
+import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.layout_manager.RemoteLayoutManager
+import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview_k.AsymmetricGridView
+import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview_k.AsymmetricGridViewAdapter
+import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview_k.AsymmetricItem
+import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.models.firestore.RemoteProfile
 
-class RemoteLayout(
-    context      : Context,
-    attributeSet : AttributeSet?    = null
-) : DragDropSwipeRecyclerView(context, attributeSet) {
+class RemoteLayout(context: Context, attrs: AttributeSet) : AsymmetricGridView(context, attrs) {
 
-    var widthCount: Int = 4
-    set(value) {
-        field = value
-        layoutManager = getRemoteLayoutManager()
-        adapter = getRemoteAdapter()
+    //TODO: Test Code
+    fun setupAdapter() {
+        val rla = RemoteListAdapter(context)
+            .apply {
+                TempData.tempRemoteProfile.buttons
+                    .apply {
+                        for (i in 0 until 35) {
+                            add(RemoteProfile.Button()
+                                .apply {
+                                    name = "Button $i"
+                                })
+                            when (i) {
+                                0,1,2,3,5,6,7,8 -> {
+                                    add(AsymmetricButtonItem(1, 1, i))
+                                }
+                                4,9,10,12 -> {
+                                    add(AsymmetricButtonItem(1, 2, i))
+                                }
+                                11 -> {
+                                    add(AsymmetricButtonItem(2, 2, i))
+                                }
+                                else -> {
+                                    val colspan = if (i % 2 == 0) 1 else 2
+                                    val rowSpan = if (i % 10 == 0) 1 else 2
+                                    add(AsymmetricButtonItem(1, 1, i))
+                                }
+                            }
+                        }
+                    }
+            }
+
+        adapter = AsymmetricGridViewAdapter(context, this, rla)
     }
 
-    var remoteProfile: RemoteProfile? = null
-    set(value) {
-        field = value
-        (adapter as RemoteLayoutAdapter?)?.apply {
-            dataSet = field?.buttons?.toList() ?: emptyList()
-            notifyDataSetChanged()
+    class AsymmetricButtonItem(var _columnSpan: Int, var _rowSpan: Int, var _position: Int): AsymmetricItem {
+        override var columnSpan: Int
+            get() = _columnSpan
+            set(value) { _columnSpan = columnSpan }
+        override var rowSpan: Int
+            get() = _rowSpan
+            set(value) { _rowSpan = rowSpan }
+        var button: RemoteProfile.Button? = null
+
+        constructor(parcel: Parcel) : this(
+            parcel.readInt(),
+            parcel.readInt(),
+            parcel.readInt()
+        )
+
+        override fun describeContents() = 0
+
+        override fun writeToParcel(dest: Parcel?, flags: Int) {
+            dest?.apply {
+                    writeInt(_columnSpan)
+                    writeInt(_rowSpan)
+                    writeInt(_position)
+                }
+        }
+
+        override fun toString(): String {
+            return String.format("%s: %sx%s", _position, _rowSpan, _columnSpan)
+        }
+
+        companion object CREATOR : Parcelable.Creator<AsymmetricButtonItem> {
+            override fun createFromParcel(parcel: Parcel): AsymmetricButtonItem {
+                return AsymmetricButtonItem(parcel)
+            }
+
+            override fun newArray(size: Int): Array<AsymmetricButtonItem?> {
+                return arrayOfNulls(size)
+            }
         }
     }
 
-    private fun getRemoteAdapter(): RemoteLayoutAdapter {
-        return RemoteLayoutAdapter(remoteProfile?.buttons?.toList() ?: emptyList())
-            .apply {
-                remoteProperties = object : RemoteLayoutAdapter.RemoteLayoutProperties {
-                    override fun getWidth() = width
+    class RemoteListAdapter(context: Context): ArrayAdapter<AsymmetricButtonItem>(context, 0) {
+        private val layoutInflater = LayoutInflater.from(context)
+
+        var remoteProperties: RemoteLayoutProperties? = null
+
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+            val button = TempData.tempRemoteProfile.buttons[position]
+
+            val v = when (convertView) {
+                null -> {
+                    layoutInflater.inflate(R.layout.v_rmt_btn_base, parent, false)
+                }
+                else -> {
+                    convertView
                 }
             }
-    }
+            v.findViewById<TextView>(R.id.btnText).text = button.name
 
-    private fun getRemoteLayoutManager() : RemoteLayoutManager {
-        return RemoteLayoutManager(widthCount, VERTICAL or HORIZONTAL)
-            .apply {
-                gapStrategy = GAP_HANDLING_NONE
-            }
-    }
-
-    init {
-        orientation = ListOrientation.GRID_LIST_WITH_HORIZONTAL_SWIPING
-        orientation?.removeSwipeDirectionFlag(ListOrientation.DirectionFlag.LEFT)
-        orientation?.removeSwipeDirectionFlag(ListOrientation.DirectionFlag.RIGHT)
-        layoutManager = getRemoteLayoutManager()
-        itemLayoutId = R.layout.v_rmt_btn_base
-        adapter = getRemoteAdapter()
-    }
-
-    class RemoteLayoutAdapter(dataSet: List<RemoteProfile.Button> = emptyList())
-        : DragDropSwipeAdapter<RemoteProfile.Button, RemoteLayoutAdapter.ViewHolder>(dataSet) {
-
-        var remoteProperties : RemoteLayoutProperties? = null
-
-        override fun getViewHolder(itemView: View): ViewHolder = ViewHolder(itemView)
-
-        override fun onBindViewHolder(item: RemoteProfile.Button, viewHolder: ViewHolder, position: Int) {
-            viewHolder.innerView.text = item.name
             when (position) {
-                2,6,8 -> {
-                    remoteProperties?.getWidth()?.let {
-                        val layoutParams = viewHolder.innerView.layoutParams
-                        layoutParams.width = it/3
-                        layoutParams.height = it/2
-                        viewHolder.itemView.layoutParams = layoutParams
-                        viewHolder.itemView.invalidate()
+                10,12 -> {
+                    v.visibility = View.INVISIBLE
+                }
+                else -> {
+                    v.visibility = View.VISIBLE
+                }
+            }
+
+            //TODO: Test code
+//            when (position) {
+//                1,3,5 -> {
+//                    remoteProperties?.getRemoteWidth()?.let {
+//                        val layoutParams = v.layoutParams
+//                        layoutParams.width = it / 2
+//                        layoutParams.height = it / 4
+//                        v.layoutParams = layoutParams
+//                        v.invalidate()
+//                    }
+//                }
+//            }
+
+            return v
+        }
+
+        interface RemoteLayoutProperties {
+            fun getRemoteWidth() : Int
+        }
+    }
+
+    class RemoteRecyclerAdapter: RecyclerView.Adapter<RemoteRecyclerAdapter.RemoteViewHolder>() {
+        private val listListener = object :
+            ObservableList.OnListChangedCallback<ObservableArrayList<RemoteProfile.Button>>() {
+            override fun onChanged(sender: ObservableArrayList<RemoteProfile.Button>?) = notifyDataSetChanged()
+            override fun onItemRangeRemoved(s: ObservableArrayList<RemoteProfile.Button>?, positionStart: Int, itemCount: Int) = notifyItemRangeRemoved(positionStart, itemCount)
+            override fun onItemRangeMoved(sender: ObservableArrayList<RemoteProfile.Button>?, fromPosition: Int, toPosition: Int, itemCount: Int) = notifyDataSetChanged()
+            override fun onItemRangeInserted(sender: ObservableArrayList<RemoteProfile.Button>?, positionStart: Int, itemCount: Int) = notifyItemRangeInserted(positionStart, itemCount)
+            override fun onItemRangeChanged(sender: ObservableArrayList<RemoteProfile.Button>?, positionStart: Int, itemCount: Int) = notifyItemRangeChanged(positionStart, itemCount)
+        }
+
+        var remoteProperties: RemoteLayoutProperties? = null
+
+        init {
+            startListening()
+        }
+
+        fun stopListening() {
+            TempData.tempRemoteProfile.buttons.removeOnListChangedCallback(listListener)
+        }
+
+        fun startListening() {
+            TempData.tempRemoteProfile.buttons.addOnListChangedCallback(listListener)
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RemoteViewHolder {
+            return RemoteViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false))
+        }
+
+        override fun getItemCount() = TempData.tempRemoteProfile.buttons.size
+
+
+        override fun onBindViewHolder(holder: RemoteViewHolder, position: Int) {
+            holder.bind(TempData.tempRemoteProfile.buttons[position])
+
+            //TODO: TEST CODE
+            when (position) {
+                1,3,5 -> {
+                    remoteProperties?.getRemoteWidth()?.let {
+                        val layoutParams = holder.itemView.layoutParams
+                        layoutParams.width = it / 3
+                        layoutParams.height = it / 2
                     }
                 }
             }
         }
 
-        override fun getViewToTouchToStartDraggingItem(
-            item: RemoteProfile.Button,
-            viewHolder: ViewHolder,
-            position: Int
-        ): View? {
-            return null
+        class RemoteViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
+            private var button: RemoteProfile.Button? = null
+
+            fun bind(button: RemoteProfile.Button) {
+                this.button = button
+                itemView.findViewById<TextView>(R.id.btnText).text = this.button?.name
+            }
         }
 
         interface RemoteLayoutProperties {
-            fun getWidth() : Int
-        }
-
-        class ViewHolder(itemView: View) : DragDropSwipeAdapter.ViewHolder(itemView) {
-            val innerView: TextView = itemView.findViewById(R.id.btnRmtInnerView)
+            fun getRemoteWidth() : Int
         }
     }
 }

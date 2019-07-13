@@ -2,9 +2,11 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical"
               android:layout_width="match_parent"
-              android:layout_height="match_parent">
+              android:layout_height="match_parent"
+              android:background="@color/colorPrimaryExtraDark"
+>
 
-    <com.ms8.smartirhub.android._tests.dev_playground.remote_layout.RemoteLayout
+    <com.ms8.smartirhub.android._tests.dev_playground.remote_layout.RemoteLayoutFromLibrary
             android:id="@+id/remoteLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>

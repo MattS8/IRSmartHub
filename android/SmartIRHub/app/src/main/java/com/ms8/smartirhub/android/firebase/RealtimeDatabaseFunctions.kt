@@ -7,7 +7,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Command
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Command.Companion.DEFAULT_HUB
 import com.ms8.smartirhub.android.models.realtimedatabase.HubAction
 import com.ms8.smartirhub.android.models.realtimedatabase.HubResult
 import com.ms8.smartirhub.android.models.firestore.IrSignal
@@ -15,6 +14,7 @@ import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.firebase.FirebaseConstants.IR_ACTION_LISTEN
 import com.ms8.smartirhub.android.firebase.FirebaseConstants.IR_ACTION_NONE
 import com.ms8.smartirhub.android.firebase.FirebaseConstants.IR_ACTION_SEND
+import com.ms8.smartirhub.android.models.firestore.Hub.Companion.DEFAULT_HUB
 import org.jetbrains.anko.doAsync
 import java.text.SimpleDateFormat
 import java.util.*

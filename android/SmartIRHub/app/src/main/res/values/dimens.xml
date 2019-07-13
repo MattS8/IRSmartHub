@@ -7,4 +7,6 @@
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="bottom_nav_height">56dp</dimen>
     <dimen name="fsw_nav_height">24dp</dimen>
+
+    <dimen name="btn_corner_radius">24dp</dimen>
 </resources>

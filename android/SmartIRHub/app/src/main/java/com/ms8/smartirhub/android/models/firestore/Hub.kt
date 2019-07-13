@@ -23,4 +23,8 @@ class Hub {
         result = 31 * result + uid.hashCode()
         return result
     }
+
+    companion object {
+        const val DEFAULT_HUB = "_default_hub_"
+    }
 }

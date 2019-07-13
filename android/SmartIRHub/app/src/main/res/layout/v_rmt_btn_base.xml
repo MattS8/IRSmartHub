@@ -1,24 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.ms8.smartirhub.android.custom_views.ButtonView
+<androidx.constraintlayout.widget.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:minWidth="56dp"
-        android:minHeight="56dp"
-        app:layout_constraintStart_toStartOf="parent"
-        android:foreground="?android:selectableItemBackground"
-        app:cardElevation="2dp"
-        app:flexibility="2"
-        android:background="@color/colorCardDark"
-        android:id="@+id/btnViewBase"
-        android:layout_margin="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
 >
+    <com.ms8.smartirhub.android.custom_views.ButtonView
+            android:id="@+id/btnBackground"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:elevation="6dp"
+            android:stateListAnimator="@animator/selector_button_elevation"
+            android:foreground="?android:selectableItemBackground"
+    >
+        <ImageView
+                android:id="@+id/btnImage"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+        />
 
+        <TextView
+                android:id="@+id/btnText"
+                android:layout_margin="8dp"
+                android:gravity="center"
+                app:autoSizeTextType="uniform"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textColor="@color/white"
+        />
+    </com.ms8.smartirhub.android.custom_views.ButtonView>
 
-    <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" android:id="@+id/btnRmtInnerView" android:gravity="center"
-            android:layout_gravity="center" tools:text="1" app:autoSizeTextType="uniform"
-            android:textColor="@color/colorControlNormalWhite" android:padding="8dp"/>
-</com.ms8.smartirhub.android.custom_views.ButtonView>
+</androidx.constraintlayout.widget.ConstraintLayout>

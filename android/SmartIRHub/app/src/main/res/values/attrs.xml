@@ -18,13 +18,5 @@
         <attr name="barThickness" format="dimension"/>
     </declare-styleable>
 
-    <declare-styleable name="RoundedView">
-        <attr name="topLeftCornerRadius" format="dimension" />
-        <attr name="topRightCornerRadius" format="dimension" />
-        <attr name="bottomLeftCornerRadius" format="dimension" />
-        <attr name="bottomRightCornerRadius" format="dimension" />
-        <attr name="cornerRadius" format="dimension"/>
-    </declare-styleable>
-
     <attr name="superBottomSheet_peekHeight" format="dimension"/>
 </resources>

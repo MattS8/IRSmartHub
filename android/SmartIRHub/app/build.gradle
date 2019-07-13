@@ -98,4 +98,5 @@ dependencies {
 
     //Potential Remote Layout Base
     implementation 'com.ernestoyaquello.dragdropswiperecyclerview:drag-drop-swipe-recyclerview:0.4.1'
+    //implementation 'com.felipecsl.asymmetricgridview:library:2.0.1'
 }

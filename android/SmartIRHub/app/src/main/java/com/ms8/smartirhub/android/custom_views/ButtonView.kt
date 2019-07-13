@@ -1,125 +1,39 @@
 package com.ms8.smartirhub.android.custom_views
 
 import android.content.Context
+import android.graphics.Outline
 import android.util.AttributeSet
-import android.view.MotionEvent
-import android.view.ViewPropertyAnimator
-import androidx.interpolator.view.animation.FastOutSlowInInterpolator
-import com.ms8.smartirhub.android.R
+import android.view.View
+import android.view.ViewOutlineProvider
+import android.widget.FrameLayout
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Properties.BgStyle
 
-class ButtonView(context: Context, attrs: AttributeSet) : RoundedView(context, attrs) {
+class ButtonView(context: Context, attrs: AttributeSet) : FrameLayout(context, attrs) {
 
-    private val ANIMATION_DURATION = 200L
-    private val ANIMATION_DURATION_SHORT = 100L
-
-    private var _isAnimating = false
-    private var _isActionUpPerformed = false
-
-//    private val _debugPath by lazy {
-//        DebugPath(this)
-//    }
-//    private val _shineProvider by lazy {
-//        ShineProvider(this)
-//    }
-    //Will be available in next versions
-    private var isShineEnabled = false
-
-    var flexibility = 2f
-        set(value) {
-            if (value !in 1f..10f) {
-                throw IllegalArgumentException("Flexibility must be between [1f..10f].")
-            }
-            field = value
-        }
-
-    var isDebugPathEnabled = false
-
-    init {
-        isClickable = true
-        init(attrs)
-    }
-
-    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-        processTouchEvent(event)
-        return super.dispatchTouchEvent(event)
-    }
-
-//    override fun dispatchDraw(canvas: Canvas?) {
-//        super.dispatchDraw(canvas)
-//        if (isDebugPathEnabled)
-//            _debugPath.onDispatchDraw(canvas)
-//        if (isShineEnabled)
-//            _shineProvider.onDispatchDraw(canvas)
-//    }
-
-    private fun processTouchEvent(event: MotionEvent) {
-        val verticalRotation = calculateRotation((event.x * flexibility * 2) / width)
-        val horizontalRotation = -calculateRotation((event.y * flexibility * 2) / height)
-
-        when (event.actionMasked) {
-            MotionEvent.ACTION_DOWN -> {
-                animator {
-                    rotationY(verticalRotation)
-                    rotationX(horizontalRotation)
-                    duration = ANIMATION_DURATION_SHORT
-                    withStartAction {
-                        _isActionUpPerformed = false
-                        _isAnimating = true
-                    }
-                    withEndAction {
-                        if (_isActionUpPerformed) {
-                            animateToOriginalPosition()
-                        } else {
-                            _isAnimating = false
-                        }
-                    }
+    class ButtonOutlineProvider(var buttonProperties: RemoteProfile.Button.Properties): ViewOutlineProvider() {
+        override fun getOutline(view: View?, outline: Outline?) {
+            when (buttonProperties.bgStyle) {
+                BgStyle.BG_CIRCLE -> {
+                    outline?.setOval(0, 0, view?.width ?: 0, view?.height ?: 0)
                 }
-            }
-            MotionEvent.ACTION_MOVE -> {
-                rotationY = verticalRotation
-                rotationX = horizontalRotation
-            }
-            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_OUTSIDE -> {
-                _isActionUpPerformed = true
-                if (!_isAnimating) {
-                    animateToOriginalPosition()
+                BgStyle.BG_ROUND_RECT -> {
+                    outline?.setRoundRect(0, 0, view?.width ?: 0, view?.height ?: 0, (view?.height ?: 0 / 2).toFloat())
+                }
+                BgStyle.BG_ROUND_RECT_BOTTOM -> {
+                    outline?.setRoundRect(0, 0, view?.width ?: 0, view?.height ?: 0, (view?.height ?: 0 / 2).toFloat())
+                }
+                BgStyle.BG_ROUND_RECT_TOP -> {
+                    outline?.setRoundRect(0, 0, view?.width ?: 0, view?.height ?: 0, (view?.height ?: 0 / 2).toFloat())
+                }
+                BgStyle.BG_CUSTOM_IMAGE -> {
+
+                }
+                BgStyle.BG_INVISIBLE -> {
+
                 }
             }
         }
-    }
 
-    private fun init(attrs: AttributeSet?) {
-        context.obtainStyledAttributes(attrs, R.styleable.ElasticView).apply {
-            if (hasValue(R.styleable.ElasticView_flexibility)) {
-                flexibility = getFloat(R.styleable.ElasticView_flexibility, flexibility)
-            }
-            recycle()
-        }
-    }
-
-    private fun animator(body: ViewPropertyAnimator.() -> Unit) {
-        animate().apply {
-            interpolator = FastOutSlowInInterpolator()
-            body()
-            start()
-        }
-    }
-
-    private fun animateToOriginalPosition() {
-        animator {
-            rotationX(0f)
-            rotationY(0f)
-            duration = ANIMATION_DURATION
-        }
-    }
-
-    private fun calculateRotation(value: Float): Float {
-        var tempValue = when {
-            value < 0 -> 1f
-            value > flexibility * 2 -> flexibility * 2
-            else -> value
-        }
-        tempValue -= flexibility
-        return tempValue
     }
 }

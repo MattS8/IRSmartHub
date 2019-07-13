@@ -143,6 +143,8 @@ object FirestoreActions {
                     buttons.add(RemoteProfile.Button().apply {
                         name = buttonMap["name"] as String
                         style = (buttonMap["style"] as Number).toInt()
+                        properties.rowSpan = (buttonMap["rowSpan"] as Number).toInt()
+                        properties.columnSpan = (buttonMap["columnSpan"] as Number).toInt()
                         (buttonMap["command"] as List<Map<String, Any?>>).forEach { actionMap ->
                             command.actions.add(RemoteProfile.Command.Action().apply {
                                 delay = (actionMap["delay"] as Number).toInt()

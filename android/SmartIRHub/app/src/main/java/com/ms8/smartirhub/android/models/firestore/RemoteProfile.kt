@@ -5,9 +5,11 @@ import androidx.databinding.ObservableArrayList
 import androidx.databinding.ObservableBoolean
 import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.IgnoreExtraProperties
+import com.ms8.smartirhub.android.models.firestore.Hub.Companion.DEFAULT_HUB
 import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.ADD_TO_END
 import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.ID_BUTTONS
 import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.ID_NAME
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_BUTTON
 
 @IgnoreExtraProperties
 class RemoteProfile: Observable {
@@ -60,15 +62,37 @@ class RemoteProfile: Observable {
 */
 
     class Button {
-        var name    : String    = ""
-        var style   : Int       = 1
-        var command : Command = Command()
+        var properties      : Properties    = Properties()
+        var command         : Command       = Command()
+        var name            : String        = ""
+        var style           : Int           = STYLE_BUTTON
+
+
+        class Properties {
+            var bgStyle         : BgStyle   = BgStyle.BG_CIRCLE
+            var bgUrl           : String    = ""
+            var columnSpan      : Int       = 1
+            var rowSpan         : Int       = 1
+            var marginBottom    : Int       = 8
+            var marginTop       : Int       = 8
+            var marginStart     : Int       = 8
+            var marginEnd       : Int       = 8
+
+            enum class BgStyle {
+                BG_INVISIBLE,
+                BG_CIRCLE,
+                BG_ROUND_RECT,
+                BG_ROUND_RECT_TOP,
+                BG_ROUND_RECT_BOTTOM,
+                BG_CUSTOM_IMAGE
+            }
+        }
 
         companion object {
             const val STYLE_CREATE_BUTTON = 0
-            const val STYLE_SQUARE_BUTTON = 1
-            const val STYLE_ROUND_BUTTON = 2
-            const val STYLE_VERTICAL_RECT_TOP_ROUNDED = 3
+            const val STYLE_SPACE = 1
+            const val STYLE_BUTTON = 2
+            const val STYLE_BTN_NO_MARGIN = 3
             const val STYLE_VERTICAL_RECT_BOT_ROUNDED = 4
 
             const val ID_BUTTONS = 80839
@@ -85,10 +109,6 @@ class RemoteProfile: Observable {
             var hubUID      : String    = DEFAULT_HUB
             var irSignal    : String    = ""
             var delay       : Int       = 0
-        }
-
-        companion object {
-            const val DEFAULT_HUB = "_default_hub_"
         }
     }
 }

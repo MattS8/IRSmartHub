@@ -15,10 +15,10 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button
 import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_CREATE_BUTTON
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_ROUND_BUTTON
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_SQUARE_BUTTON
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_BUTTON
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_SPACE
 import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_VERTICAL_RECT_BOT_ROUNDED
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_VERTICAL_RECT_TOP_ROUNDED
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_BTN_NO_MARGIN
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
 
@@ -91,30 +91,18 @@ class RemoteLayout(context: Context, attrs : AttributeSet) : RecyclerView(contex
                 STYLE_CREATE_BUTTON -> {
                     LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_create_new, parent, false)
                 }
-                STYLE_SQUARE_BUTTON -> {
+                STYLE_SPACE -> {
                     Log.d("RemoteAdapter", "Inflating square button")
-                    (LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false) as RoundedView).apply {
-                        setCornerRadii(12f, 12f, 2f, 2f, true)
-                    }
+                    (LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false))
                 }
-                STYLE_ROUND_BUTTON -> {
-                    (LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false) as RoundedView).apply {
-                        setCornerRadii(14f, 14f, 14f, 14f, true)
-                    }
+                STYLE_BUTTON -> {
+                    (LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false))
                 }
-                STYLE_VERTICAL_RECT_TOP_ROUNDED -> {
-                    (LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false) as RoundedView).apply {
-                        setCornerRadii(8f, 8f, 0f, 0f, true)
-                        layoutParams.height *= 2
-                        requestLayout()
-                    }
+                STYLE_BTN_NO_MARGIN -> {
+                    (LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false))
                 }
                 STYLE_VERTICAL_RECT_BOT_ROUNDED -> {
-                    (LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false) as RoundedView).apply {
-                        setCornerRadii(0f, 0f, 8f, 8f, true)
-                        layoutParams.height *= 2
-                        requestLayout()
-                    }
+                    (LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false))
                 }
                 else -> {
                     Log.w("RemoteLayout", "unknown viewType ($viewType)")
@@ -155,7 +143,7 @@ class RemoteLayout(context: Context, attrs : AttributeSet) : RecyclerView(contex
 
         fun bind(button: Button) {
             this.button = button
-            itemView.findViewById<TextView>(R.id.btnRmtInnerView).text = button.name
+            itemView.findViewById<TextView>(R.id.btnText).text = button.name
             itemView.setOnClickListener { RealtimeDatabaseFunctions.sendCommandToHub(button.command) }
         }
     }

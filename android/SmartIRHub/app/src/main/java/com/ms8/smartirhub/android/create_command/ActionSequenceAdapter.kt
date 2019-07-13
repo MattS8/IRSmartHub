@@ -10,9 +10,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Command
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Command.Companion.DEFAULT_HUB
 import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.database.TempData
+import com.ms8.smartirhub.android.models.firestore.Hub.Companion.DEFAULT_HUB
 
 class ActionSequenceAdapter(var callback: ActionSequenceAdapterCallbacks?) : RecyclerView.Adapter<ActionSequenceAdapter.ActionViewHolder>() {
     var actionList = ArrayList<Command.Action>()
