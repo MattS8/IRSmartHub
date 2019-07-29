@@ -29,7 +29,7 @@ Contains a collection of pre-programmed actions.
 ### Button
 Contains information about a button. ***Note***: as of 7/29/2019, buttons can contain more than one physical 'button' (for example, the volume button is one Button with volume up and volume down 'buttons'). This means each Button might contain multiple commands (one for each physical 'button' represented within this Button data object).
 - **name**: An optional name for the button, given by the user.
-- **commands**: A list of one or more commands (based on the button style) to send when the button is pressed.
+- **command**: A list of one or more commands (based on the button style) to send when the button is pressed.
 - **style**: An integer representing the style type of the button.
 
 ### IR Signal
