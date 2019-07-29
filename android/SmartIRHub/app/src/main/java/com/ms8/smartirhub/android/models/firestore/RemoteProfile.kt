@@ -9,7 +9,6 @@ import com.ms8.smartirhub.android.models.firestore.Hub.Companion.DEFAULT_HUB
 import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.ADD_TO_END
 import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.ID_BUTTONS
 import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.ID_NAME
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_BUTTON
 
 @IgnoreExtraProperties
 class RemoteProfile: Observable {
@@ -65,7 +64,7 @@ class RemoteProfile: Observable {
         var properties      : Properties    = Properties()
         var command         : Command       = Command()
         var name            : String        = ""
-        var style           : Int           = STYLE_BUTTON
+        var style           : Int           = STYLE_BTN_SINGLE_ACTION
 
 
         class Properties {
@@ -91,9 +90,9 @@ class RemoteProfile: Observable {
         companion object {
             const val STYLE_CREATE_BUTTON = 0
             const val STYLE_SPACE = 1
-            const val STYLE_BUTTON = 2
+            const val STYLE_BTN_SINGLE_ACTION = 2
             const val STYLE_BTN_NO_MARGIN = 3
-            const val STYLE_VERTICAL_RECT_BOT_ROUNDED = 4
+            const val STYLE_BTN_INCREMENTER_VERTICAL = 4
 
             const val ID_BUTTONS = 80839
             const val ID_NAME = 80840

@@ -5,6 +5,8 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:clipChildren="false"
 >
     <com.ms8.smartirhub.android.custom_views.ButtonView
             android:id="@+id/btnBackground"
@@ -16,7 +18,8 @@
             android:layout_height="0dp"
             android:elevation="6dp"
             android:stateListAnimator="@animator/selector_button_elevation"
-            android:foreground="?android:selectableItemBackground"
+            android:clipToPadding="false"
+            android:clipChildren="false"
     >
         <ImageView
                 android:id="@+id/btnImage"
@@ -25,15 +28,15 @@
                 android:layout_height="match_parent"
         />
 
-        <TextView
-                android:id="@+id/btnText"
-                android:layout_margin="8dp"
-                android:gravity="center"
-                app:autoSizeTextType="uniform"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:textColor="@color/white"
-        />
+        <!--<TextView-->
+                <!--android:id="@+id/btnText"-->
+                <!--android:layout_margin="8dp"-->
+                <!--android:gravity="center"-->
+                <!--app:autoSizeTextType="uniform"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:textColor="@color/white"-->
+        <!--/>-->
     </com.ms8.smartirhub.android.custom_views.ButtonView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

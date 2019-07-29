@@ -1,7 +1,6 @@
 package com.ms8.smartirhub.android._tests.dev_playground.remote_layout
 
 import android.content.Context
-import android.graphics.drawable.Drawable
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.AttributeSet
@@ -9,11 +8,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview.AGVRecyclerViewAdapter
 import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview.AsymmetricItem
@@ -23,9 +18,7 @@ import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetric
 import com.ms8.smartirhub.android.custom_views.ButtonView
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.models.firestore.RemoteProfile
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Properties.*
-import com.wajahatkarim3.easyvalidation.core.view_ktx.validUrl
-import org.jetbrains.anko.backgroundResource
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Properties.BgStyle
 
 class RemoteLayoutFromLibrary(context: Context, attrs: AttributeSet): AsymmetricRecyclerView(context, attrs) {
 
@@ -37,25 +30,25 @@ class RemoteLayoutFromLibrary(context: Context, attrs: AttributeSet): Asymmetric
                         .apply {
                             name = "Button $i"
                             when (i) {
-                                4 -> {
-                                    style = RemoteProfile.Button.STYLE_BUTTON
+                                0,1  -> {
+                                    properties.columnSpan = 2
+                                }
+                                2 -> {
+                                    style = RemoteProfile.Button.STYLE_BTN_INCREMENTER_VERTICAL
                                     properties.bgStyle = BgStyle.BG_ROUND_RECT_TOP
                                     properties.marginTop = 16
                                     properties.marginStart = 16
                                     properties.marginEnd = 16
                                     properties.marginBottom = 0
+                                    properties.rowSpan = 2
                                 }
                                 8 -> {
-                                    style = RemoteProfile.Button.STYLE_BUTTON
+                                    style = RemoteProfile.Button.STYLE_BTN_SINGLE_ACTION
                                     properties.bgStyle = BgStyle.BG_ROUND_RECT_BOTTOM
                                     properties.marginTop = 0
                                     properties.marginStart = 16
                                     properties.marginEnd = 16
                                     properties.marginBottom = 16
-                                }
-                                1,2 -> {
-                                    style = RemoteProfile.Button.STYLE_SPACE
-                                    properties.bgStyle = BgStyle.BG_INVISIBLE
                                 }
                             }
                         })
@@ -88,7 +81,6 @@ class RemoteLayoutFromLibrary(context: Context, attrs: AttributeSet): Asymmetric
         override fun getItemCount() =
             TempData.tempRemoteProfile.buttons.size
 
-
         override fun onBindViewHolder(holder: RemoteLayoutFromLibraryViewHolder, position: Int) {
             Log.d("TEST", "Binding ${TempData.tempRemoteProfile.buttons[position]?.name}")
             holder.bind(position)
@@ -99,75 +91,23 @@ class RemoteLayoutFromLibrary(context: Context, attrs: AttributeSet): Asymmetric
         LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false)
     ) {
         var button: RemoteProfile.Button? = null
-        var buttonText: TextView = itemView.findViewById(R.id.btnText)
-        var buttonBackground: ButtonView = itemView.findViewById(R.id.btnBackground)
+        //var buttonText: TextView = itemView.findViewById(R.id.btnText)
+        var buttonView: ButtonView = itemView.findViewById(R.id.btnBackground)
 
         fun bind(position: Int) {
             button = TempData.tempRemoteProfile.buttons[position]
+            if (button == null)
+                Log.w("TEST##", "BUTTON WAS NULL @ $position")
             button?.let { b ->
-                buttonText.text = b.name
-                val layoutParams = buttonBackground.layoutParams as MarginLayoutParams
-                Log.d("TEST", "Setting bottom margin to ${Utils.dpToPx(itemView.context, b.properties.marginStart.toFloat())} for button $position")
-                layoutParams.setMargins(
-                    Utils.dpToPx(itemView.context, b.properties.marginStart.toFloat()),
-                    Utils.dpToPx(itemView.context, b.properties.marginTop.toFloat()),
-                    Utils.dpToPx(itemView.context, b.properties.marginEnd.toFloat()),
-                    Utils.dpToPx(itemView.context, b.properties.marginBottom.toFloat())
-                    )
-                when (b.properties.bgStyle) {
-                    BgStyle.BG_CIRCLE -> {
-                        buttonBackground.backgroundResource = R.drawable.btn_bg_circle
-                    }
-                    BgStyle.BG_ROUND_RECT -> {
-                        buttonBackground.backgroundResource = R.drawable.btn_bg_round_rect
-                    }
-                    BgStyle.BG_ROUND_RECT_BOTTOM -> {
-                        buttonBackground.backgroundResource = R.drawable.btn_bg_round_bottom
-                    }
-                    BgStyle.BG_ROUND_RECT_TOP -> {
-                        buttonBackground.backgroundResource = R.drawable.btn_bg_round_top
-                    }
-                    BgStyle.BG_CUSTOM_IMAGE -> {
-                        val url = b.properties.bgUrl
-                        if (url.validUrl()) {
-                            Glide.with(buttonBackground).load(url).into(object : CustomTarget<Drawable>() {
-                                override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
-                                    buttonBackground.background = resource
-                                }
+                buttonView.properties = b.properties
+                buttonView.buttonText = b.name
 
-                                override fun onLoadCleared(placeholder: Drawable?) {}
-                            })
-                        }
-                    }
-                    BgStyle.BG_INVISIBLE -> {
-                        buttonBackground.backgroundResource = 0
-                    }
-                }
-                buttonBackground.layoutParams = layoutParams
-                buttonBackground.outlineProvider = button?.properties?.let { ButtonView.ButtonOutlineProvider(it) }
-                itemView.visibility = if (button?.properties?.bgStyle != BgStyle.BG_INVISIBLE)
+                itemView.visibility = if (b.properties.bgStyle != BgStyle.BG_INVISIBLE)
                         View.VISIBLE
                     else
                         View.INVISIBLE
                 itemView.invalidate()
             }
-
-
-
-
-//            when (button?.style ?: RemoteProfile.Button.STYLE_SPACE) {
-//                RemoteProfile.Button.STYLE_SPACE -> {
-//                    Log.d("TEST", "Hiding space at pos $position")
-//                    itemView.visibility = View.INVISIBLE
-//                    itemView.isEnabled = false
-//                }
-//                else -> {
-//                    itemView.visibility = View.VISIBLE
-//                    itemView.isEnabled = true
-//                }
-//            }
-//            var lp = itemView.layoutParams
-            itemView.invalidate()
         }
     }
 

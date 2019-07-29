@@ -3,10 +3,10 @@
        android:shape="rectangle"
 >
     <solid
-            android:color="@color/colorButtonBG"/>
+            android:color="@color/colorRemoteBG"/>
     <corners
-            android:bottomLeftRadius="@dimen/btn_corner_radius"
-            android:bottomRightRadius="@dimen/btn_corner_radius"
+            android:topLeftRadius="@dimen/rmt_corner_radius"
+            android:topRightRadius="@dimen/rmt_corner_radius"
     />
 
 </shape>

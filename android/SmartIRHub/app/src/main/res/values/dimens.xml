@@ -9,4 +9,5 @@
     <dimen name="fsw_nav_height">24dp</dimen>
 
     <dimen name="btn_corner_radius">24dp</dimen>
+    <dimen name="rmt_corner_radius">32dp</dimen>
 </resources>

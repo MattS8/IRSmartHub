@@ -111,7 +111,7 @@ class RemoteLayout(context: Context, attrs: AttributeSet) : AsymmetricGridView(c
                     convertView
                 }
             }
-            v.findViewById<TextView>(R.id.btnText).text = button.name
+            //v.findViewById<TextView>(R.id.btnText).text = button.name
 
             when (position) {
                 10,12 -> {
@@ -194,7 +194,7 @@ class RemoteLayout(context: Context, attrs: AttributeSet) : AsymmetricGridView(c
 
             fun bind(button: RemoteProfile.Button) {
                 this.button = button
-                itemView.findViewById<TextView>(R.id.btnText).text = this.button?.name
+                //itemView.findViewById<TextView>(R.id.btnText).text = this.button?.name
             }
         }
 

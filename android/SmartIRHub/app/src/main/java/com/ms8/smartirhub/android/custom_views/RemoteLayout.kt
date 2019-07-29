@@ -7,7 +7,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.databinding.Observable
 import androidx.databinding.ObservableList
 import androidx.recyclerview.widget.RecyclerView
@@ -15,12 +14,12 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button
 import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_CREATE_BUTTON
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_BUTTON
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_BTN_SINGLE_ACTION
 import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_SPACE
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_VERTICAL_RECT_BOT_ROUNDED
 import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_BTN_NO_MARGIN
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
+import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_BTN_INCREMENTER_VERTICAL
 
 class RemoteLayout(context: Context, attrs : AttributeSet) : RecyclerView(context, attrs) {
     private var isListening = true
@@ -95,13 +94,13 @@ class RemoteLayout(context: Context, attrs : AttributeSet) : RecyclerView(contex
                     Log.d("RemoteAdapter", "Inflating square button")
                     (LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false))
                 }
-                STYLE_BUTTON -> {
+                STYLE_BTN_SINGLE_ACTION -> {
                     (LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false))
                 }
                 STYLE_BTN_NO_MARGIN -> {
                     (LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false))
                 }
-                STYLE_VERTICAL_RECT_BOT_ROUNDED -> {
+                STYLE_BTN_INCREMENTER_VERTICAL -> {
                     (LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false))
                 }
                 else -> {
@@ -143,7 +142,7 @@ class RemoteLayout(context: Context, attrs : AttributeSet) : RecyclerView(contex
 
         fun bind(button: Button) {
             this.button = button
-            itemView.findViewById<TextView>(R.id.btnText).text = button.name
+            //itemView.findViewById<TextView>(R.id.btnText).text = button.name
             itemView.setOnClickListener { RealtimeDatabaseFunctions.sendCommandToHub(button.command) }
         }
     }
