@@ -14,10 +14,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.create_command.CC_ChooseIrSignalActivity.Companion.REQ_EDIT_ACTION
 import com.ms8.smartirhub.android.create_command.CC_ChooseIrSignalActivity.Companion.REQ_NEW_ACTION
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Command
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Command
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ACcChooseActionBinding
 import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 
 class CC_ChooseActionsActivity : AppCompatActivity() {
     lateinit var binding: ACcChooseActionBinding
@@ -91,15 +92,15 @@ class CC_ChooseActionsActivity : AppCompatActivity() {
             REQ_NEW_ACTION -> {
                 if (resultCode == Activity.RESULT_OK) {
                     val newIrSignalUID = data?.getStringExtra(LSWalkThroughActivity.NEW_IR_SIGNAL_UID) ?: return
-                    TempData.tempButton?.command?.actions?.add(Command.Action().apply { irSignal =  newIrSignalUID})
+                    TempData.tempButton?.command?.get(0)?.actions?.add(Command.Action().apply { irSignal =  newIrSignalUID})
                 }
             }
             REQ_EDIT_ACTION -> {
                 if (resultCode == Activity.RESULT_OK) {
                     if (editingPosition != -1) {
                         val newIrSignalUID = data?.getStringExtra(LSWalkThroughActivity.NEW_IR_SIGNAL_UID) ?: return
-                        TempData.tempButton?.command?.actions?.removeAt(editingPosition)
-                        TempData.tempButton?.command?.actions?.add(editingPosition, Command.Action().apply { irSignal = newIrSignalUID })
+                        TempData.tempButton?.command?.get(0)?.actions?.removeAt(editingPosition)
+                        TempData.tempButton?.command?.get(0)?.actions?.add(editingPosition, Command.Action().apply { irSignal = newIrSignalUID })
                     } else {
                         Log.e("ChooseActions", "Returned successfully from REQ_EDIT_ACTION, but editingPosition was -1")
                     }
@@ -110,24 +111,24 @@ class CC_ChooseActionsActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        TempData.tempButton?.command?.actions?.removeOnListChangedCallback(commandListener)
+        TempData.tempButton?.command?.get(0)?.actions?.removeOnListChangedCallback(commandListener)
     }
 
     override fun onResume() {
         super.onResume()
-        TempData.tempButton?.command?.actions?.addOnListChangedCallback(commandListener)
+        TempData.tempButton?.command?.get(0)?.actions?.addOnListChangedCallback(commandListener)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         if (TempData.tempButton?.command == null)
-            TempData.tempButton?.command = Command()
+            TempData.tempButton?.command = RemoteProfile.Button.newCommandList()
 
         binding = DataBindingUtil.setContentView(this, R.layout.a_cc_choose_action)
         binding.actionsList.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
         binding.actionsList.adapter = adapter
-        binding.btnSaveCommand.isEnabled = TempData.tempButton?.command?.actions?.size ?: 0 > 0
+        binding.btnSaveCommand.isEnabled = TempData.tempButton?.command?.get(0)?.actions?.size ?: 0 > 0
         binding.btnSaveCommand.setOnClickListener {
             setResult(Activity.RESULT_OK)
             finish()

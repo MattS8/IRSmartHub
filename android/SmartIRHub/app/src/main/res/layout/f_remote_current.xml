@@ -5,7 +5,7 @@
             android:layout_height="match_parent"
             android:background="@color/colorPrimaryExtraDark"
     >
-        <com.ms8.smartirhub.android.custom_views.RemoteLayout
+        <com.ms8.smartirhub.android.remote_control.views.RemoteLayout
                 android:id="@+id/remoteLayout"
                 android:layout_width="0dp"
                 android:layout_marginStart="16dp"
@@ -17,6 +17,6 @@
                 app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent">
 
-        </com.ms8.smartirhub.android.custom_views.RemoteLayout>
+        </com.ms8.smartirhub.android.remote_control.views.RemoteLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

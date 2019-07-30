@@ -3,12 +3,14 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clipToPadding="false"
         android:clipChildren="false"
+        android:minWidth="42dp"
+        android:minHeight="42dp"
 >
-    <com.ms8.smartirhub.android.custom_views.ButtonView
+    <com.ms8.smartirhub.android.remote_control.views.ButtonView
             android:id="@+id/btnBackground"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -20,6 +22,7 @@
             android:stateListAnimator="@animator/selector_button_elevation"
             android:clipToPadding="false"
             android:clipChildren="false"
+            app:layout_constraintDimensionRatio="W,1:1"
     >
         <ImageView
                 android:id="@+id/btnImage"
@@ -37,6 +40,6 @@
                 <!--android:layout_height="match_parent"-->
                 <!--android:textColor="@color/white"-->
         <!--/>-->
-    </com.ms8.smartirhub.android.custom_views.ButtonView>
+    </com.ms8.smartirhub.android.remote_control.views.ButtonView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

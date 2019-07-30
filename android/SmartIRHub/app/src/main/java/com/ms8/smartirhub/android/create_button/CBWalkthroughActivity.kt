@@ -20,13 +20,13 @@ import com.ms8.smartirhub.android.custom_views.bottom_sheets.SimpleListDescSheet
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.SimpleListDescSheet.Companion.REQ_EDIT_ACTION
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.SimpleListDescSheet.Companion.REQ_NEW_ACTION
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.PickNameSheet
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Command
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.ADD_TO_END
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Command
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.ADD_TO_END
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ACreateButtonWalkthroughBinding
 import com.ms8.smartirhub.android.databinding.VChooseNameSheetBinding
 import com.ms8.smartirhub.android.databinding.VSimpleListDescSheetBinding
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity
 import com.ms8.smartirhub.android.utils.MyValidators.ButtonNameValidator
 
@@ -108,7 +108,7 @@ class CBWalkThroughActivity : AppCompatActivity() {
                 pickNameSheet.dismiss()
             }
             binding.prog3.bOnThisStep -> {
-                TempData.tempButton?.let { it.command = Command() }
+                TempData.tempButton?.let { it.command = RemoteProfile.Button.newCommandList()}
                 determineWalkThroughState()
             }
             binding.prog2.bOnThisStep -> {
@@ -132,7 +132,7 @@ class CBWalkThroughActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        TempData.tempButton?.command?.actions?.addOnListChangedCallback(commandListener)
+        TempData.tempButton?.command?.get(0)?.actions?.addOnListChangedCallback(commandListener)
         pickNameSheet.callback = object : PickNameSheet.Callback {
             override fun onSavePressed(sheetBinding: VChooseNameSheetBinding?) {
                 sheetBinding?.txtInput?.error = ""
@@ -153,7 +153,7 @@ class CBWalkThroughActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        TempData.tempButton?.command?.actions?.removeOnListChangedCallback(commandListener)
+        TempData.tempButton?.command?.get(0)?.actions?.removeOnListChangedCallback(commandListener)
         pickNameSheet.callback = null
     }
 
@@ -216,9 +216,9 @@ class CBWalkThroughActivity : AppCompatActivity() {
                 if (resultCode == Activity.RESULT_OK) {
                     val newIrSignalUID = data?.getStringExtra(LSWalkThroughActivity.NEW_IR_SIGNAL_UID) ?: return
                     Log.d("TEST", "got new signal with uid: $newIrSignalUID")
-                    TempData.tempButton!!.command.actions.add(Command.Action().apply {
+                    TempData.tempButton!!.command[0].actions.add(Command.Action().apply {
                         irSignal =  newIrSignalUID })
-                    pickActionsSheetAdapter.actionList = ArrayList(TempData.tempButton?.command?.actions ?: ArrayList())
+                    pickActionsSheetAdapter.actionList = ArrayList(TempData.tempButton?.command?.get(0)?.actions ?: ArrayList())
                     pickActionsSheetAdapter.notifyDataSetChanged()
                 }
             }
@@ -226,8 +226,8 @@ class CBWalkThroughActivity : AppCompatActivity() {
                 if (resultCode == Activity.RESULT_OK) {
                     val newIrSignalUID = data?.getStringExtra(LSWalkThroughActivity.NEW_IR_SIGNAL_UID) ?: return
                     if (editingPosition != -1) {
-                        TempData.tempButton?.command?.actions?.removeAt(editingPosition)
-                        TempData.tempButton?.command?.actions?.add(editingPosition, Command.Action().apply { irSignal = newIrSignalUID })
+                        TempData.tempButton?.command?.get(0)?.actions?.removeAt(editingPosition)
+                        TempData.tempButton?.command?.get(0)?.actions?.add(editingPosition, Command.Action().apply { irSignal = newIrSignalUID })
                     } else { Log.e("ChooseActions", "Returned successfully from REQ_EDIT_ACTION, but editingPosition was -1") }
                 }
             }
@@ -275,7 +275,7 @@ class CBWalkThroughActivity : AppCompatActivity() {
                 binding.btnNextStep.setOnClickListener { showPickNameSheet() }
                 binding.prog1.setOnClickListener { showPickNameSheet() }
             }
-            TempData.tempButton?.command?.actions?.size ?: 0 == 0 -> {
+            TempData.tempButton?.command?.get(0)?.actions?.size ?: 0 == 0 -> {
                 binding.prog1.bOnThisStep = true
                 binding.prog2.bOnThisStep = true
                 binding.prog3.bOnThisStep = false

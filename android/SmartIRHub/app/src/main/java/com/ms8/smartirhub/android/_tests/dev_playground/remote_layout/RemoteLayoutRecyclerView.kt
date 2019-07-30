@@ -13,7 +13,7 @@
 //import com.ms8.smartirhub.android.R
 //import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview_k.*
 //import com.ms8.smartirhub.android.database.TempData
-//import com.ms8.smartirhub.android.models.firestore.RemoteProfile
+//import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 //
 //class RemoteLayoutRecyclerView(context: Context, attrs: AttributeSet) : AsymmetricRecyclerView(context, attrs) {
 //

@@ -6,8 +6,9 @@ import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import androidx.core.widget.TextViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview.AGVRecyclerViewAdapter
@@ -15,10 +16,14 @@ import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetric
 import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview.AsymmetricRecyclerView
 import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview.AsymmetricRecyclerViewAdapter
 import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview_k.Utils
-import com.ms8.smartirhub.android.custom_views.ButtonView
 import com.ms8.smartirhub.android.database.TempData
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Properties.BgStyle
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_ADD
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_SUBTRACT
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_INCREMENTER_VERTICAL
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_SINGLE_ACTION
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Properties.BgStyle
+import com.ms8.smartirhub.android.remote_control.views.ButtonView
 
 class RemoteLayoutFromLibrary(context: Context, attrs: AttributeSet): AsymmetricRecyclerView(context, attrs) {
 
@@ -26,29 +31,57 @@ class RemoteLayoutFromLibrary(context: Context, attrs: AttributeSet): Asymmetric
         TempData.tempRemoteProfile.buttons
             .apply {
                 for (i in 0 until 50) {
-                    add(RemoteProfile.Button()
+                    add(
+                        RemoteProfile.Button()
                         .apply {
                             name = "Button $i"
                             when (i) {
                                 0,1  -> {
-                                    properties.columnSpan = 2
+                                    columnSpan = 2
                                 }
                                 2 -> {
-                                    style = RemoteProfile.Button.STYLE_BTN_INCREMENTER_VERTICAL
-                                    properties.bgStyle = BgStyle.BG_ROUND_RECT_TOP
-                                    properties.marginTop = 16
-                                    properties.marginStart = 16
-                                    properties.marginEnd = 16
-                                    properties.marginBottom = 0
-                                    properties.rowSpan = 2
+                                    rowSpan = 2
+                                    style = STYLE_BTN_INCREMENTER_VERTICAL
+                                    properties[0].bgStyle = BgStyle.BG_ROUND_RECT_TOP
+                                    properties[0].marginTop = 16
+                                    properties[0].marginStart = 16
+                                    properties[0].marginEnd = 16
+                                    properties[0].marginBottom = 0
+                                    properties[0].image = IMG_ADD
+
+                                    properties.add(RemoteProfile.Button.Properties()
+                                        .apply {
+                                            bgStyle = BgStyle.BG_ROUND_RECT_BOTTOM
+                                            marginTop = 0
+                                            marginStart = 16
+                                            marginBottom = 16
+                                            marginEnd = 16
+                                            image = IMG_SUBTRACT
+                                        })
+
+                                    name = "VOL"
                                 }
-                                8 -> {
-                                    style = RemoteProfile.Button.STYLE_BTN_SINGLE_ACTION
-                                    properties.bgStyle = BgStyle.BG_ROUND_RECT_BOTTOM
-                                    properties.marginTop = 0
-                                    properties.marginStart = 16
-                                    properties.marginEnd = 16
-                                    properties.marginBottom = 16
+                                7 -> {
+                                    rowSpan = 2
+                                    style = STYLE_BTN_INCREMENTER_VERTICAL
+                                    properties[0].bgStyle = BgStyle.BG_ROUND_RECT_TOP
+                                    properties[0].marginTop = 16
+                                    properties[0].marginStart = 16
+                                    properties[0].marginEnd = 16
+                                    properties[0].marginBottom = 0
+                                    properties[0].image = IMG_ADD
+
+                                    properties.add(RemoteProfile.Button.Properties()
+                                        .apply {
+                                            bgStyle = BgStyle.BG_ROUND_RECT_BOTTOM
+                                            marginTop = 0
+                                            marginStart = 16
+                                            marginBottom = 16
+                                            marginEnd = 16
+                                            image = IMG_SUBTRACT
+                                        })
+
+                                    name = "CH"
                                 }
                             }
                         })
@@ -71,7 +104,11 @@ class RemoteLayoutFromLibrary(context: Context, attrs: AttributeSet): Asymmetric
         override fun getItem(position: Int): AsymmetricItem {
             val b = TempData.tempRemoteProfile.buttons[position]
 
-            return DemoItem(b.properties.columnSpan, b.properties.rowSpan, position)
+            return DemoItem(b.columnSpan, b.rowSpan, position)
+        }
+
+        override fun getItemViewType(position: Int): Int {
+            return TempData.tempRemoteProfile.buttons[position].style
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RemoteLayoutFromLibraryViewHolder {
@@ -88,26 +125,59 @@ class RemoteLayoutFromLibrary(context: Context, attrs: AttributeSet): Asymmetric
     }
 
     class RemoteLayoutFromLibraryViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder(
-        LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false)
+        when (viewType) {
+            STYLE_BTN_SINGLE_ACTION -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false)
+            STYLE_BTN_INCREMENTER_VERTICAL -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_inc_vert, parent, false)
+            else -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false)
+        }
     ) {
         var button: RemoteProfile.Button? = null
-        //var buttonText: TextView = itemView.findViewById(R.id.btnText)
-        var buttonView: ButtonView = itemView.findViewById(R.id.btnBackground)
 
         fun bind(position: Int) {
             button = TempData.tempRemoteProfile.buttons[position]
             if (button == null)
                 Log.w("TEST##", "BUTTON WAS NULL @ $position")
             button?.let { b ->
-                buttonView.properties = b.properties
-                buttonView.buttonText = b.name
-
-                itemView.visibility = if (b.properties.bgStyle != BgStyle.BG_INVISIBLE)
-                        View.VISIBLE
-                    else
-                        View.INVISIBLE
-                itemView.invalidate()
+                when (b.style) {
+                    STYLE_BTN_SINGLE_ACTION -> bindSingleActionButton(b)
+                    STYLE_BTN_INCREMENTER_VERTICAL -> bindIncrementerButton(b)
+                    else -> bindSingleActionButton(b)
+                }
+//                buttonView.properties = b.properties
+//                buttonView.buttonText = b.name
+//
+//                itemView.visibility = if (b.properties.bgStyle != BgStyle.BG_INVISIBLE)
+//                        View.VISIBLE
+//                    else
+//                        View.INVISIBLE
+//                itemView.invalidate()
             }
+        }
+
+        private fun bindIncrementerButton(button: RemoteProfile.Button) {
+            val topButtonView = itemView.findViewById<ButtonView>(R.id.btnTop)
+            val bottomButtonView = itemView.findViewById<ButtonView>(R.id.btnBottom)
+            val buttonText = itemView.findViewById<TextView>(R.id.txtButtonName)
+
+            // set top button properties
+            topButtonView.properties = button.properties[0]
+            topButtonView.setOnClickListener { Log.d("TEST", "TOP BUTTON CLICKED") }
+            // set bottom button properties
+            bottomButtonView.properties = button.properties[1]
+            bottomButtonView.setOnClickListener { Log.d("TEST", "BOTTOM BUTTON CLICKED") }
+            // set middle textView text
+            buttonText.text = button.name
+            // Backwards compatible autoSizeText
+            TextViewCompat.setAutoSizeTextTypeWithDefaults(buttonText, TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM)
+        }
+
+        private fun bindSingleActionButton(button: RemoteProfile.Button) {
+            val buttonView = itemView.findViewById<ButtonView>(R.id.btnBackground)
+
+            // set button properties
+            buttonView.properties = button.properties[0]
+            // set button text
+            buttonView.buttonText = button.name
         }
     }
 

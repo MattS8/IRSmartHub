@@ -11,8 +11,7 @@ import androidx.databinding.DataBindingUtil
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.create_button.CBWalkThroughActivity
 import com.ms8.smartirhub.android.create_button.CBWalkThroughActivity.Companion.REQ_NEW_BUTTON
-import com.ms8.smartirhub.android.custom_views.RemoteLayout
-import com.ms8.smartirhub.android.database.LocalData
+import com.ms8.smartirhub.android.remote_control.views.RemoteLayout
 import com.ms8.smartirhub.android.databinding.FRemoteCurrentBinding
 
 class RemoteFragment : MainFragment() {

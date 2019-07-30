@@ -1,4 +1,4 @@
-package com.ms8.smartirhub.android.models.firestore
+package com.ms8.smartirhub.android.remote_control.models
 
 import androidx.databinding.Observable
 import androidx.databinding.ObservableArrayList
@@ -6,9 +6,9 @@ import androidx.databinding.ObservableBoolean
 import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.IgnoreExtraProperties
 import com.ms8.smartirhub.android.models.firestore.Hub.Companion.DEFAULT_HUB
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.ADD_TO_END
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.ID_BUTTONS
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.ID_NAME
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.ADD_TO_END
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.ID_BUTTONS
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.ID_NAME
 
 @IgnoreExtraProperties
 class RemoteProfile: Observable {
@@ -61,21 +61,22 @@ class RemoteProfile: Observable {
 */
 
     class Button {
-        var properties      : Properties    = Properties()
-        var command         : Command       = Command()
-        var name            : String        = ""
-        var style           : Int           = STYLE_BTN_SINGLE_ACTION
+        var properties      : ArrayList<Properties> = ArrayList<Properties>().apply { add(Properties()) }
+        var command         : ArrayList<Command>    = ArrayList<Command>().apply { add(Command()) }
+        var name            : String                = ""
+        var style           : Int                   = STYLE_BTN_SINGLE_ACTION
+        var columnSpan      : Int       = 1
+        var rowSpan         : Int       = 1
 
 
         class Properties {
             var bgStyle         : BgStyle   = BgStyle.BG_CIRCLE
             var bgUrl           : String    = ""
-            var columnSpan      : Int       = 1
-            var rowSpan         : Int       = 1
-            var marginBottom    : Int       = 8
-            var marginTop       : Int       = 8
-            var marginStart     : Int       = 8
-            var marginEnd       : Int       = 8
+            var image           : String    = ""
+            var marginBottom    : Int       = 16
+            var marginTop       : Int       = 16
+            var marginStart     : Int       = 16
+            var marginEnd       : Int       = 16
 
             enum class BgStyle {
                 BG_INVISIBLE,
@@ -88,6 +89,8 @@ class RemoteProfile: Observable {
         }
 
         companion object {
+            fun newCommandList(): java.util.ArrayList<Command> = ArrayList<Command>().apply { add(Command()) }
+
             const val STYLE_CREATE_BUTTON = 0
             const val STYLE_SPACE = 1
             const val STYLE_BTN_SINGLE_ACTION = 2
@@ -98,6 +101,9 @@ class RemoteProfile: Observable {
             const val ID_NAME = 80840
 
             const val ADD_TO_END = -1
+
+            const val IMG_ADD       = "_IMG_ADD_"
+            const val IMG_SUBTRACT  = "_IMG_SUBTRACT_"
         }
     }
 

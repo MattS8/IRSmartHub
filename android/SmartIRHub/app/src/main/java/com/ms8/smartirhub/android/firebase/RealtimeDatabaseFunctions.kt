@@ -6,7 +6,7 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Command
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Command
 import com.ms8.smartirhub.android.models.realtimedatabase.HubAction
 import com.ms8.smartirhub.android.models.realtimedatabase.HubResult
 import com.ms8.smartirhub.android.models.firestore.IrSignal

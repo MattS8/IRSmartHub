@@ -11,7 +11,6 @@ import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableMap
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.google.firebase.auth.FirebaseAuth
@@ -23,7 +22,7 @@ import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.BackWarningSheet
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.RemoteTemplatesSheet
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ActivityMainViewBinding

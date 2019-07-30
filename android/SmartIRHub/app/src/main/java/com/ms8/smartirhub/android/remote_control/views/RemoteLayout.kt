@@ -1,4 +1,4 @@
-package com.ms8.smartirhub.android.custom_views
+package com.ms8.smartirhub.android.remote_control.views
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -12,14 +12,14 @@ import androidx.databinding.ObservableList
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_CREATE_BUTTON
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_BTN_SINGLE_ACTION
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_SPACE
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_BTN_NO_MARGIN
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_CREATE_BUTTON
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_SINGLE_ACTION
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_SPACE
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_NO_MARGIN
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Button.Companion.STYLE_BTN_INCREMENTER_VERTICAL
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_INCREMENTER_VERTICAL
 
 class RemoteLayout(context: Context, attrs : AttributeSet) : RecyclerView(context, attrs) {
     private var isListening = true
@@ -143,7 +143,7 @@ class RemoteLayout(context: Context, attrs : AttributeSet) : RecyclerView(contex
         fun bind(button: Button) {
             this.button = button
             //itemView.findViewById<TextView>(R.id.btnText).text = button.name
-            itemView.setOnClickListener { RealtimeDatabaseFunctions.sendCommandToHub(button.command) }
+            itemView.setOnClickListener { RealtimeDatabaseFunctions.sendCommandToHub(button.command[0]) }
         }
     }
 

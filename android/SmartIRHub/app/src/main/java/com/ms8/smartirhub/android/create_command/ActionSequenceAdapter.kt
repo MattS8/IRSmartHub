@@ -9,7 +9,7 @@ import android.widget.SeekBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.models.firestore.RemoteProfile.Command
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Command
 import com.ms8.smartirhub.android.database.LocalData
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.models.firestore.Hub.Companion.DEFAULT_HUB
@@ -40,7 +40,7 @@ class ActionSequenceAdapter(var callback: ActionSequenceAdapterCallbacks?) : Rec
                 holder.itemView.setOnClickListener { callback?.startEditAction(actionList[holder.adapterPosition], holder.adapterPosition) }
                 holder.bindAction(actionList[position])
                 holder.itemView.findViewById<ImageButton>(R.id.btnDeleteAction).setOnClickListener {
-                    TempData.tempButton?.command?.actions?.removeAt(holder.adapterPosition)
+                    TempData.tempButton?.command?.get(0)?.actions?.removeAt(holder.adapterPosition)
                 }
                 // Show delay input for actions with additional actions after
                 if (position > 0 && position < itemCount - 2) {
