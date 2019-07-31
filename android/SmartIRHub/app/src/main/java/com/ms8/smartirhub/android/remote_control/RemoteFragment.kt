@@ -11,7 +11,7 @@ import androidx.databinding.DataBindingUtil
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.create_button.CBWalkThroughActivity
 import com.ms8.smartirhub.android.create_button.CBWalkThroughActivity.Companion.REQ_NEW_BUTTON
-import com.ms8.smartirhub.android.remote_control.views.RemoteLayout
+import com.ms8.smartirhub.android.remote_control.views._OLD_RemoteLayout
 import com.ms8.smartirhub.android.databinding.FRemoteCurrentBinding
 
 class RemoteFragment : MainFragment() {
@@ -24,7 +24,7 @@ class RemoteFragment : MainFragment() {
         Callbacks
     ----------------------------------------------
 */
-    private val remoteLayoutCallback = object : RemoteLayout.RemoteLayoutButtonCallback {
+    private val remoteLayoutCallback = object : _OLD_RemoteLayout.RemoteLayoutButtonCallback {
         override fun createNewButton() {
             if (!waitingForCreateButtonActivity) {
                 waitingForCreateButtonActivity = true

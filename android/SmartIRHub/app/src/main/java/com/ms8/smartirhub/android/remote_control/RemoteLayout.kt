@@ -15,12 +15,17 @@ import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetric
 import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview.AsymmetricItem
 import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview.AsymmetricRecyclerView
 import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview.AsymmetricRecyclerViewAdapter
-import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview_k.Utils
+import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_ADD
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_RADIAL_DOWN
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_RADIAL_LEFT
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_RADIAL_RIGHT
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_RADIAL_UP
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_SUBTRACT
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_INCREMENTER_VERTICAL
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_RADIAL_W_CENTER
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_SINGLE_ACTION
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Properties.BgStyle
 import com.ms8.smartirhub.android.remote_control.views.ButtonView
@@ -61,7 +66,7 @@ class RemoteLayoutFromLibrary(context: Context, attrs: AttributeSet): Asymmetric
 
                                     name = "VOL"
                                 }
-                                7 -> {
+                                4 -> {
                                     rowSpan = 2
                                     style = STYLE_BTN_INCREMENTER_VERTICAL
                                     properties[0].bgStyle = BgStyle.BG_ROUND_RECT_TOP
@@ -82,6 +87,61 @@ class RemoteLayoutFromLibrary(context: Context, attrs: AttributeSet): Asymmetric
                                         })
 
                                     name = "CH"
+                                }
+                                3 -> {
+                                    rowSpan = 2
+                                    columnSpan = 2
+                                    style = STYLE_BTN_RADIAL_W_CENTER
+
+                                    // add topButton Properties
+                                    properties[0].bgStyle = BgStyle.BG_NONE
+                                    properties[0].marginTop = 16
+                                    properties[0].marginStart = 0
+                                    properties[0].marginEnd = 0
+                                    properties[0].marginBottom = 0
+                                    properties[0].image = IMG_RADIAL_UP
+
+                                    // add endButton Properties
+                                    properties.add(RemoteProfile.Button.Properties()
+                                        .apply {
+                                            bgStyle = BgStyle.BG_NONE
+                                            marginTop = 0
+                                            marginStart = 0
+                                            marginEnd = 16
+                                            marginBottom = 0
+                                            image = IMG_RADIAL_RIGHT
+                                        })
+                                    // add bottomButton Properties
+                                    properties.add(RemoteProfile.Button.Properties()
+                                        .apply {
+                                            bgStyle = BgStyle.BG_NONE
+                                            marginTop = 0
+                                            marginStart = 0
+                                            marginEnd = 0
+                                            marginBottom = 16
+                                            image = IMG_RADIAL_DOWN
+                                        })
+                                    // add startButton Properties
+                                    properties.add(RemoteProfile.Button.Properties()
+                                        .apply {
+                                            bgStyle = BgStyle.BG_NONE
+                                            marginTop = 0
+                                            marginStart = 16
+                                            marginEnd = 0
+                                            marginBottom = 0
+                                            image = IMG_RADIAL_LEFT
+                                        })
+                                    // add centerButton Properties
+                                    properties.add(RemoteProfile.Button.Properties()
+                                        .apply {
+                                            bgStyle = BgStyle.BG_CIRCLE
+                                            marginTop = 0
+                                            marginStart = 0
+                                            marginEnd = 0
+                                            marginBottom = 0
+                                        })
+
+                                    name = "OK"
                                 }
                             }
                         })
@@ -119,7 +179,6 @@ class RemoteLayoutFromLibrary(context: Context, attrs: AttributeSet): Asymmetric
             TempData.tempRemoteProfile.buttons.size
 
         override fun onBindViewHolder(holder: RemoteLayoutFromLibraryViewHolder, position: Int) {
-            Log.d("TEST", "Binding ${TempData.tempRemoteProfile.buttons[position]?.name}")
             holder.bind(position)
         }
     }
@@ -128,6 +187,8 @@ class RemoteLayoutFromLibrary(context: Context, attrs: AttributeSet): Asymmetric
         when (viewType) {
             STYLE_BTN_SINGLE_ACTION -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false)
             STYLE_BTN_INCREMENTER_VERTICAL -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_inc_vert, parent, false)
+            STYLE_BTN_RADIAL_W_CENTER -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_radial_w_center_btn, parent, false)
+
             else -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false)
         }
     ) {
@@ -141,6 +202,7 @@ class RemoteLayoutFromLibrary(context: Context, attrs: AttributeSet): Asymmetric
                 when (b.style) {
                     STYLE_BTN_SINGLE_ACTION -> bindSingleActionButton(b)
                     STYLE_BTN_INCREMENTER_VERTICAL -> bindIncrementerButton(b)
+                    STYLE_BTN_RADIAL_W_CENTER -> bindRadialWithCenterButton(b)
                     else -> bindSingleActionButton(b)
                 }
 //                buttonView.properties = b.properties
@@ -154,6 +216,37 @@ class RemoteLayoutFromLibrary(context: Context, attrs: AttributeSet): Asymmetric
             }
         }
 
+        private fun bindRadialWithCenterButton(button: RemoteProfile.Button) {
+            val topButtonView = itemView.findViewById<ButtonView>(R.id.btnTop)
+            val bottomButtonView = itemView.findViewById<ButtonView>(R.id.btnBottom)
+            val startButtonView = itemView.findViewById<ButtonView>(R.id.btnStart)
+            val endButtonView = itemView.findViewById<ButtonView>(R.id.btnEnd)
+            val centerButtonView = itemView.findViewById<ButtonView>(R.id.btnCenter)
+
+            // set top button properties
+            topButtonView.properties = button.properties[0]
+            //todo replace with proper onClick
+            topButtonView.setOnClickListener { Log.d("TEST", "TOP BUTTON CLICKED") }
+            // set bottom button properties
+            endButtonView.properties = button.properties[1]
+            //todo replace with proper onClick
+            endButtonView.setOnClickListener { Log.d("TEST", "END BUTTON CLICKED") }
+            // set start button properties
+            bottomButtonView.properties = button.properties[2]
+            //todo replace with proper onClick
+            bottomButtonView.setOnClickListener { Log.d("TEST", "BOTTOM BUTTON CLICKED") }
+            // set end button properties
+            startButtonView.properties = button.properties[3]
+            //todo replace with proper onClick
+            startButtonView.setOnClickListener { Log.d("TEST", "START BUTTON CLICKED") }
+            // set center button properties
+            centerButtonView.properties = button.properties[4]
+            // set center button text
+            centerButtonView.buttonText = button.name
+            //todo replace with proper onClick
+            centerButtonView.setOnClickListener { Log.d("TEST", "CENTER BUTTON CLICKED") }
+        }
+
         private fun bindIncrementerButton(button: RemoteProfile.Button) {
             val topButtonView = itemView.findViewById<ButtonView>(R.id.btnTop)
             val bottomButtonView = itemView.findViewById<ButtonView>(R.id.btnBottom)
@@ -161,9 +254,11 @@ class RemoteLayoutFromLibrary(context: Context, attrs: AttributeSet): Asymmetric
 
             // set top button properties
             topButtonView.properties = button.properties[0]
+            //todo replace with proper onClick
             topButtonView.setOnClickListener { Log.d("TEST", "TOP BUTTON CLICKED") }
             // set bottom button properties
             bottomButtonView.properties = button.properties[1]
+            //todo replace with proper onClick
             bottomButtonView.setOnClickListener { Log.d("TEST", "BOTTOM BUTTON CLICKED") }
             // set middle textView text
             buttonText.text = button.name
@@ -178,6 +273,8 @@ class RemoteLayoutFromLibrary(context: Context, attrs: AttributeSet): Asymmetric
             buttonView.properties = button.properties[0]
             // set button text
             buttonView.buttonText = button.name
+            //todo replace with proper onClick
+            buttonView.setOnClickListener { Log.d("TEST", "BUTTON CLICKED") }
         }
     }
 
