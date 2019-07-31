@@ -1,4 +1,4 @@
-package com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview_k
+package com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview
 
 import android.content.Context
 import android.database.DataSetObserver
@@ -15,9 +15,11 @@ class AsymmetricGridViewAdapter(
     listView: AsymmetricGridView,
     private val wrappedAdapter: ListAdapter
 )
-    : BaseAdapter(), AGVBaseAdapter<RecyclerView.ViewHolder>, WrapperListAdapter {
+    : BaseAdapter(),
+    AGVBaseAdapter<RecyclerView.ViewHolder>, WrapperListAdapter {
 
-    private val adapterImpl: AdapterImpl = AdapterImpl(context, this, listView)
+    private val adapterImpl: AdapterImpl =
+        AdapterImpl(context, this, listView)
 
     override val actualItemCount: Int
         get() = wrappedAdapter.count
@@ -43,7 +45,13 @@ class AsymmetricGridViewAdapter(
     override fun onCreateAsymmetricViewHolder(
         position: Int, parent: ViewGroup, viewType: Int
     ): AsymmetricViewHolder<RecyclerView.ViewHolder> {
-        return AsymmetricViewHolder(wrappedAdapter.getView(position, null, parent))
+        return AsymmetricViewHolder(
+            wrappedAdapter.getView(
+                position,
+                null,
+                parent
+            )
+        )
     }
 
     override fun onBindAsymmetricViewHolder(holder: AsymmetricViewHolder<*>, parent: ViewGroup, position: Int) {

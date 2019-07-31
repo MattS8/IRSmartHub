@@ -9,6 +9,7 @@ import android.os.Parcelable
 import android.util.Log
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableMap
 import androidx.fragment.app.FragmentPagerAdapter
@@ -19,7 +20,6 @@ import com.mikepenz.materialdrawer.Drawer
 import com.mikepenz.materialdrawer.DrawerBuilder
 import com.mikepenz.materialdrawer.model.ProfileDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem
-import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.BackWarningSheet
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.RemoteTemplatesSheet
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
@@ -30,6 +30,14 @@ import com.ms8.smartirhub.android.utils.exts.getNavBarHeight
 import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity
 import com.ms8.smartirhub.android.main_view.fragments.*
+import com.ms8.smartirhub.android.remote_control.RemoteFragment
+import com.ms8.smartirhub.android.utils.exts.findNavBarHeight
+import android.util.TypedValue
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.DecelerateInterpolator
+import com.ms8.smartirhub.android.R
+import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
+
 
 class MainViewActivity : AppCompatActivity() {
     private lateinit var binding : ActivityMainViewBinding
@@ -61,11 +69,11 @@ class MainViewActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         when {
-        // Check remoteTemplateSheet state
+        // check remoteTemplateSheet state
             remoteTemplatesSheet.onBackPressed() -> {}
-        // Show exit warning before leaving
+        // show exit warning before leaving
             !exitWarningSheet.isVisible -> { exitWarningSheet.show(supportFragmentManager, "ExitWarningSheet") }
-        // Proceed with normal onBackPressed
+        // proceed with normal onBackPressed
             else -> { super.onBackPressed() }
         }
     }
@@ -75,12 +83,32 @@ class MainViewActivity : AppCompatActivity() {
         outState.putParcelable(STATE, state.apply { adapterBaseID = pagerAdapter.getBaseItemId() })
     }
 
+//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+//        Log.d("TEST", "Selected item ID = ${item.itemId}" +
+//                "\n\tR.id.navigation_remote = ${R.id.navigation_main_remote}" +
+//                "\n\tR.id.navigation_commands = ${R.id.navigation_commands}" +
+//                "\n\tR.id.navigation_devices = ${R.id.navigation_devices}")
+//
+//        // Update state
+//        state.navPosition = item.itemId
+//
+//        // Reset viewpager position
+//        state.viewPagerPosition = 0
+//
+//        // Update FAB based on selected item
+//        setupFab()
+//
+//        // Show proper views based on selected item
+//        setupInnerView()
+//
+//        return true
+//    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main_view)
-        //binding.navView.menuItemSelectionListener = navListener
 
-        /* --- Set up exit sheet -- */
+        // setup exit warning sheet
         exitWarningSheet
             .apply {
                 titleStr = this@MainViewActivity.getString(R.string.exit_app_title)
@@ -94,7 +122,7 @@ class MainViewActivity : AppCompatActivity() {
                 }
             }
 
-        /* --- Build drawer layout --- */
+        // build drawer header layout
         val header = AccountHeaderBuilder()
             .withActivity(this)
             .withHeaderBackground(R.drawable.side_nav_bar)
@@ -105,7 +133,7 @@ class MainViewActivity : AppCompatActivity() {
             )
             .build()
 
-        /* -- Account for nav/status bar height --*/
+        // Account for nav/status bar height
         val rotation = (getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.rotation
         if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) {
             try {
@@ -114,7 +142,7 @@ class MainViewActivity : AppCompatActivity() {
             } catch (e :Exception) {}
         }
 
-        /* --- Build Side Drawer --- */
+        // setup side drawer
         drawer = DrawerBuilder()
             .withActivity(this)
             .withToolbar(binding.toolbar)
@@ -128,15 +156,13 @@ class MainViewActivity : AppCompatActivity() {
             })
             .build()
 
-        /* --- Set Up State ---*/
+        // get state
         state = savedInstanceState?.get(STATE) as State? ?: State()
 
-        //binding.navView.setSelectedIndex(state.navPosition, true)
-
-        /* --- Set Fab Layout --- */
+        // setup fab
         setupFab()
 
-        /* --- Set Inner View Layout --- */
+        // setup fragment pager adapter
         pagerAdapter = MainViewAdapter(supportFragmentManager, FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT, state.navPosition, state.adapterBaseID)
             .apply {
                 addFragment(MyCommandsFragment(), MainViewAdapter.Companion.ViewPagerList.COMMANDS)
@@ -147,19 +173,157 @@ class MainViewActivity : AppCompatActivity() {
                 addFragment(MyIRSmartHubsFragment(), MainViewAdapter.Companion.ViewPagerList.DEVICES)
             }
 
-
-        /* -- Set bindings -- */
+        // setup bindings
         binding
             .apply {
                 frameLayout.adapter = pagerAdapter
                 frameLayout.addOnPageChangeListener(pageChangeCallback)
 
-                navView.setOnNavigationItemSelectedListener { item -> onItemSelected(item) }
-                navView.setOnNavigationItemReselectedListener { run {  } }
-                navView.selectedItemId = state.navPosition
+                navView.layoutParams = CoordinatorLayout.LayoutParams(navView.layoutParams)
+                    .apply {
+                        val tv = TypedValue()
+                        val navBarHeight = findNavBarHeight()
+                        if (theme.resolveAttribute(android.R.attr.actionBarSize, tv, true) && navBarHeight > 0) {
+                            height = TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics) + findNavBarHeight()
+                        }
+                        gravity = Gravity.BOTTOM
+                    }
+                navView.setPadding(navView.paddingLeft, navView.paddingTop, navView.paddingRight, findNavBarHeight())
+
+                btnMyRemotes.setOnClickListener { onMyRemotesClicked() }
+                btnMyDevices.setOnClickListener { onMyDevicesClicked() }
             }
 
-        setupInnerView()
+        // set currently shown view
+        when (state.navPosition) {
+            FP_MY_DEVICES -> onMyDevicesClicked(true)
+            FP_MY_REMOTES -> onMyRemotesClicked(true)
+        }
+
+        createMockData()
+    }
+
+    private fun createMockData() {
+        TempData.tempRemoteProfile.buttons
+            .apply {
+                for (i in 0 until 50) {
+                    add(
+                        RemoteProfile.Button()
+                            .apply {
+                                name = "B $i"
+                                when (i) {
+                                    0,1  -> {
+                                        columnSpan = 2
+                                    }
+                                    2 -> {
+                                        rowSpan = 2
+                                        style = RemoteProfile.Button.STYLE_BTN_INCREMENTER_VERTICAL
+                                        properties[0].bgStyle = RemoteProfile.Button.Properties.BgStyle.BG_ROUND_RECT_TOP
+                                        properties[0].marginTop = 16
+                                        properties[0].marginStart = 16
+                                        properties[0].marginEnd = 16
+                                        properties[0].marginBottom = 0
+                                        properties[0].image = RemoteProfile.Button.IMG_ADD
+
+                                        properties.add(
+                                            RemoteProfile.Button.Properties()
+                                                .apply {
+                                                    bgStyle = RemoteProfile.Button.Properties.BgStyle.BG_ROUND_RECT_BOTTOM
+                                                    marginTop = 0
+                                                    marginStart = 16
+                                                    marginBottom = 16
+                                                    marginEnd = 16
+                                                    image = RemoteProfile.Button.IMG_SUBTRACT
+                                                })
+
+                                        name = "VOL"
+                                    }
+                                    4 -> {
+                                        rowSpan = 2
+                                        style = RemoteProfile.Button.STYLE_BTN_INCREMENTER_VERTICAL
+                                        properties[0].bgStyle = RemoteProfile.Button.Properties.BgStyle.BG_ROUND_RECT_TOP
+                                        properties[0].marginTop = 16
+                                        properties[0].marginStart = 16
+                                        properties[0].marginEnd = 16
+                                        properties[0].marginBottom = 0
+                                        properties[0].image = RemoteProfile.Button.IMG_ADD
+
+                                        properties.add(
+                                            RemoteProfile.Button.Properties()
+                                                .apply {
+                                                    bgStyle = RemoteProfile.Button.Properties.BgStyle.BG_ROUND_RECT_BOTTOM
+                                                    marginTop = 0
+                                                    marginStart = 16
+                                                    marginBottom = 16
+                                                    marginEnd = 16
+                                                    image = RemoteProfile.Button.IMG_SUBTRACT
+                                                })
+
+                                        name = "CH"
+                                    }
+                                    3 -> {
+                                        rowSpan = 2
+                                        columnSpan = 2
+                                        style = RemoteProfile.Button.STYLE_BTN_RADIAL_W_CENTER
+
+                                        // add topButton Properties
+                                        properties[0].bgStyle = RemoteProfile.Button.Properties.BgStyle.BG_NONE
+                                        properties[0].marginTop = 16
+                                        properties[0].marginStart = 0
+                                        properties[0].marginEnd = 0
+                                        properties[0].marginBottom = 0
+                                        properties[0].image = RemoteProfile.Button.IMG_RADIAL_UP
+
+                                        // add endButton Properties
+                                        properties.add(
+                                            RemoteProfile.Button.Properties()
+                                                .apply {
+                                                    bgStyle = RemoteProfile.Button.Properties.BgStyle.BG_NONE
+                                                    marginTop = 0
+                                                    marginStart = 0
+                                                    marginEnd = 16
+                                                    marginBottom = 0
+                                                    image = RemoteProfile.Button.IMG_RADIAL_RIGHT
+                                                })
+                                        // add bottomButton Properties
+                                        properties.add(
+                                            RemoteProfile.Button.Properties()
+                                                .apply {
+                                                    bgStyle = RemoteProfile.Button.Properties.BgStyle.BG_NONE
+                                                    marginTop = 0
+                                                    marginStart = 0
+                                                    marginEnd = 0
+                                                    marginBottom = 16
+                                                    image = RemoteProfile.Button.IMG_RADIAL_DOWN
+                                                })
+                                        // add startButton Properties
+                                        properties.add(
+                                            RemoteProfile.Button.Properties()
+                                                .apply {
+                                                    bgStyle = RemoteProfile.Button.Properties.BgStyle.BG_NONE
+                                                    marginTop = 0
+                                                    marginStart = 16
+                                                    marginEnd = 0
+                                                    marginBottom = 0
+                                                    image = RemoteProfile.Button.IMG_RADIAL_LEFT
+                                                })
+                                        // add centerButton Properties
+                                        properties.add(
+                                            RemoteProfile.Button.Properties()
+                                                .apply {
+                                                    bgStyle = RemoteProfile.Button.Properties.BgStyle.BG_CIRCLE
+                                                    marginTop = 0
+                                                    marginStart = 0
+                                                    marginEnd = 0
+                                                    marginBottom = 0
+                                                })
+
+                                        name = "OK"
+                                    }
+                                }
+                            })
+                }
+            }
     }
 
     override fun onPause() {
@@ -179,6 +343,59 @@ class MainViewActivity : AppCompatActivity() {
  ----------------------------------------------
  */
 
+    private fun onMyRemotesClicked(forceUpdate: Boolean = false) {
+        // do nothing if 'my remotes' is already shown
+        if (state.navPosition == FP_MY_REMOTES && !forceUpdate)
+            return
+
+        // update nav position
+        state.navPosition = FP_MY_REMOTES
+
+        // set toolbar title
+        when (state.viewPagerPosition) {
+            VP_FAV_REMOTE -> {
+                val title = if (TempData.tempRemoteProfile.name == "") getString(R.string.new_remote) else TempData.tempRemoteProfile.name
+                binding.toolbar.title = title
+            }
+            VP_ALL_REMOTES -> {
+                binding.toolbar.title = getString(R.string.title_remotes)
+            }
+        }
+
+        // set fab label and function
+        setupFab()
+
+        // update pagerAdapter and viewPager
+        pagerAdapter.setNavPosition(state.navPosition)
+        binding.frameLayout.setCurrentItem(state.viewPagerPosition, false)
+    }
+
+    private fun onMyDevicesClicked(forceUpdate: Boolean = false) {
+        // do nothing if 'my devices' is already shown
+        if (state.navPosition == FP_MY_DEVICES && !forceUpdate)
+            return
+
+        // update nav position
+        state.navPosition = FP_MY_DEVICES
+
+        // set toolbar title
+        when (state.viewPagerPosition) {
+            VP_DEVICES -> {
+                binding.toolbar.title = getString(R.string.title_my_devices)
+            }
+            VP_IRSMART_DEVICES -> {
+                binding.toolbar.title = getString(R.string.title_my_ir_hubs)
+            }
+        }
+
+        // set fab label and function
+        setupFab()
+
+        // update pagerAdapter and viewPager
+        pagerAdapter.setNavPosition(state.navPosition)
+        binding.frameLayout.setCurrentItem(state.viewPagerPosition, false)
+    }
+
     private val pageChangeCallback = object: ViewPager.OnPageChangeListener {
         override fun onPageScrollStateChanged(state: Int) {}
 
@@ -190,109 +407,182 @@ class MainViewActivity : AppCompatActivity() {
         }
     }
 
-    @SuppressLint("LogNotTimber")
-    private fun setupInnerView() {
-        when (state.navPosition) {
-        // My Remotes
-            R.id.navigation_main_remote -> {
-                //TODO Implement remotes page
-                /*
-                    This page contains two panels:
-                        1. The user's favorite remote
-                        2. A list of all other remotes the user has access to
-                 */
-                //pagerAdapter.setFragments(remotesFragments)
-                when (state.viewPagerPosition) {
-                    VP_FAV_REMOTE -> {
-                        val title = if (TempData.tempRemoteProfile.name == "") getString(R.string.new_remote) else TempData.tempRemoteProfile.name
-                        binding.toolbar.title = title
-                    }
-                    VP_ALL_REMOTES -> {
-                        binding.toolbar.title = getString(R.string.title_remotes)
-                    }
-                }
-            }
-        // My Commands
-            R.id.navigation_commands -> {
-                //TODO Implement commands page
-                /*
-                    This page contains two panels:
-                        1. A list of user-defined commands (with favorite commands stickied to the
-                            top).
-                        2. A list of user-programed IR signals.
-                 */
-                //pagerAdapter.setFragments(commandsFragments)
-                when (state.viewPagerPosition) {
-                    VP_COMMANDS -> {
-                        binding.toolbar.title = getString(R.string.title_my_commands)
-                    }
-                    VP_IR_SIGNALS -> {
-                        binding.toolbar.title = getString(R.string.title_programmed_signals)
-                    }
-                }
-            }
-        // My Devices
-            R.id.navigation_devices -> {
-                //TODO Implement devices page
-                /*
-                    This page contains multiple things:
-                        1. A list of IR devices that the user has added. These are pre-defined devices
-                            with a preset remote profile to accompany them.
-                        2. A list of IRSmartHub devices. From here, users can change the name of
-                            devices, set up new ones, etc.
-                 */
-                //pagerAdapter.setFragments(devicesFragments)
-                when (state.viewPagerPosition) {
-                    VP_DEVICES -> {
-                        binding.toolbar.title = getString(R.string.title_my_devices)
-                    }
-                    VP_IRSMART_DEVICES -> {
-                        binding.toolbar.title = getString(R.string.title_my_ir_hubs)
-                    }
-                }
-            }
-            else -> { Log.e("MainViewActivity", "Unknown nav id: ${state.navPosition}") }
-        }
-        pagerAdapter.setNavPosition(state.navPosition)
-        binding.frameLayout.setCurrentItem(state.viewPagerPosition, false)
-    }
-
+//    @SuppressLint("LogNotTimber")
+//    private fun setupInnerView() {
+//        when (state.navPosition) {
+//        // My Remotes
+//            R.id.navigation_main_remote -> {
+//                //TODO Implement remotes page
+//                /*
+//                    This page contains two panels:
+//                        1. The user's favorite remote
+//                        2. A list of all other remotes the user has access to
+//                 */
+//                //pagerAdapter.setFragments(remotesFragments)
+//                when (state.viewPagerPosition) {
+//                    VP_FAV_REMOTE -> {
+//                        val title = if (TempData.tempRemoteProfile.name == "") getString(R.string.new_remote) else TempData.tempRemoteProfile.name
+//                        binding.toolbar.title = title
+//                    }
+//                    VP_ALL_REMOTES -> {
+//                        binding.toolbar.title = getString(R.string.title_remotes)
+//                    }
+//                }
+//            }
+//        // My Commands
+//            R.id.navigation_commands -> {
+//                //TODO Implement commands page
+//                /*
+//                    This page contains two panels:
+//                        1. A list of user-defined commands (with favorite commands stickied to the
+//                            top).
+//                        2. A list of user-programed IR signals.
+//                 */
+//                //pagerAdapter.setFragments(commandsFragments)
+//                when (state.viewPagerPosition) {
+//                    VP_COMMANDS -> {
+//                        binding.toolbar.title = getString(R.string.title_my_commands)
+//                    }
+//                    VP_IR_SIGNALS -> {
+//                        binding.toolbar.title = getString(R.string.title_programmed_signals)
+//                    }
+//                }
+//            }
+//        // My Devices
+//            R.id.navigation_devices -> {
+//                //TODO Implement devices page
+//                /*
+//                    This page contains multiple things:
+//                        1. A list of IR devices that the user has added. These are pre-defined devices
+//                            with a preset remote profile to accompany them.
+//                        2. A list of IRSmartHub devices. From here, users can change the name of
+//                            devices, set up new ones, etc.
+//                 */
+//                //pagerAdapter.setFragments(devicesFragments)
+//                when (state.viewPagerPosition) {
+//                    VP_DEVICES -> {
+//                        binding.toolbar.title = getString(R.string.title_my_devices)
+//                    }
+//                    VP_IRSMART_DEVICES -> {
+//                        binding.toolbar.title = getString(R.string.title_my_ir_hubs)
+//                    }
+//                }
+//            }
+//            else -> { Log.e("MainViewActivity", "Unknown nav id: ${state.navPosition}") }
+//        }
+//        pagerAdapter.setNavPosition(state.navPosition)
+//        binding.frameLayout.setCurrentItem(state.viewPagerPosition, false)
+//    }
+//
     private fun setupFab() {
         when (state.navPosition) {
             // My Remotes
-            R.id.navigation_main_remote -> {
-                binding.fab.animateNewText(getString(R.string.create_remote))
+            FP_MY_REMOTES -> {
+                //binding.fab.labelText = getString(R.string.create_remote)
                 binding.fab.setOnClickListener { createRemote() }
             }
             // My Commands
-            R.id.navigation_commands -> {
-                when (state.viewPagerPosition) {
-                // Create New Command
-                    VP_COMMANDS -> {
-                        binding.fab.animateNewText(getString(R.string.create_command))
-                        binding.fab.setOnClickListener { createCommand() }
-                    }
-                    VP_IR_SIGNALS -> {
-                        binding.fab.text = getString(R.string.create_ir_signal)
-                        binding.fab.setOnClickListener { createIrSignal() }
-                    }
-                }
-            }
+//            FP_MY_COMMANDS -> {
+//                when (state.viewPagerPosition) {
+//                // Create New Command
+//                    VP_COMMANDS -> {
+//                        //binding.fab.labelText = getString(R.string.create_command)
+//                        binding.fab.setOnClickListener { createCommand() }
+//                    }
+//                    VP_IR_SIGNALS -> {
+//                        //binding.fab.labelText = getString(R.string.create_ir_signal)
+//                        binding.fab.setOnClickListener { createIrSignal() }
+//                    }
+//                }
+//            }
             // My Devices
-            R.id.navigation_devices -> {
+            FP_MY_DEVICES -> {
                 when (state.viewPagerPosition) {
                 // Add Predefined Devices
                     VP_DEVICES -> {
-                        binding.fab.animateNewText(getString(R.string.add_ir_device))
+                        //binding.fab.labelText = getString(R.string.add_ir_device)
                         binding.fab.setOnClickListener { addDevice() }
                     }
                 // Set Up IRSmartHub
                     VP_IRSMART_DEVICES -> {
-                        binding.fab.animateNewText(getString(R.string.setup_new_hub))
+                        //binding.fab.labelText = getString(R.string.setup_new_hub)
                         binding.fab.setOnClickListener { setupNewHub() }
                     }
                 }
             }
+        }
+    }
+
+    fun hideUiElements() {
+        if (!binding.fab.isOrWillBeHidden) {
+            val tv = TypedValue()
+            val navBarDist = if (theme.resolveAttribute(android.R.attr.actionBarSize, tv, true))
+                TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics)
+            else
+                Utils.dpToPx(this, 56f)
+
+
+            val interpolator = AccelerateInterpolator()
+            binding.fab.hide()
+            binding.fab.animate()
+                .translationY(200f)
+                .setDuration(300)
+                .setInterpolator(interpolator)
+                .start()
+            binding.toolbar.animate()
+                .alpha(0f)
+                .translationY(-100f)
+                .setDuration(300)
+                .setInterpolator(interpolator)
+                .start()
+            binding.navView.animate()
+                .translationY(navBarDist.toFloat())
+                .setDuration(300)
+                .setInterpolator(interpolator)
+                .start()
+            binding.btnMyRemotes.animate()
+                .alpha(0f)
+                .setDuration(300)
+                .setInterpolator(interpolator)
+                .start()
+            binding.btnMyDevices.animate()
+                .alpha(0f)
+                .setDuration(300)
+                .setInterpolator(interpolator)
+                .start()
+        }
+    }
+
+    fun showUiElements() {
+        if (binding.fab.isOrWillBeHidden) {
+            val interpolator = DecelerateInterpolator()
+            binding.fab.show()
+            binding.toolbar.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(300)
+                .setInterpolator(interpolator)
+                .start()
+            binding.fab.animate()
+                .translationY(0f)
+                .setDuration(300)
+                .setInterpolator(interpolator)
+                .start()
+            binding.navView.animate()
+                .translationY(0f)
+                .setDuration(300)
+                .setInterpolator(interpolator)
+                .start()
+            binding.btnMyRemotes.animate()
+                .alpha(1f)
+                .setDuration(300)
+                .setInterpolator(interpolator)
+                .start()
+            binding.btnMyDevices.animate()
+                .alpha(1f)
+                .setDuration(300)
+                .setInterpolator(interpolator)
+                .start()
         }
     }
 
@@ -304,23 +594,6 @@ class MainViewActivity : AppCompatActivity() {
 
     private fun onDrawerItemClicked(view: View?, position: Int, drawerItem: IDrawerItem<*>) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-
-    private fun onItemSelected(menuItem: MenuItem) : Boolean {
-        // Update state
-        state.navPosition = menuItem.itemId
-
-        // Reset viewpager position
-        state.viewPagerPosition = 0
-
-        // Update FAB based on selected item
-        setupFab()
-
-        // Show proper views based on selected item
-        setupInnerView()
-
-        return true
     }
 
 /*
@@ -336,7 +609,9 @@ class MainViewActivity : AppCompatActivity() {
                 Log.d("onTemplateSelected", "Template selected: $uid")
                 TempData.tempRemoteProfile = LocalData.remoteProfiles[uid] ?: RemoteProfile()
                 TempData.tempRemoteProfile.inEditMode.set(true)
-                setupInnerView()
+                state.viewPagerPosition = VP_FAV_REMOTE
+                onMyRemotesClicked()
+
             }
         }
     }
@@ -373,6 +648,10 @@ class MainViewActivity : AppCompatActivity() {
         const val VP_IRSMART_DEVICES    = 1
         const val VP_FAV_REMOTE         = 0
         const val VP_ALL_REMOTES        = 1
+
+        // Fragment Positions
+        const val FP_MY_REMOTES = 0
+        const val FP_MY_DEVICES = 1
     }
 
     /*
@@ -382,7 +661,7 @@ class MainViewActivity : AppCompatActivity() {
     */
 
     class State() : Parcelable {
-        var navPosition = R.id.navigation_main_remote
+        var navPosition = FP_MY_REMOTES
         var viewPagerPosition = 0
         var adapterBaseID: Long = 0
 

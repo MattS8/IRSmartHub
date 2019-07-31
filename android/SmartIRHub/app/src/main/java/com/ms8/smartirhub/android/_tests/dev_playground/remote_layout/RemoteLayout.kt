@@ -12,9 +12,9 @@ import androidx.databinding.ObservableArrayList
 import androidx.databinding.ObservableList
 import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview_k.AsymmetricGridView
-import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview_k.AsymmetricGridViewAdapter
-import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview_k.AsymmetricItem
+import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.AsymmetricGridView
+import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.AsymmetricGridViewAdapter
+import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.AsymmetricItem
 import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 
@@ -52,10 +52,15 @@ class RemoteLayout(context: Context, attrs: AttributeSet) : AsymmetricGridView(c
                     }
             }
 
-        adapter = AsymmetricGridViewAdapter(context, this, rla)
+        adapter = AsymmetricGridViewAdapter(
+            context,
+            this,
+            rla
+        )
     }
 
-    class AsymmetricButtonItem(var _columnSpan: Int, var _rowSpan: Int, var _position: Int): AsymmetricItem {
+    class AsymmetricButtonItem(var _columnSpan: Int, var _rowSpan: Int, var _position: Int):
+        AsymmetricItem {
         override var columnSpan: Int
             get() = _columnSpan
             set(value) { _columnSpan = columnSpan }

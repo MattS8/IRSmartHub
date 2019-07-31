@@ -1,4 +1,4 @@
-package com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview_k
+package com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview
 
 import android.content.Context
 import android.util.AttributeSet
@@ -7,8 +7,10 @@ import android.view.ViewTreeObserver
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
-open class AsymmetricRecyclerView(context: Context, attrs: AttributeSet) : RecyclerView(context, attrs), AsymmetricView {
-    private val viewImpl: AsymmetricViewImpl = AsymmetricViewImpl(context)
+open class AsymmetricRecyclerView(context: Context, attrs: AttributeSet) : RecyclerView(context, attrs),
+    AsymmetricView {
+    private val viewImpl: AsymmetricViewImpl =
+        AsymmetricViewImpl(context)
     private var adapter: AsymmetricRecyclerViewAdapter<*>? = null
 
     override var isDebugging: Boolean

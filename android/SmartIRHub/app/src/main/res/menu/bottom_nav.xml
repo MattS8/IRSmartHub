@@ -5,21 +5,25 @@
       app:bbn_itemColorActive="@color/colorAccent"
       app:bbn_itemColorInactive="@color/colorPrimary"
       android:background="@color/colorPrimaryDark"
+      app:showAsAction="always"
 >
     <item
             android:id="@+id/navigation_commands"
             android:icon="@drawable/temp_splash_logo"
             android:title="@string/title_my_commands"
+            app:showAsAction="always"
     />
     <item
             android:id="@+id/navigation_main_remote"
             android:icon="@drawable/temp_splash_logo"
             android:title="@string/title_remotes"
+            app:showAsAction="always"
     />
     <item
         android:id="@+id/navigation_devices"
         android:icon="@drawable/temp_splash_logo"
         android:title="@string/title_my_devices"
+        app:showAsAction="always"
     />
 
 </menu>

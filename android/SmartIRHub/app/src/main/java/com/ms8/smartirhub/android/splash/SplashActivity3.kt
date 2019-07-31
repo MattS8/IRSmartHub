@@ -654,7 +654,7 @@ private fun moveLogoUp(animate: Boolean) {
             val groupSize = LocalData.user?.groups?.size ?: -1
             if (LocalData.user != null && groupSize == LocalData.groups.size) {
                 Log.d("UserGroupListener", "Done fetching user groups... (${LocalData.user!!.groups.size} == ${LocalData.groups.size}")
-                context?.startActivity(Intent(context, TestRemoteLayout::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
+                context?.startActivity(Intent(context, MainViewActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
                 context?.finish()
             }
         }

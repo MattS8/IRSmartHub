@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout         xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-                xmlns:tools="http://schemas.android.com/tools">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:id="@+id/container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -12,6 +11,7 @@
             android:clipChildren="false"
             android:clipToPadding="false"
             android:fitsSystemWindows="true"
+            android:paddingTop="16dp"
     >
 
 
@@ -19,96 +19,141 @@
 
         <androidx.viewpager.widget.ViewPager
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_height="match_parent"
                 android:id="@+id/frame_layout"
                 app:layout_constraintTop_toBottomOf="@id/toolbar"
                 app:layout_constraintBottom_toTopOf="@id/nav_view"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_anchor="@id/toolbar"
+                app:layout_anchorGravity="bottom"
                 app:layout_behavior="@string/appbar_scrolling_view_behavior"
         />
 
-<!-- Floating Page Action Button -->
-        <!--<com.google.android.material.card.MaterialCardView-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="56dp"-->
-                <!--android:id="@+id/fab"-->
-                <!--app:cardCornerRadius="56dp"-->
-                <!--app:layout_constraintBottom_toTopOf="@id/nav_view"-->
-                <!--app:layout_constraintEnd_toEndOf="parent"-->
-                <!--app:layout_constraintStart_toStartOf="parent"-->
-                <!--app:layout_constraintHorizontal_bias="1"-->
-                <!--app:layout_constraintVertical_bias="1"-->
-                <!--android:layout_margin="32dp"-->
-                <!--android:foreground="?android:selectableItemBackground"-->
-                <!--app:cardBackgroundColor="@color/colorAccent"-->
-                <!--android:stateListAnimator="@animator/selector_button_elevation"-->
-                <!--android:animateLayoutChanges="true"-->
-                <!--app:cardPreventCornerOverlap="false"-->
-                <!--app:cardUseCompatPadding="true"-->
-                <!--android:clickable="true"-->
-                <!--android:focusable="true"-->
-        <!--&gt;-->
-            <!--<TextView android:layout_width="wrap_content" android:layout_height="match_parent"-->
-                      <!--android:id="@+id/fabText"-->
-                      <!--tools:text="New Remote"-->
-                      <!--android:gravity="center_vertical"-->
-                      <!--android:layout_marginEnd="16dp"-->
-                      <!--android:layout_marginStart="8dp"-->
-                      <!--android:textAppearance="@style/AppTheme.TextAppearance.SplashSubHeader"-->
-                      <!--android:drawableStart="@drawable/ic_add_white_24dp"-->
-                      <!--android:drawablePadding="8dp"-->
-
-            <!--/>-->
-
-        <!--</com.google.android.material.card.MaterialCardView>-->
-
-        <com.ms8.smartirhub.android.custom_views.MyExtendedFAB
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintBottom_toTopOf="@id/nav_view"
-                app:layout_constraintVertical_bias="1"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="1"
-                android:layout_marginBottom="24dp"
-                android:layout_marginEnd="32dp"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="32dp"
-                app:layout_anchor="@+id/nav_view"
-                app:layout_anchorGravity="end|top"
-                app:backgroundTint="@color/colorAccent"
+                android:id="@+id/fab_dummy"
+                android:layout_margin="32dp"
+                app:layout_anchorGravity="center"
+                app:layout_anchor="@id/nav_view"
+                android:alpha=".0"
+                app:elevation="0dp"
+                android:elevation="0dp"
+                android:clickable="false"
+        />
+
+        <!--<com.github.clans.fab.FloatingActionButton-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:id="@+id/fab"-->
+                <!--android:visibility="visible"-->
+                <!--android:layout_marginBottom="56dp"-->
+                <!--app:layout_anchorGravity="center_horizontal|top"-->
+                <!--app:layout_anchor="@id/nav_view"-->
+                <!--app:elevation="32dp"-->
+                <!--android:elevation="32dp"-->
+                <!--android:translationZ="24dp"-->
+                <!--app:fab_colorNormal="@color/white"-->
+                <!--android:src="@drawable/ic_mode_edit_black_24dp"-->
+                <!--app:rippleColor="@color/accent"-->
+        <!--/>-->
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:id="@+id/fab"
-                app:iconTint="@color/white"
-                app:icon="@drawable/ic_add_white_24dp"
-                android:drawableStart="@drawable/ic_add_white_24dp"
-                android:minHeight="56dp"
-                android:paddingStart="12dp"
-                android:paddingEnd="20dp"
-                android:gravity="center_vertical"
-                app:pressedTranslationZ="32dp"
-                android:textAppearance="@style/AppTheme.TextAppearance.SplashSubHeader" android:textSize="14sp"
-                android:textStyle="bold"/>
-        
+                android:layout_margin="32dp"
+                app:layout_anchorGravity="center"
+                app:layout_anchor="@id/fab_dummy"
+                app:backgroundTint="@color/white"
+                android:src="@drawable/ic_mode_edit_black_24dp"
+        />
+
 <!-- Bottom Nav -->
 
 
-        <com.google.android.material.bottomnavigation.BottomNavigationView
+        <com.google.android.material.bottomappbar.BottomAppBar
                 android:id="@+id/nav_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintVertical_bias="1"
-                android:background="@color/colorPrimaryDark"
-                app:itemIconTint="@color/selectable_text_colored"
-                app:itemTextColor="@color/selectable_text_colored"
-                app:menu="@menu/bottom_nav"
-                android:foreground="?android:selectableItemBackground"
-                android:elevation="24dp"
-        />
+                android:layout_gravity="bottom"
+                app:backgroundTint="@color/colorPrimaryDark"
+                app:fabAlignmentMode="center"
+                app:fabCradleMargin="8dp"
+                app:fabCradleRoundedCornerRadius="16dp"
+        >
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_gravity="start"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+            >
+
+                <TextView
+                        android:id="@+id/btnMyRemotes"
+                        android:layout_width="wrap_content"
+                        android:layout_height="?actionBarSize"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:textSize="14sp"
+                        android:textColor="@color/white"
+                        android:text="@string/title_remotes"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintVertical_bias="0"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/fab_dummy_space"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginStart="24dp"
+                        android:layout_marginEnd="24dp"
+                        android:drawableTop="@drawable/ic_my_remotes_icon"
+                        android:drawablePadding="-8dp"
+                />
+
+                <TextView
+                        android:id="@+id/fab_dummy_space"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintVertical_bias="0"
+                />
+
+                <TextView
+                        android:id="@+id/btnMyDevices"
+                        android:layout_width="wrap_content"
+                        android:layout_height="?actionBarSize"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:textSize="14sp"
+                        android:textColor="@color/white"
+                        android:text="@string/title_my_devices"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintVertical_bias="0"
+                        app:layout_constraintStart_toEndOf="@id/fab_dummy_space"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:layout_marginStart="24dp"
+                        android:layout_marginEnd="24dp"
+                        android:layout_marginTop="4dp"
+                        android:drawableTop="@drawable/ic_device_hub_white_24dp"
+                        android:drawablePadding="-8dp"
+                />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+        </com.google.android.material.bottomappbar.BottomAppBar>
+
 
         <!-- Toolbar -->
         <com.ms8.smartirhub.android.custom_views.ToolbarCenteredTitle
@@ -116,15 +161,17 @@
                 android:layout_height="?attr/actionBarSize"
                 android:id="@+id/toolbar"
                 android:layout_marginTop="@dimen/fsw_nav_height"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintVertical_bias="0"
-
+                android:layout_gravity="top"
         />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
     
 </layout>
 

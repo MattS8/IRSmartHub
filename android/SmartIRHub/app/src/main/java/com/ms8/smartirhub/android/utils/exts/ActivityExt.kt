@@ -10,6 +10,9 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import com.ms8.smartirhub.android.database.TempData
+import com.google.android.material.resources.MaterialResources.getDimensionPixelSize
+
+
 
 val AppCompatActivity.hasSourceBounds: Boolean get() = intent?.sourceBounds != null
 
@@ -39,6 +42,13 @@ val AppCompatActivity.statusBarAnimator: Animator
 val AppCompatActivity.navigationBarAnimator: Animator
     get() = ValueAnimator.ofArgb(TRANSPARENT, window.navigationBarColor)
         .animatedValue(window::setNavigationBarColor)
+
+fun AppCompatActivity.findNavBarHeight(): Int {
+    val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
+    return if (resourceId > 0) {
+        resources.getDimensionPixelSize(resourceId)
+    } else 0
+}
 
 fun AppCompatActivity.startCreateButtonProcess() {
     TempData.tempButton = RemoteProfile.Button()

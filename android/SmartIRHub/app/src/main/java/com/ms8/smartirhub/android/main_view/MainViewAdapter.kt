@@ -18,8 +18,8 @@ class MainViewAdapter(fm: FragmentManager, behavior: Int, private var navPositio
     override fun getItem(position: Int): Fragment {
         return when (navPosition) {
             R.id.navigation_commands -> commandsFragList[position].newInstance()
-            R.id.navigation_devices -> devicesFragList[position].newInstance()
-            R.id.navigation_main_remote -> remotesFragList[position].newInstance()
+            MainViewActivity.FP_MY_DEVICES -> devicesFragList[position].newInstance()
+            MainViewActivity.FP_MY_REMOTES -> remotesFragList[position].newInstance()
             else -> {
                 Log.w("MainViewAdapter", "Unknown navigation position: $navPosition")
                 commandsFragList[0].newInstance()
@@ -31,8 +31,8 @@ class MainViewAdapter(fm: FragmentManager, behavior: Int, private var navPositio
     override fun getCount() =
         when (navPosition) {
         R.id.navigation_commands -> commandsFragList.size
-        R.id.navigation_devices -> devicesFragList.size
-        R.id.navigation_main_remote -> remotesFragList.size
+        MainViewActivity.FP_MY_DEVICES -> devicesFragList.size
+        MainViewActivity.FP_MY_REMOTES -> remotesFragList.size
         else -> {
             Log.w("MainViewAdapter", "Unknown navigation position: $navPosition")
             0
@@ -58,8 +58,8 @@ class MainViewAdapter(fm: FragmentManager, behavior: Int, private var navPositio
     fun setNavPosition(navPosition: Int) {
         baseItemId += when (this.navPosition) {
             R.id.navigation_commands -> commandsFragList.size
-            R.id.navigation_devices -> devicesFragList.size
-            R.id.navigation_main_remote -> remotesFragList.size
+            MainViewActivity.FP_MY_DEVICES -> devicesFragList.size
+            MainViewActivity.FP_MY_REMOTES -> remotesFragList.size
             else -> maxOf(commandsFragList.size, devicesFragList.size, remotesFragList.size)
         }
         this.navPosition = navPosition

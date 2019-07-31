@@ -13,6 +13,8 @@
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowTranslucentNavigation">true</item>
         <item name="android:fitsSystemWindows">true</item>
+        <item name="android:actionBarItemBackground">@color/transparent</item>
+        <item name="actionBarItemBackground">@color/transparent</item>
     </style>
     <style name="AppTheme" parent="Base.V0.AppTheme"/>
 

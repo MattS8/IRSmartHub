@@ -1,14 +1,20 @@
-package com.ms8.smartirhub.android._tests.dev_playground.remote_layout
+package com.ms8.smartirhub.android.remote_control
 
 import android.content.Context
+import android.graphics.Outline
+import android.graphics.Rect
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
+import android.util.TypedValue
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.view.ViewOutlineProvider
 import android.widget.TextView
 import androidx.core.widget.TextViewCompat
+import androidx.databinding.ObservableList
 import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview.AGVRecyclerViewAdapter
@@ -17,177 +23,127 @@ import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetric
 import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview.AsymmetricRecyclerViewAdapter
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
 import com.ms8.smartirhub.android.database.TempData
+import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_ADD
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_RADIAL_DOWN
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_RADIAL_LEFT
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_RADIAL_RIGHT
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_RADIAL_UP
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_SUBTRACT
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_INCREMENTER_VERTICAL
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_RADIAL
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_RADIAL_W_CENTER
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_SINGLE_ACTION
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Properties.BgStyle
 import com.ms8.smartirhub.android.remote_control.views.ButtonView
 
-class RemoteLayoutFromLibrary(context: Context, attrs: AttributeSet): AsymmetricRecyclerView(context, attrs) {
+class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerView(context, attrs) {
 
-    fun setupAdapter() {
-        TempData.tempRemoteProfile.buttons
-            .apply {
-                for (i in 0 until 50) {
-                    add(
-                        RemoteProfile.Button()
-                        .apply {
-                            name = "Button $i"
-                            when (i) {
-                                0,1  -> {
-                                    columnSpan = 2
-                                }
-                                2 -> {
-                                    rowSpan = 2
-                                    style = STYLE_BTN_INCREMENTER_VERTICAL
-                                    properties[0].bgStyle = BgStyle.BG_ROUND_RECT_TOP
-                                    properties[0].marginTop = 16
-                                    properties[0].marginStart = 16
-                                    properties[0].marginEnd = 16
-                                    properties[0].marginBottom = 0
-                                    properties[0].image = IMG_ADD
+    private var lastTopChild = 0
+    var topPadding = Utils.dpToPx(context, 56f)
 
-                                    properties.add(RemoteProfile.Button.Properties()
-                                        .apply {
-                                            bgStyle = BgStyle.BG_ROUND_RECT_BOTTOM
-                                            marginTop = 0
-                                            marginStart = 16
-                                            marginBottom = 16
-                                            marginEnd = 16
-                                            image = IMG_SUBTRACT
-                                        })
+    private var isListening : Boolean = false
+    private val buttonListener = object : ObservableList.OnListChangedCallback<ObservableList<RemoteProfile.Button>>() {
+        override fun onChanged(sender: ObservableList<RemoteProfile.Button>?) {
+            adapter?.notifyDataSetChanged()
+        }
 
-                                    name = "VOL"
-                                }
-                                4 -> {
-                                    rowSpan = 2
-                                    style = STYLE_BTN_INCREMENTER_VERTICAL
-                                    properties[0].bgStyle = BgStyle.BG_ROUND_RECT_TOP
-                                    properties[0].marginTop = 16
-                                    properties[0].marginStart = 16
-                                    properties[0].marginEnd = 16
-                                    properties[0].marginBottom = 0
-                                    properties[0].image = IMG_ADD
+        override fun onItemRangeRemoved(sender: ObservableList<RemoteProfile.Button>?, positionStart: Int, itemCount: Int) {
+            adapter?.notifyItemRangeRemoved(positionStart, itemCount)
+            findLastTopChild()
+        }
 
-                                    properties.add(RemoteProfile.Button.Properties()
-                                        .apply {
-                                            bgStyle = BgStyle.BG_ROUND_RECT_BOTTOM
-                                            marginTop = 0
-                                            marginStart = 16
-                                            marginBottom = 16
-                                            marginEnd = 16
-                                            image = IMG_SUBTRACT
-                                        })
+        override fun onItemRangeMoved(sender: ObservableList<RemoteProfile.Button>?, fromPosition: Int, toPosition: Int, itemCount: Int) {
+            adapter?.notifyDataSetChanged()
+            findLastTopChild()
+        }
 
-                                    name = "CH"
-                                }
-                                3 -> {
-                                    rowSpan = 2
-                                    columnSpan = 2
-                                    style = STYLE_BTN_RADIAL_W_CENTER
+        override fun onItemRangeInserted(sender: ObservableList<RemoteProfile.Button>?, positionStart: Int, itemCount: Int) {
+            adapter?.notifyItemRangeInserted(positionStart, itemCount)
+            findLastTopChild()
+        }
 
-                                    // add topButton Properties
-                                    properties[0].bgStyle = BgStyle.BG_NONE
-                                    properties[0].marginTop = 16
-                                    properties[0].marginStart = 0
-                                    properties[0].marginEnd = 0
-                                    properties[0].marginBottom = 0
-                                    properties[0].image = IMG_RADIAL_UP
-
-                                    // add endButton Properties
-                                    properties.add(RemoteProfile.Button.Properties()
-                                        .apply {
-                                            bgStyle = BgStyle.BG_NONE
-                                            marginTop = 0
-                                            marginStart = 0
-                                            marginEnd = 16
-                                            marginBottom = 0
-                                            image = IMG_RADIAL_RIGHT
-                                        })
-                                    // add bottomButton Properties
-                                    properties.add(RemoteProfile.Button.Properties()
-                                        .apply {
-                                            bgStyle = BgStyle.BG_NONE
-                                            marginTop = 0
-                                            marginStart = 0
-                                            marginEnd = 0
-                                            marginBottom = 16
-                                            image = IMG_RADIAL_DOWN
-                                        })
-                                    // add startButton Properties
-                                    properties.add(RemoteProfile.Button.Properties()
-                                        .apply {
-                                            bgStyle = BgStyle.BG_NONE
-                                            marginTop = 0
-                                            marginStart = 16
-                                            marginEnd = 0
-                                            marginBottom = 0
-                                            image = IMG_RADIAL_LEFT
-                                        })
-                                    // add centerButton Properties
-                                    properties.add(RemoteProfile.Button.Properties()
-                                        .apply {
-                                            bgStyle = BgStyle.BG_CIRCLE
-                                            marginTop = 0
-                                            marginStart = 0
-                                            marginEnd = 0
-                                            marginBottom = 0
-                                        })
-
-                                    name = "OK"
-                                }
-                            }
-                        })
-                }
-            }
-
-        adapter = AsymmetricRecyclerViewAdapter(context, this, RemoteLayoutFromLibraryAdapter())
+        override fun onItemRangeChanged(sender: ObservableList<RemoteProfile.Button>?, positionStart: Int, itemCount: Int) {
+            adapter?.notifyItemRangeChanged(positionStart, itemCount)
+            findLastTopChild()
+        }
     }
 
     init {
-        setRequestedColumnCount(3)
+        setRequestedColumnCount(4)
         //isDebugging = true
         requestedHorizontalSpacing = Utils.dpToPx(context, 0f)
+        addItemDecoration(TopSpaceDecoration())
+        outlineProvider = object : ViewOutlineProvider() {
+            override fun getOutline(view: View?, outline: Outline?) {
+                view?.let { v ->
+                    outline?.setRoundRect(0, 0, width, height, v.resources.getDimension(R.dimen.rmt_corner_radius))
+                }
+            }
+        }
+        clipToOutline = true
         //addItemDecoration(SpacesItemDecoration(Utils.dpToPx(context, 3f)))
     }
 
+    fun findLastTopChild() {
 
-    class RemoteLayoutFromLibraryAdapter: AGVRecyclerViewAdapter<RemoteLayoutFromLibraryViewHolder>() {
+        var spanTotal = 0
+        var inspectingPos = 0
+        do {
+            spanTotal += TempData.tempRemoteProfile.buttons[inspectingPos++].columnSpan
+        } while (spanTotal <  numColumns && inspectingPos < TempData.tempRemoteProfile.buttons.size)
+        lastTopChild = inspectingPos
+        Log.d("TEST##", "Finding lastTopChild... $lastTopChild")
+    }
+
+    fun setupAdapter() {
+        Log.d("TEST###", "Setting up adapter!@!!")
+        adapter = AsymmetricRecyclerViewAdapter(context, this, RemoteLayoutAdapter())
+    }
+
+    fun startListening() {
+        if (!isListening) {
+            isListening = true
+            TempData.tempRemoteProfile.buttons.addOnListChangedCallback(buttonListener)
+
+            // update last child on top row if TempRemoteProfile already has some buttons
+            if (TempData.tempRemoteProfile.buttons.size > 0)
+                findLastTopChild()
+        }
+    }
+
+    fun stopListening() {
+        TempData.tempRemoteProfile.buttons.removeOnListChangedCallback(buttonListener)
+    }
+
+    class RemoteLayoutAdapter: AGVRecyclerViewAdapter<ButtonViewHolder>() {
 
         override fun getItem(position: Int): AsymmetricItem {
             val b = TempData.tempRemoteProfile.buttons[position]
-
-            return DemoItem(b.columnSpan, b.rowSpan, position)
+            return DemoItem(
+                b.columnSpan,
+                b.rowSpan,
+                position
+            )
         }
 
-        override fun getItemViewType(position: Int): Int {
-            return TempData.tempRemoteProfile.buttons[position].style
-        }
+        override fun getItemViewType(position: Int)
+                =  TempData.tempRemoteProfile.buttons[position].style
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RemoteLayoutFromLibraryViewHolder {
-            return RemoteLayoutFromLibraryViewHolder(parent, viewType)
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ButtonViewHolder {
+            return ButtonViewHolder(parent, viewType)
         }
 
         override fun getItemCount() =
             TempData.tempRemoteProfile.buttons.size
 
-        override fun onBindViewHolder(holder: RemoteLayoutFromLibraryViewHolder, position: Int) {
+        override fun onBindViewHolder(holder: ButtonViewHolder, position: Int) {
             holder.bind(position)
         }
+
+
     }
 
-    class RemoteLayoutFromLibraryViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder(
+    class ButtonViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder(
         when (viewType) {
             STYLE_BTN_SINGLE_ACTION -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false)
             STYLE_BTN_INCREMENTER_VERTICAL -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_inc_vert, parent, false)
             STYLE_BTN_RADIAL_W_CENTER -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_radial_w_center_btn, parent, false)
+            STYLE_BTN_RADIAL -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_radial_w_center_btn, parent, false)
 
             else -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false)
         }
@@ -196,27 +152,18 @@ class RemoteLayoutFromLibrary(context: Context, attrs: AttributeSet): Asymmetric
 
         fun bind(position: Int) {
             button = TempData.tempRemoteProfile.buttons[position]
-            if (button == null)
-                Log.w("TEST##", "BUTTON WAS NULL @ $position")
             button?.let { b ->
                 when (b.style) {
                     STYLE_BTN_SINGLE_ACTION -> bindSingleActionButton(b)
                     STYLE_BTN_INCREMENTER_VERTICAL -> bindIncrementerButton(b)
-                    STYLE_BTN_RADIAL_W_CENTER -> bindRadialWithCenterButton(b)
+                    STYLE_BTN_RADIAL_W_CENTER -> bindRadialButton(b, true)
+                    STYLE_BTN_RADIAL -> bindRadialButton(b, false)
                     else -> bindSingleActionButton(b)
                 }
-//                buttonView.properties = b.properties
-//                buttonView.buttonText = b.name
-//
-//                itemView.visibility = if (b.properties.bgStyle != BgStyle.BG_INVISIBLE)
-//                        View.VISIBLE
-//                    else
-//                        View.INVISIBLE
-//                itemView.invalidate()
             }
         }
 
-        private fun bindRadialWithCenterButton(button: RemoteProfile.Button) {
+        private fun bindRadialButton(button: RemoteProfile.Button, withCenterButton: Boolean) {
             val topButtonView = itemView.findViewById<ButtonView>(R.id.btnTop)
             val bottomButtonView = itemView.findViewById<ButtonView>(R.id.btnBottom)
             val startButtonView = itemView.findViewById<ButtonView>(R.id.btnStart)
@@ -225,26 +172,45 @@ class RemoteLayoutFromLibrary(context: Context, attrs: AttributeSet): Asymmetric
 
             // set top button properties
             topButtonView.properties = button.properties[0]
-            //todo replace with proper onClick
-            topButtonView.setOnClickListener { Log.d("TEST", "TOP BUTTON CLICKED") }
+            topButtonView.setOnClickListener {
+                RealtimeDatabaseFunctions.sendCommandToHub(button.command[0])
+                Log.d("TEST", "TOP BUTTON CLICKED")
+            }
             // set bottom button properties
             endButtonView.properties = button.properties[1]
-            //todo replace with proper onClick
-            endButtonView.setOnClickListener { Log.d("TEST", "END BUTTON CLICKED") }
+            endButtonView.setOnClickListener {
+                RealtimeDatabaseFunctions.sendCommandToHub(button.command[1])
+                Log.d("TEST", "END BUTTON CLICKED")
+            }
             // set start button properties
             bottomButtonView.properties = button.properties[2]
-            //todo replace with proper onClick
-            bottomButtonView.setOnClickListener { Log.d("TEST", "BOTTOM BUTTON CLICKED") }
+            bottomButtonView.setOnClickListener {
+                RealtimeDatabaseFunctions.sendCommandToHub(button.command[2])
+                Log.d("TEST", "BOTTOM BUTTON CLICKED")
+            }
             // set end button properties
             startButtonView.properties = button.properties[3]
-            //todo replace with proper onClick
-            startButtonView.setOnClickListener { Log.d("TEST", "START BUTTON CLICKED") }
-            // set center button properties
-            centerButtonView.properties = button.properties[4]
-            // set center button text
-            centerButtonView.buttonText = button.name
-            //todo replace with proper onClick
-            centerButtonView.setOnClickListener { Log.d("TEST", "CENTER BUTTON CLICKED") }
+            startButtonView.setOnClickListener {
+                RealtimeDatabaseFunctions.sendCommandToHub(button.command[3])
+                Log.d("TEST", "START BUTTON CLICKED")
+            }
+
+            if (withCenterButton) {
+                // make sure button is visible and enabled
+                centerButtonView.visibility = View.VISIBLE
+                centerButtonView.isEnabled = true
+                // set center button properties
+                centerButtonView.properties = button.properties[4]
+                centerButtonView.setOnClickListener {
+                    RealtimeDatabaseFunctions.sendCommandToHub(button.command[4])
+                }
+                // set center button text
+                centerButtonView.buttonText = button.name
+            } else {
+                // make sure button is visible and enabled
+                centerButtonView.visibility = View.INVISIBLE
+                centerButtonView.isEnabled = false
+            }
         }
 
         private fun bindIncrementerButton(button: RemoteProfile.Button) {
@@ -326,6 +292,16 @@ class RemoteLayoutFromLibrary(context: Context, attrs: AttributeSet): Asymmetric
             override fun newArray(size: Int): Array<DemoItem?> {
                 return arrayOfNulls(size)
             }
+        }
+    }
+
+    inner class TopSpaceDecoration() : RecyclerView.ItemDecoration() {
+
+        override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: State) {
+            super.getItemOffsets(outRect, view, parent, state)
+
+            if (parent.getChildAdapterPosition(view) == 0)
+                outRect.top = topPadding
         }
     }
 }

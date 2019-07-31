@@ -84,7 +84,8 @@ class RemoteProfile: Observable {
                 BG_ROUND_RECT,
                 BG_ROUND_RECT_TOP,
                 BG_ROUND_RECT_BOTTOM,
-                BG_CUSTOM_IMAGE
+                BG_CUSTOM_IMAGE,
+                BG_NONE
             }
         }
 
@@ -96,14 +97,20 @@ class RemoteProfile: Observable {
             const val STYLE_BTN_SINGLE_ACTION = 2
             const val STYLE_BTN_NO_MARGIN = 3
             const val STYLE_BTN_INCREMENTER_VERTICAL = 4
+            const val STYLE_BTN_RADIAL_W_CENTER = 5
+            const val STYLE_BTN_RADIAL = 6
 
             const val ID_BUTTONS = 80839
             const val ID_NAME = 80840
 
             const val ADD_TO_END = -1
 
-            const val IMG_ADD       = "_IMG_ADD_"
-            const val IMG_SUBTRACT  = "_IMG_SUBTRACT_"
+            const val IMG_ADD           = "_IMG_ADD_"
+            const val IMG_SUBTRACT      = "_IMG_SUBTRACT_"
+            const val IMG_RADIAL_LEFT   = "_IMG_RADIAL_LEFT"
+            const val IMG_RADIAL_UP     = "_IMG_RADIAL_UP"
+            const val IMG_RADIAL_DOWN   = "_IMG_RADIAL_DOWN"
+            const val IMG_RADIAL_RIGHT  = "_IMG_RADIAL_RIGHT"
         }
     }
 

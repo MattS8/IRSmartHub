@@ -12,7 +12,7 @@
                                        android:layout_marginBottom="-32dp"
                                        app:cardCornerRadius="@dimen/rmt_corner_radius">
 
-        <com.ms8.smartirhub.android._tests.dev_playground.remote_layout.RemoteLayoutFromLibrary
+        <com.ms8.smartirhub.android.remote_control.RemoteLayout
                 android:id="@+id/remoteLayout"
                 android:layout_width="match_parent"
                 android:layout_marginStart="16dp"

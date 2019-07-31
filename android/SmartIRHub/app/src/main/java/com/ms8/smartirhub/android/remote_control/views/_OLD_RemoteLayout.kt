@@ -21,7 +21,7 @@ import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_INCREMENTER_VERTICAL
 
-class RemoteLayout(context: Context, attrs : AttributeSet) : RecyclerView(context, attrs) {
+class _OLD_RemoteLayout(context: Context, attrs : AttributeSet) : RecyclerView(context, attrs) {
     private var isListening = true
     var buttonCallback: RemoteLayoutButtonCallback? = null
     set(value) {

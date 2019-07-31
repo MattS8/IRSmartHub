@@ -11,5 +11,5 @@
     <color name="colorHeader">#AAFFFFFF</color>
     <color name="colorAccentDark">#425D6B</color>
     <color name="colorRemoteBG">#AA9E9E9E</color>
-    <color name="colorButtonBG">#AAFFFFFF</color>
+    <color name="colorButtonBG">#EEFFFFFF</color>
 </resources>

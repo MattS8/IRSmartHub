@@ -1,4 +1,4 @@
-package com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview_k
+package com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview
 
 import android.content.Context
 import android.os.Parcel
@@ -16,7 +16,8 @@ internal class AsymmetricViewImpl(context: Context) {
     var isDebugging: Boolean = false
 
     init {
-        requestedHorizontalSpacing =  Utils.dpToPx(context, 5f)
+        requestedHorizontalSpacing =
+            Utils.dpToPx(context, 5f)
     }
 
     fun determineColumns(availableSpace: Int): Int {

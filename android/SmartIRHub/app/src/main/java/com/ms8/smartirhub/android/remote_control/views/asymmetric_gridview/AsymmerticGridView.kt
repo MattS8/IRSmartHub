@@ -1,4 +1,4 @@
-package com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview_k
+package com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview
 
 import android.content.Context
 import android.os.Parcelable
@@ -9,12 +9,14 @@ import android.widget.ListAdapter
 import android.widget.ListView
 import androidx.annotation.NonNull
 
-open class AsymmetricGridView(context: Context, attrs: AttributeSet) : ListView(context, attrs), AsymmetricView {
+open class AsymmetricGridView(context: Context, attrs: AttributeSet) : ListView(context, attrs),
+    AsymmetricView {
     override val divHeight = 0
     //protected var onItemClickListener: AdapterView.OnItemClickListener? = null
     //protected var onItemLongClickListener: AdapterView.OnItemLongClickListener? = null
     protected var gridAdapter: AsymmetricGridViewAdapter? = null
-    private val viewImpl: AsymmetricViewImpl = AsymmetricViewImpl(context)
+    private val viewImpl: AsymmetricViewImpl =
+        AsymmetricViewImpl(context)
 
     override var requestedHorizontalSpacing: Int
         get() = viewImpl.requestedHorizontalSpacing

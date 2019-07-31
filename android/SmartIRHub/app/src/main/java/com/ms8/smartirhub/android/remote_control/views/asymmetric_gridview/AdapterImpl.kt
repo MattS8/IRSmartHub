@@ -1,4 +1,4 @@
-package com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview_k
+package com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -31,7 +31,9 @@ class AdapterImpl(
 
     init {
         this.debugEnabled = listView.isDebugging
-        this.linearLayoutPool = ObjectPool(LinearLayoutPoolObjectFactory(context))
+        this.linearLayoutPool = ObjectPool(
+            LinearLayoutPoolObjectFactory(context)
+        )
     }
 
     private fun calculateItemsForRow(

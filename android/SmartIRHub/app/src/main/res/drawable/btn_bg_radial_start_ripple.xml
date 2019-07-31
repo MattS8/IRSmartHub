@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
-
-</selector>
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+        android:color="?android:attr/colorControlHighlight">
+    <item android:id="@android:id/mask">
+        <vector android:height="24dp" android:viewportHeight="3920"
+                android:viewportWidth="2770" android:width="24dp">
+            <path android:fillColor="@color/colorButtonBG"
+                  android:pathData="M1224,3788c-27,-29 -79,-91 -116,-138 -289,-373 -466,-780 -550,-1265 -20,-116 -23,-163 -23,-435 0,-272 3,-319 23,-435 71,-410 211,-769 424,-1090 74,-110 204,-277 253,-325l36,-34 483,483 483,483 -30,31c-46,50 -121,165 -172,265 -245,485 -180,1087 164,1510l35,43 -480,480 -480,480 -50,-53z" android:strokeColor="#00000000"/>
+        </vector>
+    </item>
+    <item android:drawable="@drawable/btn_bg_radial_start" />
+</ripple>

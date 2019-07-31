@@ -6,6 +6,7 @@ import android.graphics.Outline
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.util.Log
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
@@ -20,9 +21,13 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview_k.Utils
+import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_ADD
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_RADIAL_DOWN
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_RADIAL_LEFT
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_RADIAL_RIGHT
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_RADIAL_UP
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_SUBTRACT
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Properties.BgStyle
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validUrl
@@ -94,6 +99,10 @@ class ButtonView(context: Context, attrs: AttributeSet) : FrameLayout(context, a
                     buttonImageView?.setImageDrawable(context.getDrawable(R.drawable.ic_add_black_24dp))
                 }
                 IMG_SUBTRACT -> buttonImageView?.setImageDrawable(context.getDrawable(R.drawable.ic_remove_black_24dp))
+                IMG_RADIAL_LEFT -> buttonImageView?.setImageDrawable(context.getDrawable(R.drawable.ic_keyboard_arrow_left_black_24dp))
+                IMG_RADIAL_RIGHT -> buttonImageView?.setImageDrawable(context.getDrawable(R.drawable.ic_keyboard_arrow_right_black_24dp))
+                IMG_RADIAL_UP -> buttonImageView?.setImageDrawable(context.getDrawable(R.drawable.ic_keyboard_arrow_up_black_24dp))
+                IMG_RADIAL_DOWN -> buttonImageView?.setImageDrawable(context.getDrawable(R.drawable.ic_keyboard_arrow_down_black_24dp))
                 else -> {
                     if (properties.image.validUrl())
                         buttonImageView?.let { Glide.with(it).load(properties.image).into(it) }
@@ -131,8 +140,9 @@ class ButtonView(context: Context, attrs: AttributeSet) : FrameLayout(context, a
         buttonTextView = TextView(context)
             .apply {
                 textAlignment = View.TEXT_ALIGNMENT_CENTER
-                TextViewCompat.setAutoSizeTextTypeWithDefaults(this, TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM)
+                TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(this, 8, 16, 1, TypedValue.COMPLEX_UNIT_SP)
                 setTextColor(ContextCompat.getColor(context, R.color.black))
+                gravity = Gravity.CENTER
             }
 
         try {
@@ -140,7 +150,7 @@ class ButtonView(context: Context, attrs: AttributeSet) : FrameLayout(context, a
                 .apply {
                     width = MATCH_PARENT
                     height = MATCH_PARENT
-                    gravity = Gravity.CENTER_HORIZONTAL
+                    gravity = Gravity.CENTER
                     when (properties.bgStyle) {
                         BgStyle.BG_CIRCLE ->  {
                             val margin = Utils.dpToPx(context,
