@@ -9,7 +9,7 @@ import android.util.Log
 import androidx.databinding.DataBindingUtil
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.BottomErrorSheet
-import com.ms8.smartirhub.android.database.TempData
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.databinding.ALearnSigNameBinding
 import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity.Companion.NEW_IR_SIGNAL_UID
@@ -46,7 +46,7 @@ class LSNameSignalActivity : AppCompatActivity() {
             .addErrorCallback { errorNameSheet.show(supportFragmentManager, "bottom_sheet_error_invalid_name") }
             .check()
         if (isValidName) {
-            TempData.tempSignal!!.name = binding.txtSignalName.editText!!.text.toString()
+            AppState.tempData.tempSignal!!.name = binding.txtSignalName.editText!!.text.toString()
         }
     }
 
@@ -69,8 +69,8 @@ class LSNameSignalActivity : AppCompatActivity() {
                 errorSaveSheet.show(supportFragmentManager, "bottom_error_sheet_ir_upload")
             }
             .addOnSuccessListener {
-                setResult(Activity.RESULT_OK, Intent().putExtra(NEW_IR_SIGNAL_UID, TempData.tempSignal?.uid))
-                TempData.tempSignal = null
+                setResult(Activity.RESULT_OK, Intent().putExtra(NEW_IR_SIGNAL_UID, AppState.tempData.tempSignal?.uid))
+                AppState.tempData.tempSignal = null
                 finish()
             }
     }

@@ -11,6 +11,15 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
+        <activity android:name=".splash_login.SplashActivity4">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+        <activity android:name="._tests.dev_playground.misc.TestBackendActivity">
+        </activity>
         <activity android:name="._tests.dev_playground.remote_layout.TestRemoteLayout">
         </activity>
         <activity android:name=".create_command.CC_ChooseIrSignalActivity">
@@ -19,12 +28,7 @@
         </activity>
         <activity android:name=".setup_hub.HubSetupMainActivity">
         </activity>
-        <activity android:name=".splash.SplashActivity3">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
+        <activity android:name=".splash_login.SplashActivity3">
         </activity>
         <activity android:name=".learn_signal.AdvancedSignalInfoActivity">
         </activity>

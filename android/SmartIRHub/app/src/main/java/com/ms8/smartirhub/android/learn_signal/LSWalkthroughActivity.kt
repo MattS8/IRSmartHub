@@ -15,8 +15,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.*
-import com.ms8.smartirhub.android.database.LocalData
-import com.ms8.smartirhub.android.database.TempData
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.databinding.ACreateButtonWalkthroughBinding
 import com.ms8.smartirhub.android.databinding.VChooseNameSheetBinding
 import com.ms8.smartirhub.android.databinding.VSimpleListDescSheetBinding
@@ -38,7 +37,7 @@ class LSWalkThroughActivity : AppCompatActivity() {
                 .addErrorCallback { sheetBinding.txtInput.error = getString(R.string.err_invalid_button_name) }
                 .check()
             if (isValidName) {
-                TempData.tempSignal?.name = sheetBinding.txtInput.editText!!.text.toString()
+                AppState.tempData.tempSignal?.name = sheetBinding.txtInput.editText!!.text.toString()
                 sheetBinding.btnPickName.startAnimation()
                 uploadIrSignal()
             }
@@ -88,7 +87,7 @@ class LSWalkThroughActivity : AppCompatActivity() {
                 determineWalkThroughState()
             }
             binding.prog3.bOnThisStep -> {
-                TempData.tempSignal = null
+                AppState.tempData.tempSignal = null
                 determineWalkThroughState()
             }
         }
@@ -211,7 +210,7 @@ class LSWalkThroughActivity : AppCompatActivity() {
         super.onDestroy()
         if (isFinishing) {
             Log.d("LSWalkthroughActivity", "Fishing up!")
-            TempData.tempSignal = null
+            AppState.tempData.tempSignal = null
         }
     }
 
@@ -233,7 +232,7 @@ class LSWalkThroughActivity : AppCompatActivity() {
                 binding.btnNextStep.setOnClickListener { showPickHubSheet() }
                 binding.prog1.setOnClickListener { showPickHubSheet() }
             }
-            TempData.tempSignal == null || TempData.tempSignal?.rawData?.size == 0 -> {
+            AppState.tempData.tempSignal == null || AppState.tempData.tempSignal?.rawData?.size == 0 -> {
                 Log.d("###TEST", "Starting on prog 2")
                 binding.prog1.bOnThisStep = false
                 binding.prog2.bOnThisStep = true
@@ -287,8 +286,8 @@ class LSWalkThroughActivity : AppCompatActivity() {
             .addOnSuccessListener {
                 Log.d("TEST", "New uid: ${it.id}")
                 setResult(Activity.RESULT_OK, Intent().putExtra(NEW_IR_SIGNAL_UID, it.id))
-                //LocalData.signals[it.id] = TempData.tempSignal
-                TempData.tempSignal = null
+                //LocalData.irSignals[it.id] = AppState.tempData.tempSignal
+                AppState.tempData.tempSignal = null
                 finish()
             }
     }

@@ -12,12 +12,12 @@ import androidx.databinding.ObservableList
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.ms8.smartirhub.android.R
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_CREATE_BUTTON
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_SINGLE_ACTION
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_SPACE
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_NO_MARGIN
-import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_INCREMENTER_VERTICAL
 
@@ -60,7 +60,7 @@ class _OLD_RemoteLayout(context: Context, attrs : AttributeSet) : RecyclerView(c
     init {
         layoutManager = StaggeredGridLayoutManager(BUTTON_SPAN, StaggeredGridLayoutManager.VERTICAL)
         adapter = RemoteAdapter(buttonCallback)
-        TempData.tempRemoteProfile.buttons.addOnListChangedCallback(buttonListener)
+        AppState.tempData.tempRemoteProfile.buttons.addOnListChangedCallback(buttonListener)
         clipToPadding = false
         clipChildren = false
     }
@@ -69,14 +69,14 @@ class _OLD_RemoteLayout(context: Context, attrs : AttributeSet) : RecyclerView(c
 
     fun listen() {
         if (!isListening) {
-            TempData.tempRemoteProfile.inEditMode.addOnPropertyChangedCallback(remoteListener)
-            TempData.tempRemoteProfile.buttons.addOnListChangedCallback(buttonListener)
+            AppState.tempData.tempRemoteProfile.inEditMode.addOnPropertyChangedCallback(remoteListener)
+            AppState.tempData.tempRemoteProfile.buttons.addOnListChangedCallback(buttonListener)
         }
     }
 
     fun stopListening() {
-        TempData.tempRemoteProfile.inEditMode.removeOnPropertyChangedCallback(remoteListener)
-        TempData.tempRemoteProfile.buttons.removeOnListChangedCallback(buttonListener)
+        AppState.tempData.tempRemoteProfile.inEditMode.removeOnPropertyChangedCallback(remoteListener)
+        AppState.tempData.tempRemoteProfile.buttons.removeOnListChangedCallback(buttonListener)
     }
 
     fun updateAdapter() {
@@ -112,7 +112,7 @@ class _OLD_RemoteLayout(context: Context, attrs : AttributeSet) : RecyclerView(c
             return ButtonViewHolder(v)
         }
 
-        override fun getItemCount() = TempData.tempRemoteProfile.buttons.size + (if (isInEditMode()) 1 else 0)
+        override fun getItemCount() = AppState.tempData.tempRemoteProfile.buttons.size + (if (isInEditMode()) 1 else 0)
 
         override fun onBindViewHolder(holder: ButtonViewHolder, position: Int) {
             when {
@@ -121,7 +121,7 @@ class _OLD_RemoteLayout(context: Context, attrs : AttributeSet) : RecyclerView(c
                     holder.itemView.setOnClickListener { buttonCallback?.createNewButton() }
                 }
                 else -> {
-                    holder.bind(TempData.tempRemoteProfile.buttons[position])
+                    holder.bind(AppState.tempData.tempRemoteProfile.buttons[position])
                 }
             }
         }
@@ -129,11 +129,11 @@ class _OLD_RemoteLayout(context: Context, attrs : AttributeSet) : RecyclerView(c
         override fun getItemViewType(position: Int) =
             when {
                 position == itemCount - 1 && isInEditMode() -> STYLE_CREATE_BUTTON
-                else -> TempData.tempRemoteProfile.buttons[position].style
+                else -> AppState.tempData.tempRemoteProfile.buttons[position].style
             }
 
         private fun isInEditMode() : Boolean {
-            return TempData.tempRemoteProfile.inEditMode.get()
+            return AppState.tempData.tempRemoteProfile.inEditMode.get()
         }
     }
 
@@ -143,7 +143,7 @@ class _OLD_RemoteLayout(context: Context, attrs : AttributeSet) : RecyclerView(c
         fun bind(button: Button) {
             this.button = button
             //itemView.findViewById<TextView>(R.id.btnText).text = button.name
-            itemView.setOnClickListener { RealtimeDatabaseFunctions.sendCommandToHub(button.command[0]) }
+            itemView.setOnClickListener { RealtimeDatabaseFunctions.sendCommandToHub(button.commands[0]) }
         }
     }
 

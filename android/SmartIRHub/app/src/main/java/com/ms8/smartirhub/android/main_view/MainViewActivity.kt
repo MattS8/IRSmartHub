@@ -23,19 +23,18 @@ import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.BackWarningSheet
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.RemoteTemplatesSheet
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
-import com.ms8.smartirhub.android.database.LocalData
-import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ActivityMainViewBinding
-import com.ms8.smartirhub.android.utils.exts.getNavBarHeight
+import com.ms8.smartirhub.android.utils.extensions.getNavBarHeight
 import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity
 import com.ms8.smartirhub.android.main_view.fragments.*
 import com.ms8.smartirhub.android.remote_control.RemoteFragment
-import com.ms8.smartirhub.android.utils.exts.findNavBarHeight
+import com.ms8.smartirhub.android.utils.extensions.findNavBarHeight
 import android.util.TypedValue
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import com.ms8.smartirhub.android.R
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
 
 
@@ -128,7 +127,7 @@ class MainViewActivity : AppCompatActivity() {
             .withHeaderBackground(R.drawable.side_nav_bar)
             .addProfiles(
                 ProfileDrawerItem()
-                    .withName(LocalData.user?.username)
+                    .withName(AppState.userData.user.username.get())
                     .withEmail(FirebaseAuth.getInstance().currentUser?.email)
             )
             .build()
@@ -204,7 +203,7 @@ class MainViewActivity : AppCompatActivity() {
     }
 
     private fun createMockData() {
-        TempData.tempRemoteProfile.buttons
+        AppState.tempData.tempRemoteProfile.buttons
             .apply {
                 for (i in 0 until 50) {
                     add(
@@ -328,12 +327,12 @@ class MainViewActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        LocalData.remoteProfiles.removeOnMapChangedCallback(remoteProfilesListener)
+        AppState.userData.remotes.removeOnMapChangedCallback(remoteProfilesListener)
     }
 
     override fun onResume() {
         super.onResume()
-        LocalData.remoteProfiles.addOnMapChangedCallback(remoteProfilesListener)
+        AppState.userData.remotes.addOnMapChangedCallback(remoteProfilesListener)
     }
 
 
@@ -354,13 +353,17 @@ class MainViewActivity : AppCompatActivity() {
         // set toolbar title
         when (state.viewPagerPosition) {
             VP_FAV_REMOTE -> {
-                val title = if (TempData.tempRemoteProfile.name == "") getString(R.string.new_remote) else TempData.tempRemoteProfile.name
+                val title = if (AppState.tempData.tempRemoteProfile.name == "") getString(R.string.new_remote) else AppState.tempData.tempRemoteProfile.name
                 binding.toolbar.title = title
             }
             VP_ALL_REMOTES -> {
                 binding.toolbar.title = getString(R.string.title_remotes)
             }
         }
+
+        // set nav buttons selected
+        binding.btnMyRemotes.isSelected = true
+        binding.btnMyDevices.isSelected = false
 
         // set fab label and function
         setupFab()
@@ -388,6 +391,10 @@ class MainViewActivity : AppCompatActivity() {
             }
         }
 
+        // set nav buttons selected
+        binding.btnMyRemotes.isSelected = false
+        binding.btnMyDevices.isSelected = true
+
         // set fab label and function
         setupFab()
 
@@ -407,73 +414,6 @@ class MainViewActivity : AppCompatActivity() {
         }
     }
 
-//    @SuppressLint("LogNotTimber")
-//    private fun setupInnerView() {
-//        when (state.navPosition) {
-//        // My Remotes
-//            R.id.navigation_main_remote -> {
-//                //TODO Implement remotes page
-//                /*
-//                    This page contains two panels:
-//                        1. The user's favorite remote
-//                        2. A list of all other remotes the user has access to
-//                 */
-//                //pagerAdapter.setFragments(remotesFragments)
-//                when (state.viewPagerPosition) {
-//                    VP_FAV_REMOTE -> {
-//                        val title = if (TempData.tempRemoteProfile.name == "") getString(R.string.new_remote) else TempData.tempRemoteProfile.name
-//                        binding.toolbar.title = title
-//                    }
-//                    VP_ALL_REMOTES -> {
-//                        binding.toolbar.title = getString(R.string.title_remotes)
-//                    }
-//                }
-//            }
-//        // My Commands
-//            R.id.navigation_commands -> {
-//                //TODO Implement commands page
-//                /*
-//                    This page contains two panels:
-//                        1. A list of user-defined commands (with favorite commands stickied to the
-//                            top).
-//                        2. A list of user-programed IR signals.
-//                 */
-//                //pagerAdapter.setFragments(commandsFragments)
-//                when (state.viewPagerPosition) {
-//                    VP_COMMANDS -> {
-//                        binding.toolbar.title = getString(R.string.title_my_commands)
-//                    }
-//                    VP_IR_SIGNALS -> {
-//                        binding.toolbar.title = getString(R.string.title_programmed_signals)
-//                    }
-//                }
-//            }
-//        // My Devices
-//            R.id.navigation_devices -> {
-//                //TODO Implement devices page
-//                /*
-//                    This page contains multiple things:
-//                        1. A list of IR devices that the user has added. These are pre-defined devices
-//                            with a preset remote profile to accompany them.
-//                        2. A list of IRSmartHub devices. From here, users can change the name of
-//                            devices, set up new ones, etc.
-//                 */
-//                //pagerAdapter.setFragments(devicesFragments)
-//                when (state.viewPagerPosition) {
-//                    VP_DEVICES -> {
-//                        binding.toolbar.title = getString(R.string.title_my_devices)
-//                    }
-//                    VP_IRSMART_DEVICES -> {
-//                        binding.toolbar.title = getString(R.string.title_my_ir_hubs)
-//                    }
-//                }
-//            }
-//            else -> { Log.e("MainViewActivity", "Unknown nav id: ${state.navPosition}") }
-//        }
-//        pagerAdapter.setNavPosition(state.navPosition)
-//        binding.frameLayout.setCurrentItem(state.viewPagerPosition, false)
-//    }
-//
     private fun setupFab() {
         when (state.navPosition) {
             // My Remotes
@@ -481,20 +421,6 @@ class MainViewActivity : AppCompatActivity() {
                 //binding.fab.labelText = getString(R.string.create_remote)
                 binding.fab.setOnClickListener { createRemote() }
             }
-            // My Commands
-//            FP_MY_COMMANDS -> {
-//                when (state.viewPagerPosition) {
-//                // Create New Command
-//                    VP_COMMANDS -> {
-//                        //binding.fab.labelText = getString(R.string.create_command)
-//                        binding.fab.setOnClickListener { createCommand() }
-//                    }
-//                    VP_IR_SIGNALS -> {
-//                        //binding.fab.labelText = getString(R.string.create_ir_signal)
-//                        binding.fab.setOnClickListener { createIrSignal() }
-//                    }
-//                }
-//            }
             // My Devices
             FP_MY_DEVICES -> {
                 when (state.viewPagerPosition) {
@@ -607,8 +533,8 @@ class MainViewActivity : AppCompatActivity() {
             @SuppressLint("LogNotTimber")
             override fun onTemplateSelected(uid: String) {
                 Log.d("onTemplateSelected", "Template selected: $uid")
-                TempData.tempRemoteProfile = LocalData.remoteProfiles[uid] ?: RemoteProfile()
-                TempData.tempRemoteProfile.inEditMode.set(true)
+                AppState.tempData.tempRemoteProfile = AppState.userData.remotes[uid] ?: RemoteProfile()
+                AppState.tempData.tempRemoteProfile.inEditMode.set(true)
                 state.viewPagerPosition = VP_FAV_REMOTE
                 onMyRemotesClicked()
 

@@ -13,11 +13,10 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.database.LocalData
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.databinding.ALearnSigGetHubBinding
-import com.ms8.smartirhub.android.utils.exts.*
+import com.ms8.smartirhub.android.utils.extensions.*
 import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity.Companion.LISTENING_HUB
-import java.lang.ref.WeakReference
 import kotlin.math.hypot
 
 class LSSelectHubActivity : AppCompatActivity() {
@@ -85,7 +84,7 @@ class LSSelectHubActivity : AppCompatActivity() {
 
         binding.rvHubList.layoutManager = GridLayoutManager(this, 1, RecyclerView.VERTICAL, false)
         binding.rvHubList.adapter = hubCardListAdapter
-        binding.hubList = LocalData.hubs
+        binding.hubList = AppState.userData.hubs
         binding.rvHubList.addItemDecoration(object : DividerItemDecoration(this, RecyclerView.VERTICAL){
             override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
                 if (parent.getChildAdapterPosition(view) == parent.adapter!!.itemCount - 2) {

@@ -6,7 +6,7 @@ import android.os.Bundle
 import androidx.databinding.DataBindingUtil
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.BottomErrorSheet
-import com.ms8.smartirhub.android.database.TempData
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.databinding.ACreateButtonNameBinding
 import com.ms8.smartirhub.android.utils.MyValidators.ButtonNameValidator
 
@@ -39,7 +39,7 @@ class CBNameActivity : AppCompatActivity() {
             .addErrorCallback { errorNameSheet.show(supportFragmentManager, "bottom_sheet_error_invalid_name") }
             .check()
         if (isValidName) {
-            TempData.tempButton?.name = binding.txtButtonName.editText!!.text.toString()
+            AppState.tempData.tempButton?.name = binding.txtButtonName.editText!!.text.toString()
             setResult(Activity.RESULT_OK)
             finish()
         }

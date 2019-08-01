@@ -4,10 +4,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.DisplayMetrics
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.database.TempData
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import kotlinx.android.synthetic.main.test__remote_layout.*
-import kotlin.math.roundToInt
 
 class TestRemoteLayout : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,7 +35,7 @@ class TestRemoteLayout : AppCompatActivity() {
     }
 
     private fun createMockData() {
-        TempData.tempRemoteProfile.buttons
+        AppState.tempData.tempRemoteProfile.buttons
             .apply {
                 for (i in 0 until 50) {
                     add(

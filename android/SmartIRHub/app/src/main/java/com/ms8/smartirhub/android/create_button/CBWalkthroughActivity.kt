@@ -20,9 +20,9 @@ import com.ms8.smartirhub.android.custom_views.bottom_sheets.SimpleListDescSheet
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.SimpleListDescSheet.Companion.REQ_EDIT_ACTION
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.SimpleListDescSheet.Companion.REQ_NEW_ACTION
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.PickNameSheet
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Command
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.ADD_TO_END
-import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ACreateButtonWalkthroughBinding
 import com.ms8.smartirhub.android.databinding.VChooseNameSheetBinding
 import com.ms8.smartirhub.android.databinding.VSimpleListDescSheetBinding
@@ -108,11 +108,11 @@ class CBWalkThroughActivity : AppCompatActivity() {
                 pickNameSheet.dismiss()
             }
             binding.prog3.bOnThisStep -> {
-                TempData.tempButton?.let { it.command = RemoteProfile.Button.newCommandList()}
+                AppState.tempData.tempButton?.let { it.commands = RemoteProfile.Button.newCommandList()}
                 determineWalkThroughState()
             }
             binding.prog2.bOnThisStep -> {
-                TempData.tempButton?.name = ""
+                AppState.tempData.tempButton?.name = ""
                 determineWalkThroughState()
             }
             warningSheet.bWantsToLeave -> {
@@ -132,7 +132,7 @@ class CBWalkThroughActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        TempData.tempButton?.command?.get(0)?.actions?.addOnListChangedCallback(commandListener)
+        AppState.tempData.tempButton?.commands?.get(0)?.actions?.addOnListChangedCallback(commandListener)
         pickNameSheet.callback = object : PickNameSheet.Callback {
             override fun onSavePressed(sheetBinding: VChooseNameSheetBinding?) {
                 sheetBinding?.txtInput?.error = ""
@@ -140,7 +140,7 @@ class CBWalkThroughActivity : AppCompatActivity() {
                     .addErrorCallback { sheetBinding.txtInput.error = getString(R.string.err_invalid_button_name) }
                     .check()
                 if (isValidName) {
-                    TempData.tempButton?.name = sheetBinding.txtInput.editText!!.text.toString()
+                    AppState.tempData.tempButton?.name = sheetBinding.txtInput.editText!!.text.toString()
                     pickNameSheet.dismiss()
                 }
             }
@@ -153,7 +153,7 @@ class CBWalkThroughActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        TempData.tempButton?.command?.get(0)?.actions?.removeOnListChangedCallback(commandListener)
+        AppState.tempData.tempButton?.commands?.get(0)?.actions?.removeOnListChangedCallback(commandListener)
         pickNameSheet.callback = null
     }
 
@@ -161,8 +161,8 @@ class CBWalkThroughActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.a_create_button_walkthrough)
 
-        if (TempData.tempButton == null)
-            TempData.tempButton = RemoteProfile.Button()
+        if (AppState.tempData.tempButton == null)
+            AppState.tempData.tempButton = RemoteProfile.Button()
 
         //Set up PickNameSheet
         pickNameSheet.nameDesc = getString(R.string.remember_button_name_desc)
@@ -216,9 +216,9 @@ class CBWalkThroughActivity : AppCompatActivity() {
                 if (resultCode == Activity.RESULT_OK) {
                     val newIrSignalUID = data?.getStringExtra(LSWalkThroughActivity.NEW_IR_SIGNAL_UID) ?: return
                     Log.d("TEST", "got new signal with uid: $newIrSignalUID")
-                    TempData.tempButton!!.command[0].actions.add(Command.Action().apply {
+                    AppState.tempData.tempButton!!.commands[0].actions.add(Command.Action().apply {
                         irSignal =  newIrSignalUID })
-                    pickActionsSheetAdapter.actionList = ArrayList(TempData.tempButton?.command?.get(0)?.actions ?: ArrayList())
+                    pickActionsSheetAdapter.actionList = ArrayList(AppState.tempData.tempButton?.commands?.get(0)?.actions ?: ArrayList())
                     pickActionsSheetAdapter.notifyDataSetChanged()
                 }
             }
@@ -226,8 +226,8 @@ class CBWalkThroughActivity : AppCompatActivity() {
                 if (resultCode == Activity.RESULT_OK) {
                     val newIrSignalUID = data?.getStringExtra(LSWalkThroughActivity.NEW_IR_SIGNAL_UID) ?: return
                     if (editingPosition != -1) {
-                        TempData.tempButton?.command?.get(0)?.actions?.removeAt(editingPosition)
-                        TempData.tempButton?.command?.get(0)?.actions?.add(editingPosition, Command.Action().apply { irSignal = newIrSignalUID })
+                        AppState.tempData.tempButton?.commands?.get(0)?.actions?.removeAt(editingPosition)
+                        AppState.tempData.tempButton?.commands?.get(0)?.actions?.add(editingPosition, Command.Action().apply { irSignal = newIrSignalUID })
                     } else { Log.e("ChooseActions", "Returned successfully from REQ_EDIT_ACTION, but editingPosition was -1") }
                 }
             }
@@ -236,9 +236,9 @@ class CBWalkThroughActivity : AppCompatActivity() {
             }
             REQ_STYLE -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    TempData.tempButton?.command?.let {
-                        TempData.tempRemoteProfile.addButton(TempData.tempButton!!, intent.getIntExtra(EXTRA_BUTTON_POS, ADD_TO_END))
-                        TempData.tempButton = null
+                    AppState.tempData.tempButton?.commands?.let {
+                        AppState.tempData.tempRemoteProfile.addButton(AppState.tempData.tempButton!!, intent.getIntExtra(EXTRA_BUTTON_POS, ADD_TO_END))
+                        AppState.tempData.tempButton = null
                         // Only finish if TempData has a valid button
                         setResult(Activity.RESULT_OK)
                         finish()
@@ -254,7 +254,7 @@ class CBWalkThroughActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         if (isFinishing) {
-            TempData.tempButton = null
+            AppState.tempData.tempButton = null
         }
     }
 
@@ -266,8 +266,8 @@ class CBWalkThroughActivity : AppCompatActivity() {
 
     private fun determineWalkThroughState() {
         when {
-            TempData.tempButton == null || TempData.tempButton?.name == "" -> {
-                TempData.tempButton = RemoteProfile.Button()
+            AppState.tempData.tempButton == null || AppState.tempData.tempButton?.name == "" -> {
+                AppState.tempData.tempButton = RemoteProfile.Button()
                 binding.prog1.bOnThisStep = true
                 binding.prog2.bOnThisStep = false
                 binding.prog3.bOnThisStep = false
@@ -275,7 +275,7 @@ class CBWalkThroughActivity : AppCompatActivity() {
                 binding.btnNextStep.setOnClickListener { showPickNameSheet() }
                 binding.prog1.setOnClickListener { showPickNameSheet() }
             }
-            TempData.tempButton?.command?.get(0)?.actions?.size ?: 0 == 0 -> {
+            AppState.tempData.tempButton?.commands?.get(0)?.actions?.size ?: 0 == 0 -> {
                 binding.prog1.bOnThisStep = true
                 binding.prog2.bOnThisStep = true
                 binding.prog3.bOnThisStep = false

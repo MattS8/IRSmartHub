@@ -1,4 +1,4 @@
-package com.ms8.smartirhub.android.utils.exts
+package com.ms8.smartirhub.android.utils.extensions
 
 import android.animation.Animator
 import android.graphics.Rect

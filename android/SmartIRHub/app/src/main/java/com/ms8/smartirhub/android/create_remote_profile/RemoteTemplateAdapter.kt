@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.models.firestore.RemoteProfileTemplate
-import com.ms8.smartirhub.android.database.LocalData
+import com.ms8.smartirhub.android.database.AppState
 
 class RemoteTemplateAdapter(var templateCallback: RemoteTemplateAdapterCallback): RecyclerView.Adapter<RemoteTemplateAdapter.RemoteTemplateViewHolder>() {
     private val listnener = object : ObservableMap.OnMapChangedCallback<ObservableArrayMap<String, RemoteProfileTemplate>, String, RemoteProfileTemplate>() {
@@ -24,7 +24,7 @@ class RemoteTemplateAdapter(var templateCallback: RemoteTemplateAdapterCallback)
     var list = ArrayList<RemoteProfileTemplate>()
 
     init {
-        LocalData.remoteProfileTemplates.addOnMapChangedCallback(listnener)
+        AppState.userData.remoteTemplates.addOnMapChangedCallback(listnener)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RemoteTemplateViewHolder {
@@ -39,13 +39,13 @@ class RemoteTemplateAdapter(var templateCallback: RemoteTemplateAdapterCallback)
     }
 
     fun listen() {
-        LocalData.remoteProfileTemplates.addOnMapChangedCallback(listnener)
-        list = ArrayList(LocalData.remoteProfileTemplates.values)
+        AppState.userData.remoteTemplates.addOnMapChangedCallback(listnener)
+        list = ArrayList(AppState.userData.remoteTemplates.values)
         notifyDataSetChanged()
     }
 
     fun stopListening() {
-        LocalData.remoteProfileTemplates.removeOnMapChangedCallback(listnener)
+        AppState.userData.remoteTemplates.removeOnMapChangedCallback(listnener)
     }
 
     class RemoteTemplateViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

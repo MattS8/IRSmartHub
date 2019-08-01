@@ -13,7 +13,7 @@ import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.database.LocalData
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.utils.MySharedPreferences
 import java.lang.Exception
 
@@ -90,31 +90,38 @@ object AuthActions {
     /**
      *  Attempts to sign user in with their google account
      */
-    fun handleGoogleSignInResult2(data: Intent?): Task<AuthResult>? {
-        Log.d(TAG, "Handling Google Sign In Result...")
+    fun handleGoogleSignInResult2(data: Intent?) {
         val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-        return try {
+        try {
             val account = task.getResult(ApiException::class.java)
             val credential = GoogleAuthProvider.getCredential(account!!.idToken, null)
             FirebaseAuth.getInstance().signInWithCredential(credential)
+                .addOnSuccessListener {
+                    Log.d("TEST###", "Google sign in good. setting uid to ${FirebaseAuth.getInstance().currentUser!!.uid}")
+                    AppState.userData.user.uid.set(FirebaseAuth.getInstance().currentUser!!.uid)
+                }
+                .addOnFailureListener { e -> AppState.errorData.userSignInError.set(e) }
 
         } catch (e : Exception) {
-            Log.e(TAG, "Google sign in failed", e)
-            null
+            AppState.errorData.userSignInError.set(e)
         }
     }
 
-    fun createAccount(emailString: String, passwordString: String): Task<AuthResult> {
-        return FirebaseAuth.getInstance().createUserWithEmailAndPassword(emailString, passwordString)
+    fun createAccount(emailString: String, passwordString: String) {
+        FirebaseAuth.getInstance().createUserWithEmailAndPassword(emailString, passwordString)
+            .addOnSuccessListener { AppState.userData.user.uid.set(FirebaseAuth.getInstance().currentUser!!.uid) }
+            .addOnFailureListener { e -> AppState.errorData.userSignInError.set(e) }
     }
 
-    fun signInWithEmail(email: String, password: String): Task<AuthResult> {
-        return FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
+    fun signInWithEmail(email: String, password: String) {
+        FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
+            .addOnSuccessListener { AppState.userData.user.uid.set(FirebaseAuth.getInstance().currentUser!!.uid) }
+            .addOnFailureListener { e -> AppState.errorData.userSignInError.set(e) }
     }
 
     fun signOut(context: Context) {
         MySharedPreferences.removeUser(context)
-        LocalData.removeUserData()
+        AppState.userData.removeData()
         FirebaseAuth.getInstance().signOut()
         FirestoreActions.removeAllListeners()
     }

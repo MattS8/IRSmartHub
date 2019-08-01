@@ -3,13 +3,13 @@ package com.ms8.smartirhub.android.create_button
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.ms8.smartirhub.android.database.LocalData
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.firebase.FirestoreActions
 
 class CommandsAdapter: RecyclerView.Adapter<CommandsAdapter.CommandsListViewHolder>() {
 
     init {
-        if (LocalData.remoteProfileTemplates.size == 0) {
+        if (AppState.userData.remotes.size == 0) {
             FirestoreActions.getRemoteTemplates()
         }
     }

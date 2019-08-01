@@ -7,7 +7,6 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,8 +20,8 @@ import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetric
 import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview.AsymmetricItem
 import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview.AsymmetricRecyclerView
 import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetricgridview.AsymmetricRecyclerViewAdapter
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
-import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_INCREMENTER_VERTICAL
@@ -76,7 +75,6 @@ class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerVie
             }
         }
         clipToOutline = true
-        //addItemDecoration(SpacesItemDecoration(Utils.dpToPx(context, 3f)))
     }
 
     fun findLastTopChild() {
@@ -84,8 +82,8 @@ class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerVie
         var spanTotal = 0
         var inspectingPos = 0
         do {
-            spanTotal += TempData.tempRemoteProfile.buttons[inspectingPos++].columnSpan
-        } while (spanTotal <  numColumns && inspectingPos < TempData.tempRemoteProfile.buttons.size)
+            spanTotal += AppState.tempData.tempRemoteProfile.buttons[inspectingPos++].columnSpan
+        } while (spanTotal <  numColumns && inspectingPos < AppState.tempData.tempRemoteProfile.buttons.size)
         lastTopChild = inspectingPos
         Log.d("TEST##", "Finding lastTopChild... $lastTopChild")
     }
@@ -98,22 +96,22 @@ class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerVie
     fun startListening() {
         if (!isListening) {
             isListening = true
-            TempData.tempRemoteProfile.buttons.addOnListChangedCallback(buttonListener)
+            AppState.tempData.tempRemoteProfile.buttons.addOnListChangedCallback(buttonListener)
 
             // update last child on top row if TempRemoteProfile already has some buttons
-            if (TempData.tempRemoteProfile.buttons.size > 0)
+            if (AppState.tempData.tempRemoteProfile.buttons.size > 0)
                 findLastTopChild()
         }
     }
 
     fun stopListening() {
-        TempData.tempRemoteProfile.buttons.removeOnListChangedCallback(buttonListener)
+        AppState.tempData.tempRemoteProfile.buttons.removeOnListChangedCallback(buttonListener)
     }
 
     class RemoteLayoutAdapter: AGVRecyclerViewAdapter<ButtonViewHolder>() {
 
         override fun getItem(position: Int): AsymmetricItem {
-            val b = TempData.tempRemoteProfile.buttons[position]
+            val b = AppState.tempData.tempRemoteProfile.buttons[position]
             return DemoItem(
                 b.columnSpan,
                 b.rowSpan,
@@ -122,14 +120,14 @@ class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerVie
         }
 
         override fun getItemViewType(position: Int)
-                =  TempData.tempRemoteProfile.buttons[position].style
+                =  AppState.tempData.tempRemoteProfile.buttons[position].style
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ButtonViewHolder {
             return ButtonViewHolder(parent, viewType)
         }
 
         override fun getItemCount() =
-            TempData.tempRemoteProfile.buttons.size
+            AppState.tempData.tempRemoteProfile.buttons.size
 
         override fun onBindViewHolder(holder: ButtonViewHolder, position: Int) {
             holder.bind(position)
@@ -151,7 +149,7 @@ class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerVie
         var button: RemoteProfile.Button? = null
 
         fun bind(position: Int) {
-            button = TempData.tempRemoteProfile.buttons[position]
+            button = AppState.tempData.tempRemoteProfile.buttons[position]
             button?.let { b ->
                 when (b.style) {
                     STYLE_BTN_SINGLE_ACTION -> bindSingleActionButton(b)
@@ -173,25 +171,25 @@ class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerVie
             // set top button properties
             topButtonView.properties = button.properties[0]
             topButtonView.setOnClickListener {
-                RealtimeDatabaseFunctions.sendCommandToHub(button.command[0])
+                RealtimeDatabaseFunctions.sendCommandToHub(button.commands[0])
                 Log.d("TEST", "TOP BUTTON CLICKED")
             }
             // set bottom button properties
             endButtonView.properties = button.properties[1]
             endButtonView.setOnClickListener {
-                RealtimeDatabaseFunctions.sendCommandToHub(button.command[1])
+                RealtimeDatabaseFunctions.sendCommandToHub(button.commands[1])
                 Log.d("TEST", "END BUTTON CLICKED")
             }
             // set start button properties
             bottomButtonView.properties = button.properties[2]
             bottomButtonView.setOnClickListener {
-                RealtimeDatabaseFunctions.sendCommandToHub(button.command[2])
+                RealtimeDatabaseFunctions.sendCommandToHub(button.commands[2])
                 Log.d("TEST", "BOTTOM BUTTON CLICKED")
             }
             // set end button properties
             startButtonView.properties = button.properties[3]
             startButtonView.setOnClickListener {
-                RealtimeDatabaseFunctions.sendCommandToHub(button.command[3])
+                RealtimeDatabaseFunctions.sendCommandToHub(button.commands[3])
                 Log.d("TEST", "START BUTTON CLICKED")
             }
 
@@ -202,7 +200,7 @@ class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerVie
                 // set center button properties
                 centerButtonView.properties = button.properties[4]
                 centerButtonView.setOnClickListener {
-                    RealtimeDatabaseFunctions.sendCommandToHub(button.command[4])
+                    RealtimeDatabaseFunctions.sendCommandToHub(button.commands[4])
                 }
                 // set center button text
                 centerButtonView.buttonText = button.name

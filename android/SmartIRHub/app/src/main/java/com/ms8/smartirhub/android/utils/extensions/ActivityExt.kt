@@ -1,4 +1,4 @@
-package com.ms8.smartirhub.android.utils.exts
+package com.ms8.smartirhub.android.utils.extensions
 
 import android.animation.Animator
 import android.animation.ValueAnimator
@@ -8,10 +8,8 @@ import android.graphics.Color.TRANSPARENT
 import android.graphics.Rect
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
-import com.ms8.smartirhub.android.database.TempData
-import com.google.android.material.resources.MaterialResources.getDimensionPixelSize
-
 
 
 val AppCompatActivity.hasSourceBounds: Boolean get() = intent?.sourceBounds != null
@@ -51,7 +49,7 @@ fun AppCompatActivity.findNavBarHeight(): Int {
 }
 
 fun AppCompatActivity.startCreateButtonProcess() {
-    TempData.tempButton = RemoteProfile.Button()
+    AppState.tempData.tempButton = RemoteProfile.Button()
 
 }
 

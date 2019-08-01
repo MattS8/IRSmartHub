@@ -41,6 +41,7 @@
                 app:elevation="0dp"
                 android:elevation="0dp"
                 android:clickable="false"
+                app:rippleColor="@color/colorAccent"
         />
 
         <!--<com.github.clans.fab.FloatingActionButton-->
@@ -68,6 +69,7 @@
                 app:layout_anchor="@id/fab_dummy"
                 app:backgroundTint="@color/white"
                 android:src="@drawable/ic_mode_edit_black_24dp"
+                app:rippleColor="@color/colorAccent"
         />
 
 <!-- Bottom Nav -->
@@ -100,7 +102,7 @@
                         android:gravity="center"
                         android:maxLines="1"
                         android:textSize="14sp"
-                        android:textColor="@color/white"
+                        android:textColor="@color/selectable_text_colored"
                         android:text="@string/title_remotes"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -112,6 +114,7 @@
                         android:layout_marginEnd="24dp"
                         android:drawableTop="@drawable/ic_my_remotes_icon"
                         android:drawablePadding="-8dp"
+                        android:drawableTint="@color/selectable_text_colored"
                 />
 
                 <TextView
@@ -134,7 +137,7 @@
                         android:gravity="center"
                         android:maxLines="1"
                         android:textSize="14sp"
-                        android:textColor="@color/white"
+                        android:textColor="@color/selectable_text_colored"
                         android:text="@string/title_my_devices"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -144,8 +147,9 @@
                         android:layout_marginStart="24dp"
                         android:layout_marginEnd="24dp"
                         android:layout_marginTop="4dp"
-                        android:drawableTop="@drawable/ic_device_hub_white_24dp"
+                        android:drawableTop="@drawable/ic_my_devices_icons"
                         android:drawablePadding="-8dp"
+                        android:drawableTint="@color/selectable_text_colored"
                 />
 
             </androidx.constraintlayout.widget.ConstraintLayout>

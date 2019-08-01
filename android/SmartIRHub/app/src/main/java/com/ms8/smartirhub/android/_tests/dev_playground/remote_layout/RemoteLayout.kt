@@ -12,10 +12,10 @@ import androidx.databinding.ObservableArrayList
 import androidx.databinding.ObservableList
 import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.AsymmetricGridView
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.AsymmetricGridViewAdapter
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.AsymmetricItem
-import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 
 class RemoteLayout(context: Context, attrs: AttributeSet) : AsymmetricGridView(context, attrs) {
@@ -24,7 +24,7 @@ class RemoteLayout(context: Context, attrs: AttributeSet) : AsymmetricGridView(c
     fun setupAdapter() {
         val rla = RemoteListAdapter(context)
             .apply {
-                TempData.tempRemoteProfile.buttons
+                AppState.tempData.tempRemoteProfile.buttons
                     .apply {
                         for (i in 0 until 35) {
                             add(
@@ -106,7 +106,7 @@ class RemoteLayout(context: Context, attrs: AttributeSet) : AsymmetricGridView(c
         var remoteProperties: RemoteLayoutProperties? = null
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-            val button = TempData.tempRemoteProfile.buttons[position]
+            val button = AppState.tempData.tempRemoteProfile.buttons[position]
 
             val v = when (convertView) {
                 null -> {
@@ -165,22 +165,22 @@ class RemoteLayout(context: Context, attrs: AttributeSet) : AsymmetricGridView(c
         }
 
         fun stopListening() {
-            TempData.tempRemoteProfile.buttons.removeOnListChangedCallback(listListener)
+            AppState.tempData.tempRemoteProfile.buttons.removeOnListChangedCallback(listListener)
         }
 
         fun startListening() {
-            TempData.tempRemoteProfile.buttons.addOnListChangedCallback(listListener)
+            AppState.tempData.tempRemoteProfile.buttons.addOnListChangedCallback(listListener)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RemoteViewHolder {
             return RemoteViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false))
         }
 
-        override fun getItemCount() = TempData.tempRemoteProfile.buttons.size
+        override fun getItemCount() = AppState.tempData.tempRemoteProfile.buttons.size
 
 
         override fun onBindViewHolder(holder: RemoteViewHolder, position: Int) {
-            holder.bind(TempData.tempRemoteProfile.buttons[position])
+            holder.bind(AppState.tempData.tempRemoteProfile.buttons[position])
 
             //TODO: TEST CODE
             when (position) {

@@ -35,7 +35,7 @@
             android:stateListAnimator="@animator/selector_button_elevation"
             android:clipToPadding="false"
             android:clipChildren="false"
-            android:background="@drawable/btn_bg_radial_start"
+            android:background="@drawable/btn_bg_radial_start_ripple"
             app:layout_constraintTop_toBottomOf="@id/topButtonCenter"
             app:layout_constraintBottom_toTopOf="@id/bottomButtonCenter"
             app:layout_constraintStart_toStartOf="parent"
@@ -50,7 +50,7 @@
             android:stateListAnimator="@animator/selector_button_elevation"
             android:clipToPadding="false"
             android:clipChildren="false"
-            android:background="@drawable/btn_bg_radial_end"
+            android:background="@drawable/btn_bg_radial_end_ripple"
             app:layout_constraintStart_toEndOf="@+id/btnCenter"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/topButtonCenter"
@@ -69,7 +69,7 @@
             android:stateListAnimator="@animator/selector_button_elevation"
             android:clipToPadding="false"
             android:clipChildren="false"
-            android:background="@drawable/btn_bg_radial_bottom"
+            android:background="@drawable/btn_bg_radial_bottom_ripple"
             app:layout_constraintHorizontal_bias="0.5"/>
 
     <com.ms8.smartirhub.android.remote_control.views.ButtonView

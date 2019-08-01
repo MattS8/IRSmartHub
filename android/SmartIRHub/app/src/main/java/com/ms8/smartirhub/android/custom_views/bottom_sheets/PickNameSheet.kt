@@ -11,8 +11,8 @@ import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import com.andrefrsousa.superbottomsheet.SuperBottomSheetFragment
 import com.ms8.smartirhub.android.R
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.utils.MyValidators.ButtonNameValidator
-import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.VChooseNameSheetBinding
 import org.jetbrains.anko.sdk27.coroutines.onFocusChange
 
@@ -169,7 +169,7 @@ class PickNameSheet : SuperBottomSheetFragment() {
             .addErrorCallback { binding?.txtInput?.error = getString(R.string.err_invalid_button_name) }
             .check()
         if (isValidName) {
-            TempData.tempButton?.name = binding?.txtInput?.editText!!.text.toString()
+            AppState.tempData.tempButton?.name = binding?.txtInput?.editText!!.text.toString()
             dismiss()
         }
     }

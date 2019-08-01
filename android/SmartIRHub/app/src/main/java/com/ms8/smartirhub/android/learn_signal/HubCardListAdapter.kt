@@ -11,12 +11,12 @@ import androidx.databinding.ObservableMap
 import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.models.firestore.Hub
-import com.ms8.smartirhub.android.database.LocalData
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.databinding.VHubCardBinding
 
 //TODO remove this weak reference
 class HubCardListAdapter : RecyclerView.Adapter<HubCardListAdapter.HubCardViewHolder>() {
-    val list = ArrayList<Hub>(LocalData.hubs.values)
+    val list = ArrayList<Hub>(AppState.userData.hubs.values)
     var selectedItem = 0
     var setupNewHub : ObservableBoolean = ObservableBoolean(false)
     var callback: HubCardListAdapter.Callback? = null
@@ -60,14 +60,14 @@ class HubCardListAdapter : RecyclerView.Adapter<HubCardListAdapter.HubCardViewHo
     }
 
     init {
-        LocalData.hubs.addOnMapChangedCallback(listener)
+        AppState.userData.hubs.addOnMapChangedCallback(listener)
     }
 
     fun listen(shouldListen: Boolean) {
         if (shouldListen) {
-            LocalData.hubs.addOnMapChangedCallback(listener)
+            AppState.userData.hubs.addOnMapChangedCallback(listener)
         } else {
-            LocalData.hubs.removeOnMapChangedCallback(listener)
+            AppState.userData.hubs.removeOnMapChangedCallback(listener)
         }
     }
 

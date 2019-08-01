@@ -70,7 +70,7 @@ class ButtonView(context: Context, attrs: AttributeSet) : FrameLayout(context, a
         // set background resource
         when (properties.bgStyle) {
             BgStyle.BG_CIRCLE -> { backgroundResource = R.drawable.btn_bg_circle_ripple }
-            BgStyle.BG_ROUND_RECT -> { backgroundResource = R.drawable.btn_bg_round_rect }
+            BgStyle.BG_ROUND_RECT -> { backgroundResource = R.drawable.btn_bg_round_rect_ripple }
             BgStyle.BG_ROUND_RECT_BOTTOM -> { backgroundResource = R.drawable.btn_bg_round_bottom_ripple }
             BgStyle.BG_ROUND_RECT_TOP -> { backgroundResource = R.drawable.btn_bg_round_top_ripple }
             BgStyle.BG_INVISIBLE -> { backgroundResource = 0 }

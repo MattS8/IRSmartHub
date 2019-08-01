@@ -4,7 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.databinding.DataBindingUtil
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.database.TempData
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.databinding.ASigAdvancedInfoBinding
 import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
 
@@ -24,7 +24,7 @@ class AdvancedSignalInfoActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        TempData.tempSignal?.let {irSignal ->
+        AppState.tempData.tempSignal?.let { irSignal ->
             binding.tvCode.text = irSignal.code
             binding.tvEncoding.text = irSignal.encodingType.toString()
             binding.tvRawData.text = irSignal.rawDataToString()

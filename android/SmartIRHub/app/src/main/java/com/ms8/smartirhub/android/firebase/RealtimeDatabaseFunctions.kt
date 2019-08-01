@@ -10,7 +10,7 @@ import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Command
 import com.ms8.smartirhub.android.models.realtimedatabase.HubAction
 import com.ms8.smartirhub.android.models.realtimedatabase.HubResult
 import com.ms8.smartirhub.android.models.firestore.IrSignal
-import com.ms8.smartirhub.android.database.LocalData
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.firebase.FirebaseConstants.IR_ACTION_LISTEN
 import com.ms8.smartirhub.android.firebase.FirebaseConstants.IR_ACTION_NONE
 import com.ms8.smartirhub.android.firebase.FirebaseConstants.IR_ACTION_SEND
@@ -86,13 +86,13 @@ object RealtimeDatabaseFunctions {
 
     @SuppressLint("LogNotTimber")
     fun sendCommandToHub(command: Command?) {
-        Log.d("sendCommandToHub", "defaultHub = ${LocalData.user?.defaultHub}")
+        Log.d("sendCommandToHub", "defaultHub = ${AppState.userData.user.defaultHub}")
         doAsync {
             when (command) {
-                null -> { Log.w("sendCommandToHub", "call with null command") }
+                null -> { Log.w("sendCommandToHub", "call with null commands") }
                 else -> {
                     val actions = ArrayList(command.actions)
-                    sendNextSignalToHub(actions, LocalData.user?.defaultHub ?: "")
+                    sendNextSignalToHub(actions, AppState.userData.user.defaultHub ?: "")
                 }
             }
         }
@@ -111,9 +111,9 @@ object RealtimeDatabaseFunctions {
         val destHub = if (action.hubUID == DEFAULT_HUB) defaultHubUID else action.hubUID
         Log.d("TEST", "DestHub = $destHub (defaultHubUID = $defaultHubUID)")
         when (destHub) {
-            "" -> { Log.e("sendCommandToHub", "empty default hubUID for action ${LocalData.signals[action.irSignal]?.name}") }
+            "" -> { Log.e("sendCommandToHub", "empty default hubUID for action ${AppState.userData.irSignals[action.irSignal]?.name}") }
             else -> {
-                when (val signal = LocalData.signals[action.irSignal]) {
+                when (val signal = AppState.userData.irSignals[action.irSignal]) {
                     null -> {
                         Log.e("sendCommandToHub", "Null irSignal passed for action ${action.irSignal}")
                         FirestoreActions.getIrSignal(action.irSignal)
@@ -126,10 +126,10 @@ object RealtimeDatabaseFunctions {
                                         uid = action.irSignal
                                     } ?: run { Log.d("sendCommandToHub", "Didn't find signal ${it.id}"); return@addOnSuccessListener}
                                 Log.d("sendCommandToHub", "Got missing IR Signal: ${sig.uid}")
-                                LocalData.signals[sig.uid] = sig
+                                AppState.userData.irSignals[sig.uid] = sig
                                 Log.d("sendNextSignalToHub", "Send sig: $sig")
                                 sendSignalToHub(destHub, sig)
-                                    .addOnFailureListener {  Log.e("sendCommandToHub", "Failed to send ${LocalData.signals[action.irSignal]?.name} to hub $destHub")}
+                                    .addOnFailureListener {  Log.e("sendCommandToHub", "Failed to send ${AppState.userData.irSignals[action.irSignal]?.name} to hub $destHub")}
                                     .addOnSuccessListener {
                                         Log.d("TEST", "Action sent!")
                                         //TODO: Change action backend implementation to better support a list of actions that the Hub reads at its own pace, one at a time
@@ -145,7 +145,7 @@ object RealtimeDatabaseFunctions {
                     else -> {
                         Log.d("sendNextSignalToHub", "Send sig: $signal")
                         sendSignalToHub(destHub, signal)
-                            .addOnFailureListener {  Log.e("sendCommandToHub", "Failed to send ${LocalData.signals[action.irSignal]?.name} to hub $destHub")}
+                            .addOnFailureListener {  Log.e("sendCommandToHub", "Failed to send ${AppState.userData.irSignals[action.irSignal]?.name} to hub $destHub")}
                             .addOnSuccessListener {
                                 Log.d("TEST", "Action sent!")
                                 //TODO: Change action backend implementation to better support a list of actions that the Hub reads at its own pace, one at a time

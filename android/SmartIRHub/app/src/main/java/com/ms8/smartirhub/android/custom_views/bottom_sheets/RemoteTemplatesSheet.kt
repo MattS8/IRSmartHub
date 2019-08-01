@@ -18,8 +18,7 @@ import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.create_remote_profile.RemoteTemplateAdapter
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import com.ms8.smartirhub.android.models.firestore.RemoteProfileTemplate
-import com.ms8.smartirhub.android.database.LocalData
-import com.ms8.smartirhub.android.database.TempData
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.databinding.VRemoteTemplatesSheetBinding
 import com.ms8.smartirhub.android.firebase.FirestoreActions
 import org.jetbrains.anko.windowManager
@@ -42,8 +41,8 @@ class RemoteTemplatesSheet : SuperBottomSheetFragment() {
             showLoadingView()
             awaitingRemoteUID = template.remoteProfile
             FirestoreActions.getRemoteProfile(awaitingRemoteUID)
-            LocalData.remoteProfiles.addOnMapChangedCallback(remoteProfileListener)
-            checkForRemote(LocalData.remoteProfiles, awaitingRemoteUID)
+            AppState.userData.remotes.addOnMapChangedCallback(remoteProfileListener)
+            checkForRemote(AppState.userData.remotes, awaitingRemoteUID)
         }
     }
 
@@ -124,15 +123,15 @@ class RemoteTemplatesSheet : SuperBottomSheetFragment() {
         // Check to see if we were waiting for a remoteProfile to load
         if (awaitingRemoteUID != "") {
             // If the remote was loaded during activity reload, we're done!
-            if (LocalData.remoteProfiles.containsKey(awaitingRemoteUID)) {
+            if (AppState.userData.remotes.containsKey(awaitingRemoteUID)) {
                 hideLoadingView()
-                try { TempData.tempRemoteProfile = LocalData.remoteProfiles[awaitingRemoteUID]!! }
+                try { AppState.tempData.tempRemoteProfile = AppState.userData.remotes[awaitingRemoteUID]!! }
                 catch (e : Exception) { Log.e("RemoteTemplateSheet", "$e") }
                 awaitingRemoteUID = ""
                 dismiss()
             // Otherwise, add the listener back and wait for a change
             } else {
-                LocalData.remoteProfiles.addOnMapChangedCallback(remoteProfileListener)
+                AppState.userData.remotes.addOnMapChangedCallback(remoteProfileListener)
                 showLoadingView()
             }
         }
@@ -142,7 +141,7 @@ class RemoteTemplatesSheet : SuperBottomSheetFragment() {
         super.onPause()
         adapter.stopListening()
         if (awaitingRemoteUID != "") {
-            LocalData.remoteProfiles.removeOnMapChangedCallback(remoteProfileListener)
+            AppState.userData.remotes.removeOnMapChangedCallback(remoteProfileListener)
         }
     }
 
@@ -155,7 +154,7 @@ class RemoteTemplatesSheet : SuperBottomSheetFragment() {
 
         // Start from scratch button
         binding!!.btnPos.setOnClickListener {
-            TempData.tempRemoteProfile = RemoteProfile()
+            AppState.tempData.tempRemoteProfile = RemoteProfile()
             awaitingRemoteUID = ""
             templateSheetCallback?.onTemplateSelected("")
             dismiss()
@@ -199,7 +198,7 @@ class RemoteTemplatesSheet : SuperBottomSheetFragment() {
 
     fun onBackPressed(): Boolean {
         return if (awaitingRemoteUID != "") {
-            LocalData.remoteProfiles.removeOnMapChangedCallback(remoteProfileListener)
+            AppState.userData.remotes.removeOnMapChangedCallback(remoteProfileListener)
             awaitingRemoteUID = ""
             hideLoadingView()
             true

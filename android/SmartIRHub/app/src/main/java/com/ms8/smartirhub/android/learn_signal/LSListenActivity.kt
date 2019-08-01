@@ -18,9 +18,9 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.BottomErrorSheet
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.models.realtimedatabase.HubResult
 import com.ms8.smartirhub.android.models.firestore.IrSignal
-import com.ms8.smartirhub.android.database.TempData
 import com.ms8.smartirhub.android.databinding.ALearnSigListenBinding
 import com.ms8.smartirhub.android.firebase.FirebaseConstants
 import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
@@ -53,14 +53,14 @@ class LSListenActivity : AppCompatActivity() {
             RealtimeDatabaseFunctions.getHubRef(hubUID).removeEventListener(this)
 
             val rawData = RealtimeDatabaseFunctions.parseRawData(dataSnapshot.value) ?: return
-            val numChunks = RealtimeDatabaseFunctions.calculateNumChunks(TempData.tempSignal?.rawLength ?: 0)
+            val numChunks = RealtimeDatabaseFunctions.calculateNumChunks(AppState.tempData.tempSignal?.rawLength ?: 0)
 
             if (rawData.size == numChunks) {
                 // Stop listening for rawData changes
                 RealtimeDatabaseFunctions.getRawData(hubUID).removeEventListener(this)
 
                 // Set data array for tempSignal
-                TempData.tempSignal?.rawData = rawData
+                AppState.tempData.tempSignal?.rawData = rawData
 
                 // Stop loading button and clean up listener data
                 binding.btnStartListening.revertAnimation()
@@ -115,7 +115,7 @@ class LSListenActivity : AppCompatActivity() {
             // Received an IR Signal
                 FirebaseConstants.IR_RES_RECEIVED_SIG -> {
                     Log.d("LSListenActivity", "Received signal")
-                    TempData.tempSignal = IrSignal()
+                    AppState.tempData.tempSignal = IrSignal()
                         .apply {
                             rawLength = hubResult.rawLen
                             encodingType = hubResult.encoding
@@ -140,7 +140,7 @@ class LSListenActivity : AppCompatActivity() {
 
     private fun showLearnedLayout(animate: Boolean) {
         // Set data text
-        TempData.tempSignal?.let { irSignal ->
+        AppState.tempData.tempSignal?.let { irSignal ->
             binding.tvSigType.text = irSignal.encodingType.toString()
             binding.tvSigCode.text = irSignal.code
         }
@@ -231,7 +231,7 @@ class LSListenActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
 
-        val len = TempData.tempSignal?.rawLength ?: 0
+        val len = AppState.tempData.tempSignal?.rawLength ?: 0
         Log.d("LEN", "$len")
         when {
         // Have already learned signal
@@ -338,7 +338,7 @@ class LSListenActivity : AppCompatActivity() {
 /* ------------------------------------------------ OnClick Functions ------------------------------------------------ */
 
     private fun retry() {
-        TempData.tempSignal?.resetData()
+        AppState.tempData.tempSignal?.resetData()
 
         beginListeningProcess()
     }
@@ -351,7 +351,7 @@ class LSListenActivity : AppCompatActivity() {
     }
 
     private fun testSignal() {
-        TempData.tempSignal?.let { irSignal ->
+        AppState.tempData.tempSignal?.let { irSignal ->
             binding.btnTestSignal.startAnimation()
             RealtimeDatabaseFunctions.sendNoneAction(hubUID)
                 .addOnFailureListener {e -> showUnknownError(e) }

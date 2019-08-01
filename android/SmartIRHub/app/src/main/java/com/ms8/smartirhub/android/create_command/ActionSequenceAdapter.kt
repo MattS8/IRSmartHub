@@ -10,8 +10,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Command
-import com.ms8.smartirhub.android.database.LocalData
-import com.ms8.smartirhub.android.database.TempData
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.models.firestore.Hub.Companion.DEFAULT_HUB
 
 class ActionSequenceAdapter(var callback: ActionSequenceAdapterCallbacks?) : RecyclerView.Adapter<ActionSequenceAdapter.ActionViewHolder>() {
@@ -40,7 +39,7 @@ class ActionSequenceAdapter(var callback: ActionSequenceAdapterCallbacks?) : Rec
                 holder.itemView.setOnClickListener { callback?.startEditAction(actionList[holder.adapterPosition], holder.adapterPosition) }
                 holder.bindAction(actionList[position])
                 holder.itemView.findViewById<ImageButton>(R.id.btnDeleteAction).setOnClickListener {
-                    TempData.tempButton?.command?.get(0)?.actions?.removeAt(holder.adapterPosition)
+                    AppState.tempData.tempButton?.commands?.get(0)?.actions?.removeAt(holder.adapterPosition)
                 }
                 // Show delay input for actions with additional actions after
                 if (position > 0 && position < itemCount - 2) {
@@ -82,8 +81,8 @@ class ActionSequenceAdapter(var callback: ActionSequenceAdapterCallbacks?) : Rec
     class ActionViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView) {
 
         fun bindAction(action : Command.Action) {
-            itemView.findViewById<TextView>(R.id.tvActionTitle).text = LocalData.signals[action.irSignal]?.name
-            val targetHub = if (action.hubUID == DEFAULT_HUB) LocalData.hubs[LocalData.user!!.defaultHub] ?: "Default Hub" else action.hubUID
+            itemView.findViewById<TextView>(R.id.tvActionTitle).text = AppState.userData.irSignals[action.irSignal]?.name
+            val targetHub = if (action.hubUID == DEFAULT_HUB) AppState.userData.hubs[AppState.userData.user.defaultHub] ?: "Default Hub" else action.hubUID
             val desc = itemView.context.getString(R.string.send_signal_to) + " " + targetHub
             itemView.findViewById<TextView>(R.id.tvActionDesc).text = desc
         }
