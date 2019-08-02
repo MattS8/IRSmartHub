@@ -11,6 +11,7 @@ import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.IgnoreExtraProperties
 import java.lang.Exception
 
+@Suppress("UNCHECKED_CAST")
 @IgnoreExtraProperties
 data class User(
     var defaultHub  : String                        = "",
@@ -53,56 +54,55 @@ data class User(
             }
     }
 
-    @Suppress("UNCHECKED_CAST")
-    companion object {
-        @SuppressLint("LogNotTimber")
-        fun fromSnapshot(snapshot: DocumentSnapshot) : User {
-            val newUser = snapshot.toObject(User::class.java)
-                ?: User()
+    fun clear() {
+        defaultHub = ""
+        uid.set("")
+        username.set("")
+        groups.clear()
+        hubs.clear()
+        irSignals.clear()
+        remotes.clear()
+    }
 
-            // set username
-            newUser.username.set(snapshot.id)
+    @SuppressLint("LogNotTimber")
+    fun fromSnapshot(snapshot: DocumentSnapshot) {
+        // set default hub
+        defaultHub = snapshot["defaultHub"] as String
 
-            // set uid
-            newUser.uid.set(FirebaseAuth.getInstance().currentUser?.uid ?: "")
+        // set username
+        username.set(snapshot.id)
 
-            // add hubs
-            if (snapshot.contains("hubs")) {
-                try {
-                    newUser.hubs = ObservableArrayList<String>()
-                        .apply {
-                            addAll(snapshot["hubs"] as Collection<String>)
-                        }
-                } catch (e : Exception) {
-                   Log.e("User", "$e")
-                }
+        // set uid
+        uid.set(FirebaseAuth.getInstance().currentUser?.uid ?: "")
+
+        // add hubs
+        if (snapshot.contains("hubs")) {
+            try {
+                hubs.clear()
+                hubs.addAll(snapshot["hubs"] as Collection<String>)
+            } catch (e : Exception) {
+                Log.e("User", "$e")
             }
+        }
 
-            // add irSignals
-            if (snapshot.contains("irSignals")) {
-                try {
-                    newUser.irSignals = ObservableArrayList<String>()
-                        .apply {
-                            addAll(snapshot["hubs"] as Collection<String>)
-                        }
-                } catch (e : Exception) {
-                    Log.e("User", "$e")
-                }
+        // add irSignals
+        if (snapshot.contains("irSignals")) {
+            try {
+                irSignals.clear()
+                irSignals.addAll(snapshot["hubs"] as Collection<String>)
+            } catch (e : Exception) {
+                Log.e("User", "$e")
             }
+        }
 
-            // add remotes
-            if (snapshot.contains("remotes")) {
-                try {
-                    newUser.remotes = ObservableArrayList<String>()
-                        .apply {
-                            addAll(snapshot["remotes"] as Collection<String>)
-                        }
-                } catch (e : Exception) {
-                    Log.e("user", "$e")
-                }
+        // add remotes
+        if (snapshot.contains("remotes")) {
+            try {
+                remotes.clear()
+                remotes.addAll(snapshot["remotes"] as Collection<String>)
+            } catch (e : Exception) {
+                Log.e("user", "$e")
             }
-
-            return  newUser
         }
     }
 }

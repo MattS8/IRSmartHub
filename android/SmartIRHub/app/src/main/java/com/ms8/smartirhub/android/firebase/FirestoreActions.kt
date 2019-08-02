@@ -15,7 +15,6 @@ import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.models.firestore.IrSignal
 import com.ms8.smartirhub.android.models.firestore.*
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
-import com.ms8.smartirhub.android.splash_login.SplashActivity3
 import org.jetbrains.anko.doAsync
 import java.lang.Exception
 
@@ -24,6 +23,8 @@ object FirestoreActions {
     private var groupListeners          : ArrayMap<String, ListenerRegistration> = ArrayMap()
     private var remoteProfileListeners  : ArrayMap<String, ListenerRegistration> = ArrayMap()
     private var hubListeners            : ArrayMap<String, ListenerRegistration> = ArrayMap()
+
+    private var bFetchingUser           : Boolean = false
 
 /*
     ----------------------------------------------
@@ -37,21 +38,29 @@ object FirestoreActions {
 
     @SuppressLint("LogNotTimber")
     fun getUserFromUID() {
-        FirebaseFirestore.getInstance().collection("users")
-            .whereEqualTo("uid", FirebaseAuth.getInstance().currentUser!!.uid).get()
-            .addOnSuccessListener { snapshots ->
-                if (snapshots.size() > 1)
-                    Log.e("getUserFromUID", "Received more than one user object from uid:" +
+        if (!bFetchingUser) {
+            bFetchingUser = true
+            FirebaseFirestore.getInstance().collection("users")
+                .whereEqualTo("uid", FirebaseAuth.getInstance().currentUser!!.uid).get()
+                .addOnCompleteListener { bFetchingUser = false }
+                .addOnFailureListener { e ->
+                    Log.e("getUserFromUID", "$e")
+                    AppState.errorData.userSignInError.set(e)
+                }
+                .addOnSuccessListener { snapshots ->
+                    if (snapshots.size() > 1)
+                        Log.e("getUserFromUID", "Received more than one user object from uid:" +
                                 " ${FirebaseAuth.getInstance().currentUser?.uid}")
 
-                if (snapshots.size() == 0) {
-                    AppState.userData.user.uid.set(FirebaseAuth.getInstance().currentUser!!.uid)
-                } else {
-                    AppState.userData.user = User.fromSnapshot(snapshots.documents[0])
-                }
+                    if (snapshots.size() == 0) {
+                        AppState.userData.user.uid.set(FirebaseAuth.getInstance().currentUser!!.uid)
+                    } else {
+                        AppState.userData.user.fromSnapshot(snapshots.documents[0])
+                    }
 
-                Log.d("TESTUSERUID", "user uid = ${AppState.userData.user.uid} | username = ${AppState.userData.user.username}")
-            }
+                    Log.d("TESTUSERUID", "user uid = ${AppState.userData.user.uid} | username = ${AppState.userData.user.username}")
+                }
+        }
     }
 
     @SuppressLint("LogNotTimber")
@@ -326,7 +335,7 @@ object FirestoreActions {
                     !snapshot!!.exists() -> {Log.d("listenToUserData", "User data is null")}
                     else -> {
                         Log.d("TEST###", "User before: \n${AppState.userData.user}")
-                        AppState.userData.user = User.fromSnapshot(snapshot)
+                        AppState.userData.user.fromSnapshot(snapshot)
 
                         // listen to hubs
                         hubListeners.clear()
@@ -620,7 +629,7 @@ object FirestoreActions {
             .set(User().apply {
                 this.uid.set(uid)
                 this.username.set(username)
-            })
+            }.toFirebaseObject())
             .addOnSuccessListener { listenToUserData2(username) }
             .addOnFailureListener { e -> AppState.errorData.userSignInError.set(e) }
     }
@@ -712,6 +721,10 @@ object FirestoreActions {
 
     fun addRemote(remote: RemoteProfile): Task<DocumentReference> {
         return FirebaseFirestore.getInstance().collection("remotes").add(remote.toFirebaseObject())
+    }
+
+    fun upateRemoteProfile() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
 

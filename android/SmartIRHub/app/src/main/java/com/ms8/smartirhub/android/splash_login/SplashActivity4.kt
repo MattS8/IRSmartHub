@@ -41,6 +41,7 @@ class SplashActivity4 : AppCompatActivity() {
 
     var waitingOnGoogleSignIn = false
     var layoutState = SHOW_SPLASH
+    var errorFlashbar : Flashbar? = null
 
     /**
      * Transition animation properties
@@ -94,7 +95,7 @@ class SplashActivity4 : AppCompatActivity() {
         }
     }
 
-    private fun checkLoginState() {
+    private fun checkLoginState(animate : Boolean = true) {
         if (FirebaseAuth.getInstance().currentUser != null
             && AppState.userData.user.uid.get() != ""
             && AppState.userData.user.username.get() != ""
@@ -108,20 +109,34 @@ class SplashActivity4 : AppCompatActivity() {
         // Not signed in
             FirebaseAuth.getInstance().currentUser == null -> {
                 stopLoadingViews()
-                if (waitingOnGoogleSignIn) {
-                    // todo show loading view
-                } else {
-                    showSignInOptionsLayout(true)
+                when {
+                    waitingOnGoogleSignIn -> {
+                        // todo show loading view
+                    }
+                    layoutState == SHOW_SIGN_IN -> {
+                        showSignInLayout(animate)
+                    }
+                    layoutState == SHOW_SIGN_UP -> {
+                        showSignUpLayout(animate)
+                    }
+                    else -> {
+                        showSignInOptionsLayout(animate)
+                    }
                 }
             }
         // Log in with UID
             AppState.userData.user.uid.get() == "" -> {
                 FirestoreActions.getUserFromUID()
+                when (layoutState) {
+                    SHOW_OPTIONS -> showSignInOptionsLayout(animate)
+                    SHOW_SIGN_UP -> showSignUpLayout(animate)
+                    SHOW_SIGN_IN -> showSignInLayout(animate)
+                }
             }
         // Create username
             AppState.userData.user.username.get() == "" -> {
                 stopLoadingViews()
-                showUsernameLayout(true)
+                showUsernameLayout(animate)
             }
         }
     }
@@ -149,8 +164,11 @@ class SplashActivity4 : AppCompatActivity() {
 */
 
     override fun onBackPressed() {
-        when (layoutState) {
-            SHOW_SIGN_IN, SHOW_SIGN_UP, SHOW_USERNAME -> {
+        when {
+            errorFlashbar != null -> { errorFlashbar?.dismiss() }
+            layoutState == SHOW_SIGN_IN ||
+            layoutState == SHOW_SIGN_UP ||
+            layoutState == SHOW_USERNAME -> {
                 stopLoadingViews()
                 showSignInOptionsLayout(true)
             }
@@ -333,6 +351,7 @@ class SplashActivity4 : AppCompatActivity() {
     }
 
     private fun showUsernameLayout(animate: Boolean) {
+        layoutState = SHOW_USERNAME
         moveLogoUp(true)
 
         if (animate) {
@@ -365,6 +384,7 @@ class SplashActivity4 : AppCompatActivity() {
     }
 
     private fun showSignInOptionsLayout(animate: Boolean) {
+        layoutState = SHOW_OPTIONS
         moveLogoUp(animate)
 
         if (animate) {
@@ -397,6 +417,7 @@ class SplashActivity4 : AppCompatActivity() {
     }
 
     private fun showSignUpLayout(animate : Boolean) {
+        layoutState = SHOW_SIGN_UP
         moveLogoUp(true)
 
         if (animate) {
@@ -429,6 +450,7 @@ class SplashActivity4 : AppCompatActivity() {
     }
 
     private fun showSignInLayout(animate: Boolean) {
+        layoutState = SHOW_SIGN_IN
         moveLogoUp(animate)
 
         if (animate) {
@@ -531,7 +553,7 @@ class SplashActivity4 : AppCompatActivity() {
 
     private fun showErrorWithAction(titleRes: Int, messageRes: Int, negText: Int, onNegAction : () -> Any,
                                     onDismissed: () -> Any?) {
-        Flashbar.Builder(this)
+        errorFlashbar = Flashbar.Builder(this)
             .dismissOnTapOutside()
             .enableSwipeToDismiss()
             .title(titleRes)
@@ -550,6 +572,7 @@ class SplashActivity4 : AppCompatActivity() {
                 override fun onDismissed(bar: Flashbar, event: Flashbar.DismissEvent) {
                     bar.dismiss()
                     onDismissed()
+                    errorFlashbar = null
                 }
             })
             .negativeActionTapListener(object : Flashbar.OnActionTapListener {
@@ -559,7 +582,7 @@ class SplashActivity4 : AppCompatActivity() {
                 }
             })
             .build()
-            .show()
+        errorFlashbar?.show()
     }
 
     /**
@@ -567,7 +590,7 @@ class SplashActivity4 : AppCompatActivity() {
      * and runs [onDismissed] when [Flashbar] is dismissed.
      */
     private fun showError(titleRes : Int, messageRes : Int, onDismissed : () -> Any? ) {
-        Flashbar.Builder(this)
+        errorFlashbar = Flashbar.Builder(this)
             .dismissOnTapOutside()
             .enableSwipeToDismiss()
             .title(titleRes)
@@ -585,10 +608,11 @@ class SplashActivity4 : AppCompatActivity() {
 
                 override fun onDismissed(bar: Flashbar, event: Flashbar.DismissEvent) {
                     onDismissed()
+                    errorFlashbar = null
                 }
             })
             .build()
-            .show()
+        errorFlashbar?.show()
     }
 
     /**

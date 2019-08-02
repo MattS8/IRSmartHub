@@ -22,11 +22,11 @@ object AppState {
         val remotes          : ObservableArrayMap<String, RemoteProfile>         = ObservableArrayMap(),
         val remoteTemplates  : ObservableArrayMap<String, RemoteProfileTemplate> = ObservableArrayMap(),
         val irSignals        : ObservableArrayMap<String, IrSignal>              = ObservableArrayMap(),
-        var user             : User                                              = User()
+        val user             : User                                              = User()
     ) {
 
         fun removeData() {
-            user = User()
+            user.clear()
             groups.clear()
             remotes.clear()
             hubs.clear()

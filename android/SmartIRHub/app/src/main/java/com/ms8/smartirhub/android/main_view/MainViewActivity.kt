@@ -3,6 +3,7 @@ package com.ms8.smartirhub.android.main_view
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
@@ -33,6 +34,7 @@ import com.ms8.smartirhub.android.utils.extensions.findNavBarHeight
 import android.util.TypedValue
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
+import androidx.core.content.ContextCompat
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
@@ -203,6 +205,7 @@ class MainViewActivity : AppCompatActivity() {
     }
 
     private fun createMockData() {
+        AppState.tempData.tempRemoteProfile.inEditMode.set(true)
         AppState.tempData.tempRemoteProfile.buttons
             .apply {
                 for (i in 0 until 50) {
@@ -418,8 +421,36 @@ class MainViewActivity : AppCompatActivity() {
         when (state.navPosition) {
             // My Remotes
             FP_MY_REMOTES -> {
-                //binding.fab.labelText = getString(R.string.create_remote)
-                binding.fab.setOnClickListener { createRemote() }
+                when {
+                    state.viewPagerPosition == VP_FAV_REMOTE -> {
+                        if (AppState.userData.remotes.size == 0 && !AppState.tempData.tempRemoteProfile.inEditMode.get()) {
+                            // Creating first remote
+                            binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.white))
+                            binding.fab.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_new_remote_icon))
+                            binding.fab.setOnClickListener { createRemote() }
+                        } else {
+                            when (AppState.tempData.tempRemoteProfile.inEditMode.get()) {
+                            // Editing current remote
+                                true -> {
+                                    binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.md_green_200))
+                                    binding.fab.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_done_white_24dp))
+                                    binding.fab.setOnClickListener { saveRemoteEdits() }
+                                }
+                            // Not editing current remote
+                                false -> {
+                                    binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.white))
+                                    binding.fab.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_mode_edit_black_24dp))
+                                    binding.fab.setOnClickListener { editRemote() }
+                                }
+                            }
+                        }
+                    }
+                    state.viewPagerPosition == VP_ALL_REMOTES -> {
+                        binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.white))
+                        binding.fab.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_new_remote_icon))
+                        binding.fab.setOnClickListener { createRemote() }
+                    }
+                }
             }
             // My Devices
             FP_MY_DEVICES -> {
@@ -527,6 +558,16 @@ class MainViewActivity : AppCompatActivity() {
     OnClick Functions
 ----------------------------------------------
 */
+
+    private fun editRemote() {
+        AppState.tempData.tempRemoteProfile.inEditMode.set(true)
+    }
+
+    private fun saveRemoteEdits() {
+        AppState.tempData.tempRemoteProfile.inEditMode.set(false)
+        FirestoreActions.upateRemoteProfile()
+        setupFab()
+    }
 
     private val remoteTemplatesSheet = RemoteTemplatesSheet().apply {
        templateSheetCallback = object : RemoteTemplatesSheet.RemoteTemplateSheetCallback{

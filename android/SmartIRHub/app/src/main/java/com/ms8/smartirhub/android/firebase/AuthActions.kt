@@ -96,10 +96,7 @@ object AuthActions {
             val account = task.getResult(ApiException::class.java)
             val credential = GoogleAuthProvider.getCredential(account!!.idToken, null)
             FirebaseAuth.getInstance().signInWithCredential(credential)
-                .addOnSuccessListener {
-                    Log.d("TEST###", "Google sign in good. setting uid to ${FirebaseAuth.getInstance().currentUser!!.uid}")
-                    AppState.userData.user.uid.set(FirebaseAuth.getInstance().currentUser!!.uid)
-                }
+                .addOnSuccessListener { FirestoreActions.getUserFromUID() }
                 .addOnFailureListener { e -> AppState.errorData.userSignInError.set(e) }
 
         } catch (e : Exception) {
