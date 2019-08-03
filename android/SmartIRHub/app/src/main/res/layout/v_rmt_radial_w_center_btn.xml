@@ -12,7 +12,7 @@
         android:clickable="false"
 >
 
-    <com.ms8.smartirhub.android.remote_control.views.ButtonView
+    <com.ms8.smartirhub.android.remote_control.views.RemoteButton
             android:id="@+id/btnTop"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -27,7 +27,7 @@
             app:layout_constraintBottom_toTopOf="@+id/btnCenter"
             app:layout_constraintVertical_chainStyle="packed"/>
 
-    <com.ms8.smartirhub.android.remote_control.views.ButtonView
+    <com.ms8.smartirhub.android.remote_control.views.RemoteButton
             android:id="@+id/btnStart"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -42,7 +42,7 @@
             app:layout_constraintEnd_toStartOf="@+id/btnCenter"
             app:layout_constraintHorizontal_bias="0.5"/>
 
-    <com.ms8.smartirhub.android.remote_control.views.ButtonView
+    <com.ms8.smartirhub.android.remote_control.views.RemoteButton
             android:id="@+id/btnEnd"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -57,7 +57,7 @@
             app:layout_constraintBottom_toBottomOf="@id/bottomButtonCenter"
             app:layout_constraintHorizontal_bias="0.5"/>
 
-    <com.ms8.smartirhub.android.remote_control.views.ButtonView
+    <com.ms8.smartirhub.android.remote_control.views.RemoteButton
             android:id="@+id/btnBottom"
             app:layout_constraintStart_toStartOf="@+id/startButtonCenter"
             app:layout_constraintEnd_toEndOf="@id/endButtonCenter"
@@ -72,7 +72,7 @@
             android:background="@drawable/btn_bg_radial_bottom_ripple"
             app:layout_constraintHorizontal_bias="0.5"/>
 
-    <com.ms8.smartirhub.android.remote_control.views.ButtonView
+    <com.ms8.smartirhub.android.remote_control.views.RemoteButton
             android:id="@+id/btnCenter"
             android:layout_width="0dp"
             android:layout_height="0dp"

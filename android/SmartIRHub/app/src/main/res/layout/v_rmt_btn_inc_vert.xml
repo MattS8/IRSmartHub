@@ -11,7 +11,7 @@
         android:minHeight="42dp"
         android:clickable="false"
 >
-    <com.ms8.smartirhub.android.remote_control.views.ButtonView
+    <com.ms8.smartirhub.android.remote_control.views.RemoteButton
             android:id="@+id/btnTop"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -38,7 +38,7 @@
             android:layout_height="wrap_content" app:layout_constraintTop_toBottomOf="@+id/btnTop"
             app:layout_constraintHorizontal_bias="0.5" app:layout_constraintBottom_toTopOf="@+id/btnBottom"/>
 
-    <com.ms8.smartirhub.android.remote_control.views.ButtonView
+    <com.ms8.smartirhub.android.remote_control.views.RemoteButton
             android:id="@+id/btnBottom"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

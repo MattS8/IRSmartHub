@@ -11,8 +11,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
+import android.widget.Button
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.TextViewCompat
+import androidx.databinding.Observable
 import androidx.databinding.ObservableList
 import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
@@ -28,11 +31,11 @@ import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Com
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_RADIAL
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_RADIAL_W_CENTER
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_SINGLE_ACTION
-import com.ms8.smartirhub.android.remote_control.views.ButtonView
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_CREATE_BUTTON
+import com.ms8.smartirhub.android.remote_control.views.RemoteButton
 
 class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerView(context, attrs) {
 
-    private var lastTopChild = 0
     var topPadding = Utils.dpToPx(context, 56f)
 
     private var isListening : Boolean = false
@@ -43,24 +46,25 @@ class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerVie
 
         override fun onItemRangeRemoved(sender: ObservableList<RemoteProfile.Button>?, positionStart: Int, itemCount: Int) {
             adapter?.notifyItemRangeRemoved(positionStart, itemCount)
-            findLastTopChild()
         }
 
         override fun onItemRangeMoved(sender: ObservableList<RemoteProfile.Button>?, fromPosition: Int, toPosition: Int, itemCount: Int) {
             adapter?.notifyDataSetChanged()
-            findLastTopChild()
         }
 
         override fun onItemRangeInserted(sender: ObservableList<RemoteProfile.Button>?, positionStart: Int, itemCount: Int) {
             adapter?.notifyItemRangeInserted(positionStart, itemCount)
-            findLastTopChild()
         }
 
         override fun onItemRangeChanged(sender: ObservableList<RemoteProfile.Button>?, positionStart: Int, itemCount: Int) {
             adapter?.notifyItemRangeChanged(positionStart, itemCount)
-            findLastTopChild()
         }
     }
+    private val editModeListener  =  object : Observable.OnPropertyChangedCallback() {
+        override fun onPropertyChanged(sender: Observable?, propertyId: Int) { remoteLayoutAdapter.notifyDataSetChanged() }
+    }
+    private val remoteLayoutAdapter = RemoteLayoutAdapter()
+
 
     init {
         setRequestedColumnCount(4)
@@ -77,57 +81,62 @@ class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerVie
         clipToOutline = true
     }
 
-    fun findLastTopChild() {
-
-        var spanTotal = 0
-        var inspectingPos = 0
-        do {
-            spanTotal += AppState.tempData.tempRemoteProfile.buttons[inspectingPos++].columnSpan
-        } while (spanTotal <  numColumns && inspectingPos < AppState.tempData.tempRemoteProfile.buttons.size)
-        lastTopChild = inspectingPos
-        Log.d("TEST##", "Finding lastTopChild... $lastTopChild")
-    }
-
     fun setupAdapter() {
-        Log.d("TEST###", "Setting up adapter!@!!")
-        adapter = AsymmetricRecyclerViewAdapter(context, this, RemoteLayoutAdapter())
+        adapter = AsymmetricRecyclerViewAdapter(context, this, remoteLayoutAdapter)
     }
 
     fun startListening() {
         if (!isListening) {
             isListening = true
             AppState.tempData.tempRemoteProfile.buttons.addOnListChangedCallback(buttonListener)
-
-            // update last child on top row if TempRemoteProfile already has some buttons
-            if (AppState.tempData.tempRemoteProfile.buttons.size > 0)
-                findLastTopChild()
+            AppState.tempData.tempRemoteProfile.inEditMode.addOnPropertyChangedCallback(editModeListener)
         }
     }
 
     fun stopListening() {
         AppState.tempData.tempRemoteProfile.buttons.removeOnListChangedCallback(buttonListener)
+        AppState.tempData.tempRemoteProfile.inEditMode.removeOnPropertyChangedCallback(editModeListener)
     }
 
     class RemoteLayoutAdapter: AGVRecyclerViewAdapter<ButtonViewHolder>() {
 
         override fun getItem(position: Int): AsymmetricItem {
-            val b = AppState.tempData.tempRemoteProfile.buttons[position]
-            return DemoItem(
-                b.columnSpan,
-                b.rowSpan,
-                position
-            )
+            return when {
+            // get normal item
+                position < AppState.tempData.tempRemoteProfile.buttons.size -> {
+                    val b = AppState.tempData.tempRemoteProfile.buttons[position]
+                    DemoItem(
+                        b.columnSpan,
+                        b.rowSpan,
+                        position)
+                }
+            // get 'Add Button' item
+                 else -> {
+                     DemoItem(2, 1, position)
+                 }
+            }
         }
 
-        override fun getItemViewType(position: Int)
-                =  AppState.tempData.tempRemoteProfile.buttons[position].style
+        override fun getItemViewType(position: Int) : Int {
+            return when {
+                // get button view type
+                position < AppState.tempData.tempRemoteProfile.buttons.size -> {
+                    AppState.tempData.tempRemoteProfile.buttons[position].style
+                }
+                else -> {
+                // get 'Add Button' view type
+                    RemoteProfile.Button.STYLE_CREATE_BUTTON
+                }
+            }
+        }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ButtonViewHolder {
             return ButtonViewHolder(parent, viewType)
         }
 
-        override fun getItemCount() =
-            AppState.tempData.tempRemoteProfile.buttons.size
+        override fun getItemCount() : Int {
+            return AppState.tempData.tempRemoteProfile.buttons.size + if (AppState.tempData.tempRemoteProfile.inEditMode.get()) 1 else 0
+        }
 
         override fun onBindViewHolder(holder: ButtonViewHolder, position: Int) {
             holder.bind(position)
@@ -142,6 +151,7 @@ class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerVie
             STYLE_BTN_INCREMENTER_VERTICAL -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_inc_vert, parent, false)
             STYLE_BTN_RADIAL_W_CENTER -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_radial_w_center_btn, parent, false)
             STYLE_BTN_RADIAL -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_radial_w_center_btn, parent, false)
+            STYLE_CREATE_BUTTON -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_create_new, parent, false)
 
             else -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false)
         }
@@ -149,24 +159,36 @@ class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerVie
         var button: RemoteProfile.Button? = null
 
         fun bind(position: Int) {
-            button = AppState.tempData.tempRemoteProfile.buttons[position]
-            button?.let { b ->
-                when (b.style) {
-                    STYLE_BTN_SINGLE_ACTION -> bindSingleActionButton(b)
-                    STYLE_BTN_INCREMENTER_VERTICAL -> bindIncrementerButton(b)
-                    STYLE_BTN_RADIAL_W_CENTER -> bindRadialButton(b, true)
-                    STYLE_BTN_RADIAL -> bindRadialButton(b, false)
-                    else -> bindSingleActionButton(b)
+            if (position >= AppState.tempData.tempRemoteProfile.buttons.size) {
+                bindCreateNewButton()
+            } else {
+                button = AppState.tempData.tempRemoteProfile.buttons[position]
+                button?.let { b ->
+                    when (b.style) {
+                        STYLE_BTN_SINGLE_ACTION -> bindSingleActionButton(b)
+                        STYLE_BTN_INCREMENTER_VERTICAL -> bindIncrementerButton(b)
+                        STYLE_BTN_RADIAL_W_CENTER -> bindRadialButton(b, true)
+                        STYLE_BTN_RADIAL -> bindRadialButton(b, false)
+                        else -> bindSingleActionButton(b)
+                    }
                 }
             }
         }
 
+        private fun bindCreateNewButton() {
+            val createButtonView = itemView.findViewById<ConstraintLayout>(R.id.btnRmtCreateNew)
+            createButtonView.setOnClickListener {
+                if (!AppState.tempData.tempRemoteProfile.isCreatingNewButton.get())
+                    AppState.tempData.tempRemoteProfile.isCreatingNewButton.set(true)
+            }
+        }
+
         private fun bindRadialButton(button: RemoteProfile.Button, withCenterButton: Boolean) {
-            val topButtonView = itemView.findViewById<ButtonView>(R.id.btnTop)
-            val bottomButtonView = itemView.findViewById<ButtonView>(R.id.btnBottom)
-            val startButtonView = itemView.findViewById<ButtonView>(R.id.btnStart)
-            val endButtonView = itemView.findViewById<ButtonView>(R.id.btnEnd)
-            val centerButtonView = itemView.findViewById<ButtonView>(R.id.btnCenter)
+            val topButtonView = itemView.findViewById<RemoteButton>(R.id.btnTop)
+            val bottomButtonView = itemView.findViewById<RemoteButton>(R.id.btnBottom)
+            val startButtonView = itemView.findViewById<RemoteButton>(R.id.btnStart)
+            val endButtonView = itemView.findViewById<RemoteButton>(R.id.btnEnd)
+            val centerButtonView = itemView.findViewById<RemoteButton>(R.id.btnCenter)
 
             // set top button properties
             topButtonView.properties = button.properties[0]
@@ -212,8 +234,8 @@ class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerVie
         }
 
         private fun bindIncrementerButton(button: RemoteProfile.Button) {
-            val topButtonView = itemView.findViewById<ButtonView>(R.id.btnTop)
-            val bottomButtonView = itemView.findViewById<ButtonView>(R.id.btnBottom)
+            val topButtonView = itemView.findViewById<RemoteButton>(R.id.btnTop)
+            val bottomButtonView = itemView.findViewById<RemoteButton>(R.id.btnBottom)
             val buttonText = itemView.findViewById<TextView>(R.id.txtButtonName)
 
             // set top button properties
@@ -231,7 +253,7 @@ class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerVie
         }
 
         private fun bindSingleActionButton(button: RemoteProfile.Button) {
-            val buttonView = itemView.findViewById<ButtonView>(R.id.btnBackground)
+            val buttonView = itemView.findViewById<RemoteButton>(R.id.btnBackground)
 
             // set button properties
             buttonView.properties = button.properties[0]
@@ -293,7 +315,7 @@ class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerVie
         }
     }
 
-    inner class TopSpaceDecoration() : RecyclerView.ItemDecoration() {
+    inner class TopSpaceDecoration : RecyclerView.ItemDecoration() {
 
         override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: State) {
             super.getItemOffsets(outRect, view, parent, state)

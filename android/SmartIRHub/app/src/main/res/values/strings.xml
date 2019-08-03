@@ -240,4 +240,7 @@
     <string name="select">Select</string>
     <string name="err_unknown_desc">Something went wrong. Please try again.</string>
     <string name="new_remote">New Remote</string>
+    <string name="new_remote_prompt">Create a new remote by tapping the</string>
+    <string name="icon_period">icon.</string>
+    <string name="all_remotes">All Remotes</string>
 </resources>

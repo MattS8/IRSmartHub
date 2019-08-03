@@ -723,7 +723,7 @@ object FirestoreActions {
         return FirebaseFirestore.getInstance().collection("remotes").add(remote.toFirebaseObject())
     }
 
-    fun upateRemoteProfile() {
+    fun updateRemoteProfile() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 

@@ -2,32 +2,74 @@ package com.ms8.smartirhub.android.custom_views
 
 import android.content.Context
 import android.graphics.Point
+import android.graphics.drawable.Drawable
+import android.text.Editable
+import android.text.TextWatcher
+import android.text.method.KeyListener
 import android.util.AttributeSet
+import android.view.KeyEvent
 import android.view.WindowManager
+import android.view.inputmethod.EditorInfo
+import android.widget.EditText
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
 import com.ms8.smartirhub.android.R
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.utils.TypefaceCache
-import java.lang.Exception
+import com.ms8.smartirhub.android.utils.extensions.hideKeyboard
+import org.jetbrains.anko.singleLine
+import org.jetbrains.anko.textColor
 
 
 class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.appcompat.widget.Toolbar(context, attrs) {
 
     private var _screenWidth: Int
-    private var _titleTextView: TextView
+    private lateinit var _titleTextView: EditText
     private val location = IntArray(2)
     private var titleStr: String = ""
+    private var _titleTextViewBG: Drawable
     var centerTitle = true
     set(value) {
         field = value
         requestLayout()
     }
 
+    private val titleTextWatcher = object : TextWatcher {
+        override fun afterTextChanged(p0: Editable?) {}
+
+        override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+
+        override fun onTextChanged(newText: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            newText?.let {
+                AppState.tempData.tempRemoteProfile.name = it.toString()
+            }
+        }
+    }
+    private val titleEditorAction = TextView.OnEditorActionListener { tv, actionId, keyEvent ->
+        if (actionId == EditorInfo.IME_ACTION_SEARCH
+            || actionId == EditorInfo.IME_ACTION_DONE
+            || keyEvent.action == KeyEvent.ACTION_DOWN
+            && keyEvent.keyCode == KeyEvent.KEYCODE_ENTER) {
+            _titleTextView.clearFocus()
+            hideKeyboard()
+            true
+        } else {
+            false
+        }
+    }
+
     init {
         _screenWidth = getScreenSize().x
 
-        _titleTextView = TextView(context)
-        _titleTextView.text = titleStr
+        _titleTextView = EditText(context)
+        _titleTextView.textColor = ContextCompat.getColor(context, R.color.white)
+        _titleTextView.maxLines = 1
+        _titleTextView.singleLine = true
+        _titleTextView.setText(titleStr)
+        _titleTextView.setOnEditorActionListener(titleEditorAction)
+        _titleTextViewBG = _titleTextView.background
+        makeTitleEditable(false)
         TypefaceCache.get("font/roboto_light.ttf", context)?.let { _titleTextView.typeface = it }
         TextViewCompat.setTextAppearance(_titleTextView, R.style.AppTheme_TextAppearance_ToolbarTitle)
         addView(_titleTextView)
@@ -55,7 +97,7 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
     override fun setTitle(title : CharSequence) {
         titleStr = title.toString()
         _titleTextView?.let { tv ->
-            tv.text = title
+            tv.setText(title)
             requestLayout()
         }
     }
@@ -67,4 +109,24 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
         return screenSize
     }
 
+    fun makeTitleEditable(isEditable : Boolean = true) {
+        when (isEditable) {
+            true -> {
+                _titleTextView.setTextIsSelectable(true)
+                _titleTextView.isEnabled = true
+                _titleTextView.isFocusable = true
+                _titleTextView.background = _titleTextViewBG
+                _titleTextView.addTextChangedListener(titleTextWatcher)
+            }
+            false -> {
+                _titleTextView.setTextIsSelectable(false)
+                _titleTextView.isEnabled = false
+                _titleTextView.isFocusable = false
+                _titleTextView.background = null
+                _titleTextView.removeTextChangedListener(titleTextWatcher)
+                _titleTextView.textColor = ContextCompat.getColor(context, R.color.white)
+            }
+        }
+
+    }
 }

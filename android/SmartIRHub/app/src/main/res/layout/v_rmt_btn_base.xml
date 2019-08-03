@@ -10,7 +10,7 @@
         android:minWidth="42dp"
         android:minHeight="42dp"
 >
-    <com.ms8.smartirhub.android.remote_control.views.ButtonView
+    <com.ms8.smartirhub.android.remote_control.views.RemoteButton
             android:id="@+id/btnBackground"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -40,6 +40,6 @@
                 <!--android:layout_height="match_parent"-->
                 <!--android:textColor="@color/white"-->
         <!--/>-->
-    </com.ms8.smartirhub.android.remote_control.views.ButtonView>
+    </com.ms8.smartirhub.android.remote_control.views.RemoteButton>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

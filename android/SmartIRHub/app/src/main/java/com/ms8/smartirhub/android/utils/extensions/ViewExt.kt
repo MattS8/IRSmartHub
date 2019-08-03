@@ -6,6 +6,11 @@ import android.view.View
 import android.view.ViewAnimationUtils
 import androidx.core.view.ViewCompat
 import androidx.core.view.doOnNextLayout
+import android.app.Activity
+import android.view.inputmethod.InputMethodManager
+import androidx.core.content.ContextCompat.getSystemService
+
+
 
 /**
  * Computes a [Rect] defining the location of this [View] in terms of screen coordinates
@@ -42,4 +47,12 @@ fun View.screenBounds(action: (Rect) -> Unit) {
  */
 fun View.createCircularReveal(centerX: Int, centerY: Int, startRadius: Float, endRadius: Float): Animator {
     return ViewAnimationUtils.createCircularReveal(this, centerX, centerY, startRadius, endRadius)
+}
+
+/**
+ * Hides the keyboard from the given view.
+ */
+fun View.hideKeyboard() {
+    val imm = context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+    imm.hideSoftInputFromWindow(windowToken, 0)
 }

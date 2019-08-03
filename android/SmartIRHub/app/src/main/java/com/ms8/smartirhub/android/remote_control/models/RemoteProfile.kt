@@ -27,6 +27,8 @@ class RemoteProfile: Observable {
 
     @get:Exclude
     var inEditMode          : ObservableBoolean                                 = ObservableBoolean().apply { set(false) }
+    @get:Exclude
+    var isCreatingNewButton : ObservableBoolean                                 = ObservableBoolean().apply { set(false) }
 
     private val callbacks   : ArrayList<Observable.OnPropertyChangedCallback>   = ArrayList()
 

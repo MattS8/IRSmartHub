@@ -3,7 +3,6 @@ package com.ms8.smartirhub.android.main_view
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.content.res.ColorStateList
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
@@ -83,27 +82,6 @@ class MainViewActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
         outState.putParcelable(STATE, state.apply { adapterBaseID = pagerAdapter.getBaseItemId() })
     }
-
-//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-//        Log.d("TEST", "Selected item ID = ${item.itemId}" +
-//                "\n\tR.id.navigation_remote = ${R.id.navigation_main_remote}" +
-//                "\n\tR.id.navigation_commands = ${R.id.navigation_commands}" +
-//                "\n\tR.id.navigation_devices = ${R.id.navigation_devices}")
-//
-//        // Update state
-//        state.navPosition = item.itemId
-//
-//        // Reset viewpager position
-//        state.viewPagerPosition = 0
-//
-//        // Update FAB based on selected item
-//        setupFab()
-//
-//        // Show proper views based on selected item
-//        setupInnerView()
-//
-//        return true
-//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -201,131 +179,7 @@ class MainViewActivity : AppCompatActivity() {
             FP_MY_REMOTES -> onMyRemotesClicked(true)
         }
 
-        createMockData()
-    }
-
-    private fun createMockData() {
-        AppState.tempData.tempRemoteProfile.inEditMode.set(true)
-        AppState.tempData.tempRemoteProfile.buttons
-            .apply {
-                for (i in 0 until 50) {
-                    add(
-                        RemoteProfile.Button()
-                            .apply {
-                                name = "B $i"
-                                when (i) {
-                                    0,1  -> {
-                                        columnSpan = 2
-                                    }
-                                    2 -> {
-                                        rowSpan = 2
-                                        style = RemoteProfile.Button.STYLE_BTN_INCREMENTER_VERTICAL
-                                        properties[0].bgStyle = RemoteProfile.Button.Properties.BgStyle.BG_ROUND_RECT_TOP
-                                        properties[0].marginTop = 16
-                                        properties[0].marginStart = 16
-                                        properties[0].marginEnd = 16
-                                        properties[0].marginBottom = 0
-                                        properties[0].image = RemoteProfile.Button.IMG_ADD
-
-                                        properties.add(
-                                            RemoteProfile.Button.Properties()
-                                                .apply {
-                                                    bgStyle = RemoteProfile.Button.Properties.BgStyle.BG_ROUND_RECT_BOTTOM
-                                                    marginTop = 0
-                                                    marginStart = 16
-                                                    marginBottom = 16
-                                                    marginEnd = 16
-                                                    image = RemoteProfile.Button.IMG_SUBTRACT
-                                                })
-
-                                        name = "VOL"
-                                    }
-                                    4 -> {
-                                        rowSpan = 2
-                                        style = RemoteProfile.Button.STYLE_BTN_INCREMENTER_VERTICAL
-                                        properties[0].bgStyle = RemoteProfile.Button.Properties.BgStyle.BG_ROUND_RECT_TOP
-                                        properties[0].marginTop = 16
-                                        properties[0].marginStart = 16
-                                        properties[0].marginEnd = 16
-                                        properties[0].marginBottom = 0
-                                        properties[0].image = RemoteProfile.Button.IMG_ADD
-
-                                        properties.add(
-                                            RemoteProfile.Button.Properties()
-                                                .apply {
-                                                    bgStyle = RemoteProfile.Button.Properties.BgStyle.BG_ROUND_RECT_BOTTOM
-                                                    marginTop = 0
-                                                    marginStart = 16
-                                                    marginBottom = 16
-                                                    marginEnd = 16
-                                                    image = RemoteProfile.Button.IMG_SUBTRACT
-                                                })
-
-                                        name = "CH"
-                                    }
-                                    3 -> {
-                                        rowSpan = 2
-                                        columnSpan = 2
-                                        style = RemoteProfile.Button.STYLE_BTN_RADIAL_W_CENTER
-
-                                        // add topButton Properties
-                                        properties[0].bgStyle = RemoteProfile.Button.Properties.BgStyle.BG_NONE
-                                        properties[0].marginTop = 16
-                                        properties[0].marginStart = 0
-                                        properties[0].marginEnd = 0
-                                        properties[0].marginBottom = 0
-                                        properties[0].image = RemoteProfile.Button.IMG_RADIAL_UP
-
-                                        // add endButton Properties
-                                        properties.add(
-                                            RemoteProfile.Button.Properties()
-                                                .apply {
-                                                    bgStyle = RemoteProfile.Button.Properties.BgStyle.BG_NONE
-                                                    marginTop = 0
-                                                    marginStart = 0
-                                                    marginEnd = 16
-                                                    marginBottom = 0
-                                                    image = RemoteProfile.Button.IMG_RADIAL_RIGHT
-                                                })
-                                        // add bottomButton Properties
-                                        properties.add(
-                                            RemoteProfile.Button.Properties()
-                                                .apply {
-                                                    bgStyle = RemoteProfile.Button.Properties.BgStyle.BG_NONE
-                                                    marginTop = 0
-                                                    marginStart = 0
-                                                    marginEnd = 0
-                                                    marginBottom = 16
-                                                    image = RemoteProfile.Button.IMG_RADIAL_DOWN
-                                                })
-                                        // add startButton Properties
-                                        properties.add(
-                                            RemoteProfile.Button.Properties()
-                                                .apply {
-                                                    bgStyle = RemoteProfile.Button.Properties.BgStyle.BG_NONE
-                                                    marginTop = 0
-                                                    marginStart = 16
-                                                    marginEnd = 0
-                                                    marginBottom = 0
-                                                    image = RemoteProfile.Button.IMG_RADIAL_LEFT
-                                                })
-                                        // add centerButton Properties
-                                        properties.add(
-                                            RemoteProfile.Button.Properties()
-                                                .apply {
-                                                    bgStyle = RemoteProfile.Button.Properties.BgStyle.BG_CIRCLE
-                                                    marginTop = 0
-                                                    marginStart = 0
-                                                    marginEnd = 0
-                                                    marginBottom = 0
-                                                })
-
-                                        name = "OK"
-                                    }
-                                }
-                            })
-                }
-            }
+        //createMockData()
     }
 
     override fun onPause() {
@@ -354,15 +208,7 @@ class MainViewActivity : AppCompatActivity() {
         state.navPosition = FP_MY_REMOTES
 
         // set toolbar title
-        when (state.viewPagerPosition) {
-            VP_FAV_REMOTE -> {
-                val title = if (AppState.tempData.tempRemoteProfile.name == "") getString(R.string.new_remote) else AppState.tempData.tempRemoteProfile.name
-                binding.toolbar.title = title
-            }
-            VP_ALL_REMOTES -> {
-                binding.toolbar.title = getString(R.string.title_remotes)
-            }
-        }
+        setupToolbar()
 
         // set nav buttons selected
         binding.btnMyRemotes.isSelected = true
@@ -370,6 +216,7 @@ class MainViewActivity : AppCompatActivity() {
 
         // set fab label and function
         setupFab()
+
 
         // update pagerAdapter and viewPager
         pagerAdapter.setNavPosition(state.navPosition)
@@ -385,14 +232,7 @@ class MainViewActivity : AppCompatActivity() {
         state.navPosition = FP_MY_DEVICES
 
         // set toolbar title
-        when (state.viewPagerPosition) {
-            VP_DEVICES -> {
-                binding.toolbar.title = getString(R.string.title_my_devices)
-            }
-            VP_IRSMART_DEVICES -> {
-                binding.toolbar.title = getString(R.string.title_my_ir_hubs)
-            }
-        }
+        setupToolbar()
 
         // set nav buttons selected
         binding.btnMyRemotes.isSelected = false
@@ -414,6 +254,67 @@ class MainViewActivity : AppCompatActivity() {
         override fun onPageSelected(position: Int) {
             state.viewPagerPosition = position
             setupFab()
+            setupToolbar()
+            showUiElements()
+        }
+    }
+
+    @SuppressLint("LogNotTimber")
+    private fun setupToolbar() {
+        when (state.navPosition) {
+        // 'My Remotes' page is currently shown
+            FP_MY_REMOTES -> {
+                when (state.viewPagerPosition) {
+                    VP_FAV_REMOTE -> {
+                        // todo set large margins
+
+                        if (AppState.tempData.tempRemoteProfile.inEditMode.get()) {
+                            // make title editable
+                            binding.toolbar.makeTitleEditable()
+                        } else {
+                            // make title not editable
+                            binding.toolbar.makeTitleEditable(false)
+                        }
+
+                        // set title text
+                        binding.toolbar.title = if (AppState.tempData.tempRemoteProfile.name == "")
+                            getString(R.string.new_remote)
+                        else
+                            AppState.tempData.tempRemoteProfile.name
+                    }
+                    VP_ALL_REMOTES -> {
+                        // todo set small margins
+
+                        // make title not editable
+                        binding.toolbar.makeTitleEditable(false)
+
+                        // set title text
+                        binding.toolbar.title = getString(R.string.all_remotes)
+                    }
+                    else -> {
+                        Log.e("setupToolbar", "unknown viewpager state: ${state.viewPagerPosition}")
+                    }
+                }
+            }
+        // 'My Devices' page is currently show
+            FP_MY_DEVICES -> {
+                binding.toolbar.makeTitleEditable(false)
+                when (state.viewPagerPosition) {
+                    VP_DEVICES -> {
+                        binding.toolbar.title = getString(R.string.title_my_devices)
+                    }
+                    VP_IRSMART_DEVICES -> {
+                        binding.toolbar.title = getString(R.string.title_my_ir_hubs)
+                    }
+                    else -> {
+                        Log.e("setupToolbar", "unknown viewpager state: ${state.viewPagerPosition}")
+                    }
+                }
+            }
+        // Unknown nav position
+            else -> {
+                Log.e("setupToolbar", "unknown nav position: ${state.navPosition}")
+            }
         }
     }
 
@@ -425,20 +326,17 @@ class MainViewActivity : AppCompatActivity() {
                     state.viewPagerPosition == VP_FAV_REMOTE -> {
                         if (AppState.userData.remotes.size == 0 && !AppState.tempData.tempRemoteProfile.inEditMode.get()) {
                             // Creating first remote
-                            binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.white))
                             binding.fab.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_new_remote_icon))
                             binding.fab.setOnClickListener { createRemote() }
                         } else {
                             when (AppState.tempData.tempRemoteProfile.inEditMode.get()) {
                             // Editing current remote
                                 true -> {
-                                    binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.md_green_200))
-                                    binding.fab.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_done_white_24dp))
+                                    binding.fab.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_done_green_24dp))
                                     binding.fab.setOnClickListener { saveRemoteEdits() }
                                 }
                             // Not editing current remote
                                 false -> {
-                                    binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.white))
                                     binding.fab.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_mode_edit_black_24dp))
                                     binding.fab.setOnClickListener { editRemote() }
                                 }
@@ -446,7 +344,6 @@ class MainViewActivity : AppCompatActivity() {
                         }
                     }
                     state.viewPagerPosition == VP_ALL_REMOTES -> {
-                        binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.white))
                         binding.fab.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_new_remote_icon))
                         binding.fab.setOnClickListener { createRemote() }
                     }
@@ -560,12 +457,17 @@ class MainViewActivity : AppCompatActivity() {
 */
 
     private fun editRemote() {
+        Log.d("TEST", "EditRemote")
         AppState.tempData.tempRemoteProfile.inEditMode.set(true)
+        setupToolbar()
+        setupFab()
     }
 
     private fun saveRemoteEdits() {
         AppState.tempData.tempRemoteProfile.inEditMode.set(false)
-        FirestoreActions.upateRemoteProfile()
+        //TODO Re-enable
+        //FirestoreActions.updateRemoteProfile()
+        setupToolbar()
         setupFab()
     }
 
@@ -578,14 +480,17 @@ class MainViewActivity : AppCompatActivity() {
                 AppState.tempData.tempRemoteProfile.inEditMode.set(true)
                 state.viewPagerPosition = VP_FAV_REMOTE
                 onMyRemotesClicked()
-
             }
         }
     }
 
     private fun createRemote() {
-        FirestoreActions.getRemoteTemplates()
-        remoteTemplatesSheet.show(supportFragmentManager, "RemoteTemplateSheet")
+        //TODO TEMP
+        AppState.tempData.tempRemoteProfile.name = getString(R.string.new_remote)
+        editRemote()
+        //TODO TEMP
+//        FirestoreActions.getRemoteTemplates()
+//        remoteTemplatesSheet.show(supportFragmentManager, "RemoteTemplateSheet")
     }
 
     private fun createCommand() {

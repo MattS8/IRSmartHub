@@ -34,7 +34,7 @@ import com.wajahatkarim3.easyvalidation.core.view_ktx.validUrl
 import org.jetbrains.anko.backgroundResource
 import java.lang.Exception
 
-class ButtonView(context: Context, attrs: AttributeSet) : FrameLayout(context, attrs) {
+class RemoteButton(context: Context, attrs: AttributeSet) : FrameLayout(context, attrs) {
     private var buttonTextView  : TextView?     = null
     private var buttonImageView : ImageView?    = null
 
