@@ -77,6 +77,15 @@ class RemoteProfile: Observable {
             }
     }
 
+    fun copyFrom(remoteProfile: RemoteProfile?) {
+        remoteProfile?.let {
+            uid = it.uid
+            name = it.name
+            buttons.clear()
+            buttons.addAll(it.buttons)
+        }
+    }
+
     @Suppress("UNCHECKED_CAST")
     companion object {
         @SuppressLint("LogNotTimber")

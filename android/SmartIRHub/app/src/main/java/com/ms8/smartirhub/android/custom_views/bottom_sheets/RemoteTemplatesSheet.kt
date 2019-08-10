@@ -125,8 +125,9 @@ class RemoteTemplatesSheet : SuperBottomSheetFragment() {
             // If the remote was loaded during activity reload, we're done!
             if (AppState.userData.remotes.containsKey(awaitingRemoteUID)) {
                 hideLoadingView()
-                try { AppState.tempData.tempRemoteProfile = AppState.userData.remotes[awaitingRemoteUID]!! }
-                catch (e : Exception) { Log.e("RemoteTemplateSheet", "$e") }
+//                try { AppState.tempData.tempRemoteProfile = AppState.userData.remotes[awaitingRemoteUID]!! }
+//                catch (e : Exception) { Log.e("RemoteTemplateSheet", "$e") }
+                AppState.tempData.tempRemoteProfile.copyFrom(AppState.userData.remotes[awaitingRemoteUID])
                 awaitingRemoteUID = ""
                 dismiss()
             // Otherwise, add the listener back and wait for a change
@@ -154,7 +155,7 @@ class RemoteTemplatesSheet : SuperBottomSheetFragment() {
 
         // Start from scratch button
         binding!!.btnPos.setOnClickListener {
-            AppState.tempData.tempRemoteProfile = RemoteProfile()
+            AppState.resetTempRemote()
             awaitingRemoteUID = ""
             templateSheetCallback?.onTemplateSelected("")
             dismiss()

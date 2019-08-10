@@ -77,14 +77,9 @@ object FirestoreActions {
                                 ADDED, MODIFIED -> {
                                     if (docChange.document.id != TEST_REMOTE_PROFILE_TEMPLATE) {
                                         try {
-                                            val template =
-                                                RemoteProfileTemplate()
-                                            template.name = docChange.document["name"] as String
+                                            val template = RemoteProfileTemplate.fromSnapshot(docChange.document)
+                                            AppState.userData.remoteTemplates[template.uid] = template
                                             Log.d("TEST", "adding template ${template.name}")
-                                            template.remoteProfile = docChange.document["remoteProfile"] as String
-                                            template.previewURL = docChange.document["previewURL"] as String
-                                            template.uid = docChange.document.id
-                                            AppState.userData.remoteTemplates[docChange.document.id] = template
                                         } catch (ex : Exception) { Log.e("GetRemoteTemplates", "$ex") }
                                     }
                                 }

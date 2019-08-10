@@ -4,7 +4,6 @@
                                                        android:layout_height="match_parent"
                                                        android:minHeight="350dp"
                                                        android:id="@+id/bottomSheetContainer"
-                                                       app:superBottomSheet_alwaysExpanded="true"
                                                        android:background="@color/colorCardDark"
     >
 

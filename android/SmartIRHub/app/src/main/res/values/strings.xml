@@ -243,4 +243,8 @@
     <string name="new_remote_prompt">Create a new remote by tapping the</string>
     <string name="icon_period">icon.</string>
     <string name="all_remotes">All Remotes</string>
+    <string name="create_from">Create from</string>
+    <string name="device_template">Device Template</string>
+    <string name="existing_remote">Existing Remote</string>
+    <string name="blank_layout">Black Layout</string>
 </resources>

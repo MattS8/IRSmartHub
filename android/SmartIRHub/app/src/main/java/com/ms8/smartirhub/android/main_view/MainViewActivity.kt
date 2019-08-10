@@ -3,9 +3,14 @@ package com.ms8.smartirhub.android.main_view
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
+import android.inputmethodservice.InputMethodService
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
@@ -33,9 +38,12 @@ import com.ms8.smartirhub.android.utils.extensions.findNavBarHeight
 import android.util.TypedValue
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
+import android.view.inputmethod.InputMethodManager
 import androidx.core.content.ContextCompat
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.database.AppState
+import com.ms8.smartirhub.android.databinding.VCreateRemoteFromBinding
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
 
 
@@ -47,6 +55,9 @@ class MainViewActivity : AppCompatActivity() {
 
     private val remoteFragment = RemoteFragment()
     private val exitWarningSheet = BackWarningSheet()
+
+    private var createRemoteFromBinding : VCreateRemoteFromBinding? = null
+    private var createRemoteDialog : BottomSheetDialog? = null
 
 /*
 -----------------------------------------------
@@ -70,7 +81,7 @@ class MainViewActivity : AppCompatActivity() {
     override fun onBackPressed() {
         when {
         // check remoteTemplateSheet state
-            remoteTemplatesSheet.onBackPressed() -> {}
+            //remoteTemplatesSheet.onBackPressed() -> {}
         // show exit warning before leaving
             !exitWarningSheet.isVisible -> { exitWarningSheet.show(supportFragmentManager, "ExitWarningSheet") }
         // proceed with normal onBackPressed
@@ -110,6 +121,7 @@ class MainViewActivity : AppCompatActivity() {
                     .withName(AppState.userData.user.username.get())
                     .withEmail(FirebaseAuth.getInstance().currentUser?.email)
             )
+            .withCompactStyle(true)
             .build()
 
         // Account for nav/status bar height
@@ -179,6 +191,11 @@ class MainViewActivity : AppCompatActivity() {
             FP_MY_REMOTES -> onMyRemotesClicked(true)
         }
 
+        // check if was showing bottom sheets
+        when {
+            state.isShowingCreateRemoteFromView -> createRemote(true)
+        }
+
         //createMockData()
     }
 
@@ -216,7 +233,6 @@ class MainViewActivity : AppCompatActivity() {
 
         // set fab label and function
         setupFab()
-
 
         // update pagerAdapter and viewPager
         pagerAdapter.setNavPosition(state.navPosition)
@@ -276,11 +292,13 @@ class MainViewActivity : AppCompatActivity() {
                             binding.toolbar.makeTitleEditable(false)
                         }
 
+                        Log.d("Toolbar", "tempRemoteProfile.name = ${AppState.tempData.tempRemoteProfile.name}")
                         // set title text
                         binding.toolbar.title = if (AppState.tempData.tempRemoteProfile.name == "")
                             getString(R.string.new_remote)
-                        else
+                        else {
                             AppState.tempData.tempRemoteProfile.name
+                        }
                     }
                     VP_ALL_REMOTES -> {
                         // todo set small margins
@@ -327,17 +345,20 @@ class MainViewActivity : AppCompatActivity() {
                         if (AppState.userData.remotes.size == 0 && !AppState.tempData.tempRemoteProfile.inEditMode.get()) {
                             // Creating first remote
                             binding.fab.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_new_remote_icon))
+                            binding.fab.imageTintList = ContextCompat.getColorStateList(this, R.color.black)
                             binding.fab.setOnClickListener { createRemote() }
                         } else {
                             when (AppState.tempData.tempRemoteProfile.inEditMode.get()) {
                             // Editing current remote
                                 true -> {
                                     binding.fab.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_done_green_24dp))
+                                    binding.fab.imageTintList = ContextCompat.getColorStateList(this, R.color.md_green_300)
                                     binding.fab.setOnClickListener { saveRemoteEdits() }
                                 }
                             // Not editing current remote
                                 false -> {
                                     binding.fab.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_mode_edit_black_24dp))
+                                    binding.fab.imageTintList = ContextCompat.getColorStateList(this, R.color.black)
                                     binding.fab.setOnClickListener { editRemote() }
                                 }
                             }
@@ -345,6 +366,7 @@ class MainViewActivity : AppCompatActivity() {
                     }
                     state.viewPagerPosition == VP_ALL_REMOTES -> {
                         binding.fab.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_new_remote_icon))
+                        binding.fab.imageTintList = ContextCompat.getColorStateList(this, R.color.black)
                         binding.fab.setOnClickListener { createRemote() }
                     }
                 }
@@ -457,7 +479,6 @@ class MainViewActivity : AppCompatActivity() {
 */
 
     private fun editRemote() {
-        Log.d("TEST", "EditRemote")
         AppState.tempData.tempRemoteProfile.inEditMode.set(true)
         setupToolbar()
         setupFab()
@@ -471,26 +492,56 @@ class MainViewActivity : AppCompatActivity() {
         setupFab()
     }
 
-    private val remoteTemplatesSheet = RemoteTemplatesSheet().apply {
-       templateSheetCallback = object : RemoteTemplatesSheet.RemoteTemplateSheetCallback{
-            @SuppressLint("LogNotTimber")
-            override fun onTemplateSelected(uid: String) {
-                Log.d("onTemplateSelected", "Template selected: $uid")
-                AppState.tempData.tempRemoteProfile = AppState.userData.remotes[uid] ?: RemoteProfile()
-                AppState.tempData.tempRemoteProfile.inEditMode.set(true)
-                state.viewPagerPosition = VP_FAV_REMOTE
-                onMyRemotesClicked()
-            }
+//    private val remoteTemplatesSheet = RemoteTemplatesSheet().apply {
+//       templateSheetCallback = object : RemoteTemplatesSheet.RemoteTemplateSheetCallback{
+//            @SuppressLint("LogNotTimber")
+//            override fun onTemplateSelected(uid: String) {
+//                Log.d("onTemplateSelected", "Template selected: $uid")
+//                AppState.tempData.tempRemoteProfile = AppState.userData.remotes[uid] ?: RemoteProfile()
+//                AppState.tempData.tempRemoteProfile.inEditMode.set(true)
+//                state.viewPagerPosition = VP_FAV_REMOTE
+//                onMyRemotesClicked()
+//            }
+//        }
+//    }
+
+    private fun createRemote(forceShow : Boolean = false) {
+        FirestoreActions.getRemoteTemplates()
+        if (!state.isShowingCreateRemoteFromView || forceShow) {
+            val createRemoteView = layoutInflater.inflate(R.layout.v_create_remote_from, null)
+            createRemoteDialog = BottomSheetDialog(this)
+            createRemoteFromBinding = DataBindingUtil.bind(createRemoteView)
+            createRemoteDialog?.setContentView(createRemoteView)
+            createRemoteDialog?.setOnDismissListener {
+                state.isShowingCreateRemoteFromView = false }
+
+            createRemoteFromBinding?.tvFromScratch?.setOnClickListener { createBlankRemote() }
+
+            createRemoteDialog?.show()
+            state.isShowingCreateRemoteFromView = true
         }
+
+        //remoteTemplatesSheet.show(supportFragmentManager, "RemoteTemplateSheet")
     }
 
-    private fun createRemote() {
-        //TODO TEMP
-        AppState.tempData.tempRemoteProfile.name = getString(R.string.new_remote)
-        editRemote()
-        //TODO TEMP
-//        FirestoreActions.getRemoteTemplates()
-//        remoteTemplatesSheet.show(supportFragmentManager, "RemoteTemplateSheet")
+    private fun createBlankRemote() {
+        // dismiss "create from" dialog
+        createRemoteDialog?.dismiss()
+
+        // create blank remote in tempData
+        AppState.resetTempRemote()
+
+        // set remote to edit mode
+        AppState.tempData.tempRemoteProfile.inEditMode.set(true)
+
+        // Trigger update to fragment
+        onMyRemotesClicked(true)
+
+        // show keyboard
+        (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).toggleSoftInput(InputMethodManager.SHOW_FORCED, 0)
+
+        // select "remote name" text
+        binding.toolbar.selectTitleText()
     }
 
     private fun createCommand() {
@@ -536,22 +587,23 @@ class MainViewActivity : AppCompatActivity() {
         var navPosition = FP_MY_REMOTES
         var viewPagerPosition = 0
         var adapterBaseID: Long = 0
+        var isShowingCreateRemoteFromView = false
 
         constructor(parcel: Parcel) : this() {
             navPosition = parcel.readInt()
             viewPagerPosition = parcel.readInt()
             adapterBaseID = parcel.readLong()
+            isShowingCreateRemoteFromView = parcel.readByte() != 0.toByte()
         }
 
         override fun writeToParcel(parcel: Parcel, flags: Int) {
             parcel.writeInt(navPosition)
             parcel.writeInt(viewPagerPosition)
             parcel.writeLong(adapterBaseID)
+            parcel.writeByte(if (isShowingCreateRemoteFromView) 1 else 0)
         }
 
-        override fun describeContents(): Int {
-            return 0
-        }
+        override fun describeContents() = 0
 
         companion object CREATOR : Parcelable.Creator<State> {
             override fun createFromParcel(parcel: Parcel): State {

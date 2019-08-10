@@ -35,7 +35,7 @@ object AppState {
     }
 
     data class TempData (
-        var tempRemoteProfile   : RemoteProfile = RemoteProfile(),
+        val tempRemoteProfile   : RemoteProfile         = RemoteProfile(),
         var tempButton          : RemoteProfile.Button? = null,
         var tempSignal          : IrSignal?             = null
     )
@@ -43,5 +43,12 @@ object AppState {
     data class ErrorData (
         var userSignInError : ObservableField<Exception?> = ObservableField()
     )
+
+    fun resetTempRemote() {
+        tempData.tempRemoteProfile.uid = ""
+        tempData.tempRemoteProfile.name = ""
+        tempData.tempRemoteProfile.inEditMode.set(false)
+        tempData.tempRemoteProfile.buttons.clear()
+    }
 
 }

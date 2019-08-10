@@ -1,5 +1,6 @@
 package com.ms8.smartirhub.android.custom_views
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Point
 import android.graphics.drawable.Drawable
@@ -7,6 +8,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.text.method.KeyListener
 import android.util.AttributeSet
+import android.util.Log
 import android.view.KeyEvent
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
@@ -29,6 +31,7 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
     private val location = IntArray(2)
     private var titleStr: String = ""
     private var _titleTextViewBG: Drawable
+    private var _isTitleEditable = false
     var centerTitle = true
     set(value) {
         field = value
@@ -63,6 +66,7 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
         _screenWidth = getScreenSize().x
 
         _titleTextView = EditText(context)
+        _titleTextView.setSelectAllOnFocus(true)
         _titleTextView.textColor = ContextCompat.getColor(context, R.color.white)
         _titleTextView.maxLines = 1
         _titleTextView.singleLine = true
@@ -110,6 +114,7 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
     }
 
     fun makeTitleEditable(isEditable : Boolean = true) {
+        _isTitleEditable = isEditable
         when (isEditable) {
             true -> {
                 _titleTextView.setTextIsSelectable(true)
@@ -128,5 +133,17 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
             }
         }
 
+    }
+
+    @SuppressLint("LogNotTimber")
+    fun selectTitleText() {
+        if (!_isTitleEditable) {
+            Log.e("ToolbarCenteredTitle", "Attempted to select toolbar title while not in edit mode.")
+            return
+        }
+
+        Log.d("Toolbar", "text size = ${_titleTextView.text.toString().length}")
+        _titleTextView.requestFocus()
+        _titleTextView.selectAll()
     }
 }
