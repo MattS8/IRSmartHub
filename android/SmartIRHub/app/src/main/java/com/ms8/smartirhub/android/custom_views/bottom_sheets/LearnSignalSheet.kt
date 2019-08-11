@@ -2,32 +2,29 @@ package com.ms8.smartirhub.android.custom_views.bottom_sheets
 
 import android.animation.Animator
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
-import android.os.Bundle
 import android.os.Handler
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.databinding.DataBindingUtil
-import com.andrefrsousa.superbottomsheet.SuperBottomSheetFragment
-import com.andrognito.flashbar.Flashbar
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.database.AppState
-import com.ms8.smartirhub.android.models.realtimedatabase.HubResult
-import com.ms8.smartirhub.android.models.firestore.IrSignal
 import com.ms8.smartirhub.android.databinding.VLearnSigSheetBinding
 import com.ms8.smartirhub.android.firebase.FirebaseConstants
 import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
-import com.ms8.smartirhub.android.learn_signal.*
-import java.lang.Exception
+import com.ms8.smartirhub.android.learn_signal.AdvancedSignalInfoActivity
+import com.ms8.smartirhub.android.learn_signal.LSListenActivity
+import com.ms8.smartirhub.android.models.firestore.IrSignal
+import com.ms8.smartirhub.android.models.realtimedatabase.HubResult
 
-class LearnSignalSheet : SuperBottomSheetFragment() {
+class LearnSignalSheet(context: Context) : BottomSheetDialog(context) {
     var binding : VLearnSigSheetBinding? = null
 
     var callback: Callback? = null
@@ -144,37 +141,16 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
         }
     }
 
-/*
-    ----------------------------------------------
-        Overridden Functions
-    ----------------------------------------------
-*/
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putBooleanArray(KEY_LSS_BOOLS, BooleanArray(4).apply {
-            set(0, isListeningForResult)
-            set(1, isListeningForRawData)
-            set(2, isListeningForTestSignal)
-        })
-        outState.putString(KEY_HUB_UID, hubUID)
-    }
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        super.onCreateView(inflater, container, savedInstanceState)
-
-        binding = DataBindingUtil.inflate(inflater, R.layout.v_learn_sig_sheet, container, false)
-
-        /* -- Restore State --*/
-        savedInstanceState?.getString(KEY_HUB_UID)?.let { hubUID = it }
-
-        binding!!.let { b ->
+    init {
+        binding = DataBindingUtil.inflate(layoutInflater, R.layout.v_learn_sig_sheet, null, false)
+        binding?.let { b ->
             b.btnTestSignal.setOnClickListener { testSignal() }
             b.btnRetry.setOnClickListener { retry() }
             b.btnShowAdvancedInfo.setOnClickListener { showAdvancedLayout() }
         }
+    }
 
-
+    fun setup() {
         val len = AppState.tempData.tempSignal?.rawData?.size ?: -1
         if (len > 0) {
             Log.d("TEST", "Showing learned layout")
@@ -184,13 +160,26 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
             Log.d("TEST", "Hiding learned layout")
             hideLearnedLayout(false)
         }
-
-        return binding!!.root
     }
 
-    override fun onPause() {
-        super.onPause()
+/*
+    ----------------------------------------------
+        Overridden Functions
+    ----------------------------------------------
+*/
 
+//    override fun onSaveInstanceState(outState: Bundle) {
+//        super.onSaveInstanceState(outState)
+//        outState.putBooleanArray(KEY_LSS_BOOLS, BooleanArray(4).apply {
+//            set(0, isListeningForResult)
+//            set(1, isListeningForRawData)
+//            set(2, isListeningForTestSignal)
+//        })
+//        outState.putString(KEY_HUB_UID, hubUID)
+//    }
+
+
+    fun onPause() {
         if (isListeningForResult) {
             RealtimeDatabaseFunctions.getHubResults(hubUID).removeEventListener(resultListener)
             binding?.btnStartListening?.revertAnimation()
@@ -209,7 +198,7 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
     ----------------------------------------------
 */
 
-    fun onBackPressed() : Boolean {
+    fun performBack() : Boolean {
         Log.d("TEST", "onBackPressed")
         return when {
             isListeningForResult or isListeningForRawData -> {
@@ -228,7 +217,7 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
     }
 
     private fun showAdvancedLayout() {
-        startActivity(Intent(activity, AdvancedSignalInfoActivity::class.java))
+        context.startActivity(Intent(context, AdvancedSignalInfoActivity::class.java))
     }
 
     private fun showLearnedLayout(animate: Boolean) {
@@ -239,7 +228,7 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
                 it.tvSigCode.text = irSignal.code
             }
             // Set Listening Button to Save
-            it.btnStartListening.text = getString(R.string.save)
+            it.btnStartListening.text = context.getString(R.string.save)
             it.btnStartListening.setOnClickListener { saveRecordedSignal() }
             // Enable Advanced Info button
             it.btnShowAdvancedInfo.isEnabled = true
@@ -286,7 +275,7 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
             //Enable Test Signal button
             it.btnTestSignal.isEnabled = false
             // Set Listening Button to Start Listening
-            it.btnStartListening.text = (getString(R.string.start_listening))
+            it.btnStartListening.text = (context.getString(R.string.start_listening))
             it.btnStartListening.setOnClickListener { beginListeningProcess() }
 
             // Hide Learned Info Layout, Advanced Info button, and Test Signal button
@@ -370,31 +359,31 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
 
     @SuppressLint("LogNotTimber")
     private fun showUnknownError(e: Exception?) {
-        context?.let {
-            showErrorLayout(getString(R.string.err_unknown_sig_title), getString(R.string.err_unknown_sig_desc))
+        context.let {
+            showErrorLayout(context.getString(R.string.err_unknown_sig_title), context.getString(R.string.err_unknown_sig_desc))
         }
 
         e?.let { Log.e("LSListenActivity", "Unknown Error: $it") }
     }
 
     private fun showNoResponseError() {
-        context?.let {
-            showErrorLayout(getString(R.string.err_no_response_title), getString(R.string.err_no_response_desc))
+        context.let {
+            showErrorLayout(context.getString(R.string.err_no_response_title), context.getString(R.string.err_no_response_desc))
         }
     }
     private fun showHubBusyError() {
-        context?.let {
-            showErrorLayout(getString(R.string.err_hub_busy_title), getString(R.string.err_hub_busy_desc))
+        context.let {
+            showErrorLayout(context.getString(R.string.err_hub_busy_title), context.getString(R.string.err_hub_busy_desc))
         }
     }
     private fun showOverflowError() {
-        context?.let {
-            showErrorLayout(getString(R.string.err_overflow_title), getString(R.string.err_overflow_desc))
+        context.let {
+            showErrorLayout(context.getString(R.string.err_overflow_title), context.getString(R.string.err_overflow_desc))
         }
     }
     private fun showTimeoutError() {
-        context?.let {
-            showErrorLayout(getString(R.string.err_timeout_title), getString(R.string.err_timeout_desc))
+        context.let {
+            showErrorLayout(context.getString(R.string.err_timeout_title), context.getString(R.string.err_timeout_desc))
         }
     }
 
@@ -455,9 +444,9 @@ class LearnSignalSheet : SuperBottomSheetFragment() {
                             .addOnSuccessListener {
                                 isListeningForTestSignal = false
                                 binding?.btnTestSignal?.revertAnimation()
-                                this@LearnSignalSheet.activity?.let { a ->
-                                    Flashbar.Builder(a).message(R.string.signal_sent).show()
-                                }
+//                                this@LearnSignalSheet.activity?.let { a ->
+//                                    Flashbar.Builder(a).message(R.string.signal_sent).show()
+//                                }
                             }
                             .addOnFailureListener {e -> showUnknownError(e) }
                     }

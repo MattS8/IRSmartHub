@@ -1,24 +1,22 @@
 package com.ms8.smartirhub.android.custom_views.bottom_sheets
 
-import android.content.DialogInterface
+import android.content.Context
 import android.content.res.ColorStateList
-import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.FrameLayout
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
-import com.andrefrsousa.superbottomsheet.SuperBottomSheetFragment
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.database.AppState
-import com.ms8.smartirhub.android.utils.MyValidators.ButtonNameValidator
 import com.ms8.smartirhub.android.databinding.VChooseNameSheetBinding
+import com.ms8.smartirhub.android.utils.MyValidators.ButtonNameValidator
 import org.jetbrains.anko.sdk27.coroutines.onFocusChange
 
-class PickNameSheet : SuperBottomSheetFragment() {
+class PickNameSheet(context: Context) : BottomSheetDialog(context) {
 
     var binding: VChooseNameSheetBinding? = null
+    private var nameView: View = layoutInflater.inflate(R.layout.v_bottom_sheet, null)
+
     var callback: Callback? = null
 
     var btnName = ""
@@ -62,30 +60,19 @@ class PickNameSheet : SuperBottomSheetFragment() {
         binding?.txtInput?.hint = value
     }
 
+    var strList : ArrayList<String>? = null
 
-    /*
-    ----------------------------------------------
-        Overridden Functions
-    ----------------------------------------------
-*/
-
-    override fun getTheme() = R.style.AppTheme
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putStringArrayList(KEY_STR_LIST, arrayListOf(btnName, nameTitle, nameDesc, tipsTitle, tipsDesc1, tipsDesc2, tipsExampleTitle, nameInputHint))
+    init {
+        binding = DataBindingUtil.bind(nameView)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        super.onCreateView(inflater, container, savedInstanceState)
-        binding = DataBindingUtil.inflate(inflater, R.layout.v_choose_name_sheet, container, false)
+    fun setup() {
+        setContentView(nameView)
 
-        val strList = savedInstanceState?.getStringArrayList(KEY_STR_LIST)
-
-        binding!!.let { b ->
-            b.btnPickName.text = strList?.get(0) ?: if (btnName != "") btnName else getString(R.string.pick_name)
-            b.tvTitle.text =  strList?.get(1) ?: if (nameTitle != "") nameTitle else getString(R.string.need_help_with_a_name)
-            b.tvHelpNameDesc.text = strList?.get(2) ?: if (nameDesc != "") nameDesc else getString(R.string.need_help_name_desc)
+        binding?.let { b ->
+            b.btnPickName.text = strList?.get(0) ?: if (btnName != "") btnName else context.getString(R.string.pick_name)
+            b.tvTitle.text =  strList?.get(1) ?: if (nameTitle != "") nameTitle else context.getString(R.string.need_help_with_a_name)
+            b.tvHelpNameDesc.text = strList?.get(2) ?: if (nameDesc != "") nameDesc else context.getString(R.string.need_help_name_desc)
             b.tvTipsTitle.text = strList?.get(3) ?: tipsTitle
             b.tvTipsTitle.visibility = if (b.tvTipsTitle.text == "") View.GONE else View.VISIBLE
             b.tvTipsDesc1.text = strList?.get(4) ?: tipsDesc1
@@ -97,23 +84,23 @@ class PickNameSheet : SuperBottomSheetFragment() {
             b.txtInput.hint = strList?.get(6) ?: nameInputHint
 
             b.btnPickName.setOnClickListener { if (callback != null) callback?.onSavePressed(binding) else dismiss() }
+
+            b.txtInput.editText!!.setUnderlineColor()
+            b.txtInput.editText!!.onFocusChange {v, _ -> v.setUnderlineColor() }
         }
 
-        return binding!!.root
+        setOnDismissListener { callback?.onDismiss() }
     }
 
-    override fun onStart() {
-        super.onStart()
-        val layoutParams = dialog!!.findViewById<FrameLayout>(R.id.super_bottom_sheet).layoutParams
-        layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
-        dialog!!.findViewById<FrameLayout>(R.id.super_bottom_sheet).layoutParams = layoutParams
-        binding?.txtInput?.editText!!.setUnderlineColor()
-        binding?.txtInput?.editText!!.onFocusChange {v, _ ->
-            v.setUnderlineColor()
-        }
-
-        //binding.txtInput.editText!!.inputType = (InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS or InputType.TYPE_TEXT_VARIATION_PASSWORD )
+    fun revertAnimation() {
+        binding?.btnPickName?.revertAnimation()
     }
+
+/*
+    ----------------------------------------------
+        Overridden Functions
+    ----------------------------------------------
+*/
 
     private fun View.setUnderlineColor() {
         val color = ContextCompat.getColor(context!!, R.color.colorControlNormalWhite)
@@ -129,35 +116,6 @@ class PickNameSheet : SuperBottomSheetFragment() {
         )
     }
 
-    override fun onDismiss(dialog: DialogInterface) {
-        super.onDismiss(dialog)
-        callback?.onDismiss()
-    }
-
-    override fun getBackgroundColor() = ContextCompat.getColor(context!!, R.color.colorCardDark)
-
-    override fun animateCornerRadius() = true
-
-    override fun animateStatusBar() = true
-
-    override fun isSheetAlwaysExpanded() = true
-
-//    override fun getPeekHeight(): Int {
-//        val displayMetrics = DisplayMetrics()
-//        displayMetrics.heightPixels = 0
-//        context?.windowManager?.defaultDisplay?.getMetrics(displayMetrics)
-//        var height = displayMetrics.heightPixels
-//        height = if (height <= 0){
-//            500
-//        }
-//        else {
-//            height - (height * .05).toInt()
-//        }
-//
-//        @Suppress("UNNECESSARY_SAFE_CALL")
-//        return
-//    }
-
 /*
     ----------------------------------------------
         OnClick Functions
@@ -166,7 +124,7 @@ class PickNameSheet : SuperBottomSheetFragment() {
     private fun checkName() {
     binding?.txtInput?.error = ""
         val isValidName = binding?.txtInput?.editText!!.text.toString().ButtonNameValidator()
-            .addErrorCallback { binding?.txtInput?.error = getString(R.string.err_invalid_button_name) }
+            .addErrorCallback { binding?.txtInput?.error = context.getString(R.string.err_invalid_button_name) }
             .check()
         if (isValidName) {
             AppState.tempData.tempButton?.name = binding?.txtInput?.editText!!.text.toString()

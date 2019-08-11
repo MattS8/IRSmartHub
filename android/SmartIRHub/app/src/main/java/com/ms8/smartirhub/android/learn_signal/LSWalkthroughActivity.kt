@@ -26,10 +26,10 @@ import com.ms8.smartirhub.android.utils.MyValidators.SignalNameValidator
 class LSWalkThroughActivity : AppCompatActivity() {
     lateinit var binding : ACreateButtonWalkthroughBinding
 
-    private val warningSheet: BackWarningSheet = BackWarningSheet()
+    private lateinit var warningSheet : BottomSheet
 
     /* Pick Name Bottom Sheet */
-    private val nameSheet: PickNameSheet = PickNameSheet()
+    private val nameSheet: PickNameSheet = PickNameSheet(this)
     private val nameSheetCallback = object: PickNameSheet.Callback {
         override fun onSavePressed(sheetBinding: VChooseNameSheetBinding?) {
             sheetBinding?.txtInput?.error = ""
@@ -49,10 +49,10 @@ class LSWalkThroughActivity : AppCompatActivity() {
     }
 
     /* Pick Listening Hub Bottom Sheet */
-    private val pickHubSheet = HubSheet()
+    private val pickHubSheet = HubSheet(this)
 
     /* Listen for Signal Bottom Sheet */
-    private val listenSignalSheet = LearnSignalSheet()
+    private val listenSignalSheet = LearnSignalSheet(this)
     private val listenSignalSheetCallback = object : LearnSignalSheet.Callback {
         override fun onSaveSignal() { determineWalkThroughState() }
     }
@@ -69,17 +69,17 @@ class LSWalkThroughActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         when {
-            nameSheet.isVisible -> {
+            nameSheet.isShowing -> {
                 nameSheet.dismiss()
             }
-            pickHubSheet.isVisible -> {
+            pickHubSheet.isShowing -> {
                 pickHubSheet.dismiss()
             }
-            listenSignalSheet.onBackPressed() -> {}
+            listenSignalSheet.performBack() -> {}
             binding.prog1.bOnThisStep -> {
                 when {
                     warningSheet.bWantsToLeave -> super.onBackPressed()
-                    !warningSheet.bIsShowing -> warningSheet.show(supportFragmentManager, "WarningBottomSheet")
+                    !warningSheet.bIsShowing -> warningSheet.show()
                 }
             }
             binding.prog2.bOnThisStep -> {
@@ -110,6 +110,18 @@ class LSWalkThroughActivity : AppCompatActivity() {
 
         //Restore state
         savedInstanceState?.getString(LISTENING_HUB)?.let { listeningHub = it }
+
+        // set up warning sheet
+        warningSheet = BottomSheet(this,
+            getString(R.string.exit_app_title),
+            getString(R.string.exit_app_desc),
+            getString(R.string.leave),
+            getString(android.R.string.cancel),
+            { finishAndRemoveTask() })
+        warningSheet.setup()
+
+        // setup nameSheet
+        nameSheet.setup()
 
         //Set up pickHubSheet
         pickHubSheet.sheetTitle = this@LSWalkThroughActivity.getString(R.string.hubs)
@@ -169,6 +181,8 @@ class LSWalkThroughActivity : AppCompatActivity() {
 
 
         //Set up listenSignalSheet
+        listenSignalSheet.setup()
+        listenSignalSheet.hubUID = listeningHub
         listenSignalSheet.callback = listenSignalSheetCallback
 
         //Set up toolbar
@@ -186,6 +200,7 @@ class LSWalkThroughActivity : AppCompatActivity() {
         super.onResume()
         clicked = false
         determineWalkThroughState()
+        pickHubSheet.onResume()
     }
 
 //    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -259,25 +274,25 @@ class LSWalkThroughActivity : AppCompatActivity() {
 */
 
     private fun showLearnSignalSheet() {
-        if (!listenSignalSheet.isVisible)
-            listenSignalSheet.show(supportFragmentManager, "ListeningSignalSheet")
+        if (!listenSignalSheet.isShowing)
+            listenSignalSheet.show()
     }
 
     private fun showPickHubSheet() {
-        if (!pickHubSheet.isVisible)
-            pickHubSheet.show(supportFragmentManager, "ListeningHubSheet")
+        if (!pickHubSheet.isShowing)
+            pickHubSheet.show()
     }
 
     private fun showNameSheet() {
-        if (!nameSheet.isVisible)
-            nameSheet.show(supportFragmentManager, "SignalNameSheet")
+        if (!nameSheet.isShowing)
+            nameSheet.show()
     }
 
     @SuppressLint("LogNotTimber")
     private fun uploadIrSignal() {
         FirestoreActions.addIrSignal()
             .addOnCompleteListener {
-                nameSheet.binding?.btnPickName?.revertAnimation()
+                nameSheet.revertAnimation()
             }
             .addOnFailureListener {
                 Log.e("LSNameSignalActivity", "AddIrSignal listener error: $it")

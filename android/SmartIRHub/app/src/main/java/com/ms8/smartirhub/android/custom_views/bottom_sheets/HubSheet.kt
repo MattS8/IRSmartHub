@@ -1,23 +1,23 @@
 package com.ms8.smartirhub.android.custom_views.bottom_sheets
 
+import android.content.Context
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.learn_signal.HubCardListAdapter
 
-class HubSheet : SimpleListDescSheet() {
+class HubSheet(context: Context) : SimpleListDescSheet(context) {
 
-    override fun onPause() {
+    fun onPause() {
         binding?.sheetList?.adapter?.let {
             (it as HubCardListAdapter).listen(false)
         }
-        super.onPause()
     }
 
-    override fun onResume() {
-        binding?.btnSaveCommand?.text = getString(R.string.select)
+    fun onResume() {
+        binding?.btnSaveCommand?.text = context.getString(R.string.select)
         binding?.sheetList?.adapter?.let {
             (it as HubCardListAdapter).listen(true)
         }
-        super.onResume()
+
     }
 
 }

@@ -19,18 +19,18 @@ import com.google.firebase.database.ValueEventListener
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.BottomErrorSheet
 import com.ms8.smartirhub.android.database.AppState
-import com.ms8.smartirhub.android.models.realtimedatabase.HubResult
-import com.ms8.smartirhub.android.models.firestore.IrSignal
 import com.ms8.smartirhub.android.databinding.ALearnSigListenBinding
 import com.ms8.smartirhub.android.firebase.FirebaseConstants
 import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
 import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity.Companion.LISTENING_HUB
-import java.lang.Exception
+import com.ms8.smartirhub.android.models.firestore.IrSignal
+import com.ms8.smartirhub.android.models.realtimedatabase.HubResult
 
 class LSListenActivity : AppCompatActivity() {
     lateinit var binding: ALearnSigListenBinding
     lateinit var hubUID: String
-    val bottomErrorSheet = BottomErrorSheet()
+    lateinit var bottomErrorSheet : BottomErrorSheet
+
     var isListeningForResult = false
     var isListeningForRawData = false
 
@@ -219,18 +219,21 @@ class LSListenActivity : AppCompatActivity() {
 
         hubUID = intent.getStringExtra(LISTENING_HUB) ?: ""
 
-        bottomErrorSheet.sheetTitle = getString(R.string.err_hub_busy_title)
-        bottomErrorSheet.description = getString(R.string.err_hub_busy_desc)
-
         binding = DataBindingUtil.setContentView(this, R.layout.a_learn_sig_listen)
         binding.btnShowAdvancedInfo.setOnClickListener { showAdvancedInfo() }
         binding.btnRetry.setOnClickListener { retry() }
         binding.btnTestSignal.setOnClickListener { testSignal() }
 
+        // set up toolbar
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
 
+        // set up error BottomSheet
+        bottomErrorSheet = BottomErrorSheet(this, getString(R.string.err_hub_busy_title), getString(R.string.err_hub_busy_desc))
+        bottomErrorSheet.setup()
+
+        // find learning state
         val len = AppState.tempData.tempSignal?.rawLength ?: 0
         Log.d("LEN", "$len")
         when {
@@ -291,7 +294,7 @@ class LSListenActivity : AppCompatActivity() {
                     val uid = FirebaseAuth.getInstance().currentUser?.uid
                     if (sender != "_none_" && sender != uid) {
                         binding.btnStartListening.revertAnimation()
-                        if (!bottomErrorSheet.bIsShowing) { showHubBusyError() }
+                        if (!bottomErrorSheet.isShowing) { showHubBusyError() }
                     } else {
                         sendListenAction()
                     }
@@ -385,36 +388,51 @@ class LSListenActivity : AppCompatActivity() {
     ---------------------------------------------
 */
 private fun LSListenActivity.showUnknownError(e: Exception?) {
+    if (bottomErrorSheet.isShowing)
+        bottomErrorSheet.dismiss()
+
     binding.btnTestSignal.revertAnimation()
     bottomErrorSheet.sheetTitle = getString(R.string.err_unknown_sig_title)
     bottomErrorSheet.description = getString(R.string.err_unknown_sig_desc)
-    bottomErrorSheet.show(supportFragmentManager, "Bottom_sheet_error_timeout")
+    bottomErrorSheet.show()
 
     e?.let { Log.e("LSListenActivity", "Unknown Error: $it") }
-
 }
 
 private fun LSListenActivity.showNoResponseError() {
+    if (bottomErrorSheet.isShowing)
+        bottomErrorSheet.dismiss()
+
     binding.btnStartListening.revertAnimation()
+
     bottomErrorSheet.sheetTitle = getString(R.string.err_no_response_title)
     bottomErrorSheet.description = getString(R.string.err_no_response_desc)
-    bottomErrorSheet.show(supportFragmentManager, "Bottom_sheet_error_timeout")
+    bottomErrorSheet.show()
 }
 private fun LSListenActivity.showHubBusyError() {
+    if (bottomErrorSheet.isShowing)
+        bottomErrorSheet.dismiss()
+
     binding.btnStartListening.revertAnimation()
     bottomErrorSheet.sheetTitle = getString(R.string.err_hub_busy_title)
     bottomErrorSheet.description = getString(R.string.err_hub_busy_desc)
-    bottomErrorSheet.show(supportFragmentManager, "Bottom_error_frag")
+    bottomErrorSheet.show()
 }
 private fun LSListenActivity.showOverflowError() {
+    if (bottomErrorSheet.isShowing)
+        bottomErrorSheet.dismiss()
+
     binding.btnStartListening.revertAnimation()
     bottomErrorSheet.sheetTitle = getString(R.string.err_overflow_title)
     bottomErrorSheet.description = getString(R.string.err_overflow_desc)
-    bottomErrorSheet.show(supportFragmentManager, "Bottom_sheet_error_overflow")
+    bottomErrorSheet.show()
 }
 private fun LSListenActivity.showTimeoutError() {
+    if (bottomErrorSheet.isShowing)
+        bottomErrorSheet.dismiss()
+
     binding.btnStartListening.revertAnimation()
     bottomErrorSheet.sheetTitle = getString(R.string.err_timeout_title)
     bottomErrorSheet.description = getString(R.string.err_timeout_desc)
-    bottomErrorSheet.show(supportFragmentManager, "Bottom_sheet_error_timeout")
+    bottomErrorSheet.show()
 }

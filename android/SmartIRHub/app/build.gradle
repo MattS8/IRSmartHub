@@ -77,7 +77,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.1.0-alpha09'
 
     //Bottom Sheet Dialog
-    implementation 'com.github.andrefrsousa:SuperBottomSheet:1.3.0'
+//    implementation 'com.github.andrefrsousa:SuperBottomSheet:1.3.0'
 
     //Potential Remote Buttons
     implementation 'com.github.armcha:ElasticView:0.2.0'

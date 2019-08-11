@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.databinding.DataBindingUtil
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.BottomErrorSheet
+import com.ms8.smartirhub.android.custom_views.bottom_sheets.BottomSheet
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.databinding.ALearnSigNameBinding
 import com.ms8.smartirhub.android.firebase.FirestoreActions
@@ -17,16 +18,25 @@ import com.ms8.smartirhub.android.utils.MyValidators.SignalNameValidator
 
 class LSNameSignalActivity : AppCompatActivity() {
     lateinit var binding : ALearnSigNameBinding
-    val errorSaveSheet = BottomErrorSheet()
-    val errorNameSheet = BottomErrorSheet()
+    lateinit var errorSaveSheet : BottomErrorSheet
+    lateinit var errorNameSheet : BottomErrorSheet
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        errorSaveSheet.sheetTitle = getString(R.string.err_uploading_signal_title)
-        errorSaveSheet.description = getString(R.string.err_uploading_signal_desc)
-        errorSaveSheet.setPositiveButton(getString(R.string.retry)) { uploadIrSignal() }
-        errorNameSheet.sheetTitle = getString(R.string.err_invalid_sig_name_title)
-        errorNameSheet.description = getString(R.string.err_invalid_sig_name_desc)
+
+        // set up saving error BottomErrorSheet
+        errorSaveSheet = BottomErrorSheet(this,
+            getString(R.string.err_uploading_signal_title),
+            getString(R.string.err_uploading_signal_desc),
+            getString(R.string.retry))
+            .apply { posListener = { uploadIrSignal() } }
+        errorSaveSheet.setup()
+
+        // set up naming error BottomErrorSheet
+        errorNameSheet = BottomErrorSheet(this,
+            getString(R.string.err_invalid_sig_name_title),
+            getString(R.string.err_invalid_sig_name_desc))
+        errorNameSheet.setup()
 
         binding = DataBindingUtil.setContentView(this, R.layout.a_learn_sig_name)
         binding.btnPickName.setOnClickListener { checkName() }
@@ -36,6 +46,13 @@ class LSNameSignalActivity : AppCompatActivity() {
         supportActionBar?.setDisplayShowHomeEnabled(true)
     }
 
+    private fun hideErrorSheets() {
+        if (errorSaveSheet.isShowing)
+            errorSaveSheet.dismiss()
+        if (errorNameSheet.isShowing)
+            errorNameSheet.dismiss()
+    }
+
     /*
         ----------------------------------------------
             OnClick Functions
@@ -43,7 +60,10 @@ class LSNameSignalActivity : AppCompatActivity() {
      */
     private fun checkName() {
         val isValidName = binding.txtSignalName.editText!!.text.toString().SignalNameValidator()
-            .addErrorCallback { errorNameSheet.show(supportFragmentManager, "bottom_sheet_error_invalid_name") }
+            .addErrorCallback {
+                hideErrorSheets()
+                errorNameSheet.show()
+            }
             .check()
         if (isValidName) {
             AppState.tempData.tempSignal!!.name = binding.txtSignalName.editText!!.text.toString()
@@ -66,7 +86,8 @@ class LSNameSignalActivity : AppCompatActivity() {
             }
             .addOnFailureListener {
                 Log.e("LSNameSignalActivity", "AddIrSignal listener error: $it")
-                errorSaveSheet.show(supportFragmentManager, "bottom_error_sheet_ir_upload")
+                hideErrorSheets()
+                errorSaveSheet.show()
             }
             .addOnSuccessListener {
                 setResult(Activity.RESULT_OK, Intent().putExtra(NEW_IR_SIGNAL_UID, AppState.tempData.tempSignal?.uid))

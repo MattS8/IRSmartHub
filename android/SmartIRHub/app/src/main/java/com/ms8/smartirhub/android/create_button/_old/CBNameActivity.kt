@@ -4,22 +4,31 @@ import android.app.Activity
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.databinding.DataBindingUtil
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.custom_views.bottom_sheets.BottomErrorSheet
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.databinding.ACreateButtonNameBinding
+import com.ms8.smartirhub.android.databinding.VBottomSheetBinding
 import com.ms8.smartirhub.android.utils.MyValidators.ButtonNameValidator
 
 class CBNameActivity : AppCompatActivity() {
     lateinit var binding: ACreateButtonNameBinding
-    val errorNameSheet = BottomErrorSheet()
+    private lateinit var errorNameSheet : BottomSheetDialog
+    private var errorNameSheetBinding: VBottomSheetBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.a_create_button_name)
 
-        errorNameSheet.sheetTitle = getString(R.string.err_invalid_button_name_title)
-        errorNameSheet.description = getString(R.string.err_invalid_button_name_desc)
+        // set up error BottomSheet
+        errorNameSheet = BottomSheetDialog(this)
+        val errorNameSheetView = layoutInflater.inflate(R.layout.v_bottom_sheet, null)
+        errorNameSheet.setContentView(errorNameSheetView)
+        errorNameSheetBinding = DataBindingUtil.bind(errorNameSheetView)
+        errorNameSheetBinding?.let { b ->
+            b.tvTitle.text =  getString(R.string.err_invalid_button_name_title)
+            b.tvDescription.text = getString(R.string.err_invalid_button_name_desc)
+        }
 
         binding.btnPickName.setOnClickListener { checkName() }
 
@@ -36,7 +45,7 @@ class CBNameActivity : AppCompatActivity() {
  */
     private fun checkName() {
         val isValidName = binding.txtButtonName.editText!!.text.toString().ButtonNameValidator()
-            .addErrorCallback { errorNameSheet.show(supportFragmentManager, "bottom_sheet_error_invalid_name") }
+            .addErrorCallback { errorNameSheet.show() }
             .check()
         if (isValidName) {
             AppState.tempData.tempButton?.name = binding.txtButtonName.editText!!.text.toString()

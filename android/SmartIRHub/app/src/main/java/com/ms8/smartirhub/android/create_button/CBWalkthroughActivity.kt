@@ -15,7 +15,7 @@ import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.create_button._old.CBStyleActivity
 import com.ms8.smartirhub.android.create_command.ActionSequenceAdapter
 import com.ms8.smartirhub.android.create_command.CC_ChooseIrSignalActivity
-import com.ms8.smartirhub.android.custom_views.bottom_sheets.BackWarningSheet
+import com.ms8.smartirhub.android.custom_views.bottom_sheets.BottomSheet
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.SimpleListDescSheet
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.SimpleListDescSheet.Companion.REQ_EDIT_ACTION
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.SimpleListDescSheet.Companion.REQ_NEW_ACTION
@@ -33,8 +33,8 @@ import com.ms8.smartirhub.android.utils.MyValidators.ButtonNameValidator
 class CBWalkThroughActivity : AppCompatActivity() {
     lateinit var binding: ACreateButtonWalkthroughBinding
 
-    private val warningSheet: BackWarningSheet = BackWarningSheet()
-    private val pickNameSheet = PickNameSheet()
+    private lateinit var warningSheet : BottomSheet
+    private val pickNameSheet = PickNameSheet(this)
 
 /*
     ----------------------------------------------
@@ -57,7 +57,8 @@ class CBWalkThroughActivity : AppCompatActivity() {
             )
         }
     })
-    private val pickActionsSheet = SimpleListDescSheet()
+
+    private val pickActionsSheet = SimpleListDescSheet(this)
 
     private val commandListener = object : ObservableList.OnListChangedCallback<ObservableArrayList<Command.Action>>() {
         override fun onChanged(sender: ObservableArrayList<Command.Action>) {
@@ -104,7 +105,7 @@ class CBWalkThroughActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         when {
-            pickNameSheet.isVisible -> {
+            pickNameSheet.isShowing -> {
                 pickNameSheet.dismiss()
             }
             binding.prog3.bOnThisStep -> {
@@ -120,7 +121,7 @@ class CBWalkThroughActivity : AppCompatActivity() {
                 super.onBackPressed()
             }
             !warningSheet.bIsShowing -> {
-                warningSheet.show(supportFragmentManager, "WarningBottomSheet")
+                warningSheet.show()
             }
         }
     }
@@ -164,8 +165,18 @@ class CBWalkThroughActivity : AppCompatActivity() {
         if (AppState.tempData.tempButton == null)
             AppState.tempData.tempButton = RemoteProfile.Button()
 
+        // set up warning sheet
+        warningSheet = BottomSheet(this,
+            getString(R.string.exit_app_title),
+            getString(R.string.exit_app_desc),
+            getString(R.string.leave),
+            getString(android.R.string.cancel),
+            { finishAndRemoveTask() })
+        warningSheet.setup()
+
         //Set up PickNameSheet
         pickNameSheet.nameDesc = getString(R.string.remember_button_name_desc)
+        pickNameSheet.setup()
 
         //Set up pickActionsSheet
         pickActionsSheet.sheetTitle = this@CBWalkThroughActivity.getString(R.string.command_title)
@@ -289,7 +300,7 @@ class CBWalkThroughActivity : AppCompatActivity() {
                 binding.prog3.bOnThisStep = true
                 binding.btnNextStep.text = getString(R.string.select_style)
                 binding.btnNextStep.setOnClickListener { getButtonStyle() }
-                binding.prog1.setOnClickListener { getButtonStyle() }
+                binding.prog1.  setOnClickListener { getButtonStyle() }
             }
         }
     }
@@ -301,14 +312,14 @@ class CBWalkThroughActivity : AppCompatActivity() {
 */
 
     private fun showPickNameSheet() {
-        if (!pickNameSheet.isVisible) {
-            pickNameSheet.show(supportFragmentManager, "PickButtonNameSheet")
+        if (!pickNameSheet.isShowing) {
+            pickNameSheet.show()
         }
     }
 
     private fun getSignalOrAction() {
-        if (!pickActionsSheet.isVisible) {
-            pickActionsSheet.show(supportFragmentManager, "PickActionsSheet")
+        if (!pickActionsSheet.isShowing) {
+            pickActionsSheet.show()
         }
     }
 

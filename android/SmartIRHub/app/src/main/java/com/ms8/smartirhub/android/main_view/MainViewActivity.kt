@@ -3,48 +3,46 @@ package com.ms8.smartirhub.android.main_view
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
-import android.inputmethodservice.InputMethodService
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import android.util.Log
-import android.view.*
+import android.util.TypedValue
+import android.view.Gravity
+import android.view.Surface
+import android.view.View
+import android.view.WindowManager
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.DecelerateInterpolator
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableMap
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
+import com.andrognito.flashbar.Flashbar
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.mikepenz.materialdrawer.AccountHeaderBuilder
 import com.mikepenz.materialdrawer.Drawer
 import com.mikepenz.materialdrawer.DrawerBuilder
 import com.mikepenz.materialdrawer.model.ProfileDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem
-import com.ms8.smartirhub.android.custom_views.bottom_sheets.BackWarningSheet
-import com.ms8.smartirhub.android.custom_views.bottom_sheets.RemoteTemplatesSheet
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
+import com.ms8.smartirhub.android.R
+import com.ms8.smartirhub.android.custom_views.bottom_sheets.BottomSheet
+import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.databinding.ActivityMainViewBinding
-import com.ms8.smartirhub.android.utils.extensions.getNavBarHeight
+import com.ms8.smartirhub.android.databinding.VCreateRemoteFromBinding
 import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity
 import com.ms8.smartirhub.android.main_view.fragments.*
 import com.ms8.smartirhub.android.remote_control.RemoteFragment
-import com.ms8.smartirhub.android.utils.extensions.findNavBarHeight
-import android.util.TypedValue
-import android.view.animation.AccelerateInterpolator
-import android.view.animation.DecelerateInterpolator
-import android.view.inputmethod.InputMethodManager
-import androidx.core.content.ContextCompat
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.database.AppState
-import com.ms8.smartirhub.android.databinding.VCreateRemoteFromBinding
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
+import com.ms8.smartirhub.android.utils.extensions.findNavBarHeight
+import com.ms8.smartirhub.android.utils.extensions.getNavBarHeight
 
 
 class MainViewActivity : AppCompatActivity() {
@@ -54,7 +52,7 @@ class MainViewActivity : AppCompatActivity() {
     private lateinit var pagerAdapter: MainViewAdapter
 
     private val remoteFragment = RemoteFragment()
-    private val exitWarningSheet = BackWarningSheet()
+    private lateinit var exitWarningSheet : BottomSheet
 
     private var createRemoteFromBinding : VCreateRemoteFromBinding? = null
     private var createRemoteDialog : BottomSheetDialog? = null
@@ -83,7 +81,7 @@ class MainViewActivity : AppCompatActivity() {
         // check remoteTemplateSheet state
             //remoteTemplatesSheet.onBackPressed() -> {}
         // show exit warning before leaving
-            !exitWarningSheet.isVisible -> { exitWarningSheet.show(supportFragmentManager, "ExitWarningSheet") }
+            !exitWarningSheet.isShowing -> { exitWarningSheet.show() }
         // proceed with normal onBackPressed
             else -> { super.onBackPressed() }
         }
@@ -99,18 +97,13 @@ class MainViewActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main_view)
 
         // setup exit warning sheet
-        exitWarningSheet
-            .apply {
-                titleStr = this@MainViewActivity.getString(R.string.exit_app_title)
-                descStr = this@MainViewActivity.getString(R.string.exit_app_desc)
-                btnNegStr = this@MainViewActivity.getString(android.R.string.cancel)
-                btnPosStr = this@MainViewActivity.getString(R.string.leave)
-                callback = object : BackWarningSheet.BackWaringSheetCallback {
-                    override fun btnNegAction() {}
-
-                    override fun btnPosAction() { finishAndRemoveTask() }
-                }
-            }
+        exitWarningSheet = BottomSheet(this,
+            this@MainViewActivity.getString(R.string.exit_app_title),
+            this@MainViewActivity.getString(R.string.exit_app_desc),
+            this@MainViewActivity.getString(R.string.leave),
+            this@MainViewActivity.getString(android.R.string.cancel),
+            { finishAndRemoveTask() })
+        exitWarningSheet.setup()
 
         // build drawer header layout
         val header = AccountHeaderBuilder()
@@ -508,20 +501,44 @@ class MainViewActivity : AppCompatActivity() {
     private fun createRemote(forceShow : Boolean = false) {
         FirestoreActions.getRemoteTemplates()
         if (!state.isShowingCreateRemoteFromView || forceShow) {
+
+            // set up bottom sheet dialog
             val createRemoteView = layoutInflater.inflate(R.layout.v_create_remote_from, null)
             createRemoteDialog = BottomSheetDialog(this)
             createRemoteFromBinding = DataBindingUtil.bind(createRemoteView)
             createRemoteDialog?.setContentView(createRemoteView)
-            createRemoteDialog?.setOnDismissListener {
-                state.isShowingCreateRemoteFromView = false }
+            createRemoteDialog?.setOnDismissListener { state.isShowingCreateRemoteFromView = false }
 
+            // set up onClick listeners (device template, existing remote, blank layout)
             createRemoteFromBinding?.tvFromScratch?.setOnClickListener { createBlankRemote() }
+            createRemoteFromBinding?.tvFromDeviceTemplate?.setOnClickListener { createFromDeviceTemplate() }
+            createRemoteFromBinding?.tvFromExistingRemote?.setOnClickListener { createFromExistingRemote() }
+
+            // Hide "From Existing Remote" if user doesn't have any
+            if (AppState.userData.remotes.size == 0)
+                createRemoteFromBinding?.tvFromExistingRemote?.visibility = View.GONE
 
             createRemoteDialog?.show()
             state.isShowingCreateRemoteFromView = true
         }
 
         //remoteTemplatesSheet.show(supportFragmentManager, "RemoteTemplateSheet")
+    }
+
+    /* -------- Create Remote Functions -------- */
+
+    private fun createFromExistingRemote() {
+        createRemoteDialog?.dismiss()
+
+        createRemoteDialog = BottomSheetDialog(this)
+
+
+        debug_showComingSoonFlashbar()
+    }
+
+    private fun createFromDeviceTemplate() {
+        createRemoteDialog?.dismiss()
+        debug_showComingSoonFlashbar()
     }
 
     private fun createBlankRemote() {
@@ -544,6 +561,8 @@ class MainViewActivity : AppCompatActivity() {
         binding.toolbar.selectTitleText()
     }
 
+
+
     private fun createCommand() {
         //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
@@ -559,6 +578,21 @@ class MainViewActivity : AppCompatActivity() {
     private fun addDevice() {
         //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
+    /* -------- DEBUG FUNCTIONS -------- */
+
+    fun debug_showComingSoonFlashbar() {
+        Flashbar.Builder(this)
+            .gravity(Flashbar.Gravity.BOTTOM)
+            .message("Feature coming soon!")
+            .showOverlay()
+            .enableSwipeToDismiss()
+            .dismissOnTapOutside()
+            .duration(Flashbar.DURATION_SHORT)
+            .build()
+            .show()
+    }
+
 
     companion object {
         const val REQ_NEW_IR_SIG = 2
