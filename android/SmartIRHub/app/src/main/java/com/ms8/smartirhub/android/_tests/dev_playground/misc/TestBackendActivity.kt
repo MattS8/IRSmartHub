@@ -73,11 +73,11 @@ class TestBackendActivity : AppCompatActivity() {
                     })
             }
         testRemote.uid = TEST_REMOTE
-        FirestoreActions.updateRemote(testRemote)
-            .addOnSuccessListener {
-                Log.w("TEST###", "Added successfully!")
-            }.addOnFailureListener { e ->
-                Log.e("TEST###", "Failed... $e")
-            }
+//        FirestoreActions.updateRemote(testRemote)
+//            .addOnSuccessListener {
+//                Log.w("TEST###", "Added successfully!")
+//            }.addOnFailureListener { e ->
+//                Log.e("TEST###", "Failed... $e")
+//            }
     }
 }

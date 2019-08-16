@@ -3,18 +3,23 @@ package com.ms8.smartirhub.android.remote_control.models
 import android.annotation.SuppressLint
 import android.util.ArrayMap
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.Observable
 import androidx.databinding.ObservableArrayList
 import androidx.databinding.ObservableBoolean
+import com.andrognito.flashbar.Flashbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.IgnoreExtraProperties
+import com.ms8.smartirhub.android.R
+import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.models.firestore.Hub.Companion.DEFAULT_HUB
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.ADD_TO_END
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.ID_BUTTONS
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.ID_NAME
-import java.lang.Exception
+import com.ms8.smartirhub.android.utils.MyValidators
+import com.ms8.smartirhub.android.utils.MyValidators.isValidRemoteName
 
 @IgnoreExtraProperties
 class RemoteProfile: Observable {
@@ -86,8 +91,37 @@ class RemoteProfile: Observable {
         }
     }
 
+    /**
+     * Saves remote changes to firebase. If activity is not null, error messages will be
+     * displayed via a Flashbar.
+     */
+    fun saveRemote(activity : AppCompatActivity? = null) : Boolean {
+        return when {
+            // show error if name is missing
+            name.isEmpty() -> {
+                activity?.showRemoteNameEmptyFlashbar()
+                false
+            }
+
+            // show error if name is invalid
+            !name.isValidRemoteName() -> {
+                activity?.showInvalidRemoteNameFlashbar()
+                false
+            }
+
+            // begin "save remote" task
+            else -> {
+                FirestoreActions.updateRemote()
+                true
+            }
+        }
+    }
+
     @Suppress("UNCHECKED_CAST")
     companion object {
+        /**
+         * Parses remote from firestore snapshot.
+         */
         @SuppressLint("LogNotTimber")
         fun fromSnapshot(snapshot: DocumentSnapshot) : RemoteProfile {
             val newRemote = snapshot.toObject(RemoteProfile::class.java)
@@ -335,3 +369,52 @@ class RemoteProfile: Observable {
         }
     }
 }
+
+/*
+----------------------------------------------
+   Extensions
+----------------------------------------------
+*/
+
+fun AppCompatActivity.getRemoteNameErrorString() : String {
+    return "${getString(R.string.remote_names_must_be)} ${MyValidators.MIN_REMOTE_NAME_LENGTH} - ${MyValidators.MAX_REMOTE_NAME_LENGTH} ${getString(R.string.and_no_characters)}"
+}
+
+fun AppCompatActivity.getGenericErrorFlashbar(showPositiveAction : Boolean = false) = Flashbar.Builder(this)
+        .gravity(Flashbar.Gravity.BOTTOM)
+        .showOverlay()
+        .backgroundColorRes(R.color.colorCardDark)
+        .messageColorRes(android.R.color.holo_red_dark)
+        .enableSwipeToDismiss()
+        .dismissOnTapOutside()
+        .duration(Flashbar.DURATION_LONG)
+        .apply {
+            if (showPositiveAction) {
+                positiveActionText(R.string.dismiss)
+                positiveActionTapListener(object : Flashbar.OnActionTapListener {
+                    override fun onActionTapped(bar: Flashbar) {
+                        bar.dismiss()
+                    }
+                })
+            }
+        }
+
+
+ fun AppCompatActivity?.showRemoteNameEmptyFlashbar() {
+     this?.let {
+         getGenericErrorFlashbar(true)
+             .message(getString(R.string.err_empty_remote_name))
+             .build()
+             .show()
+     }
+}
+
+fun AppCompatActivity?.showInvalidRemoteNameFlashbar() {
+    this?.let {
+        getGenericErrorFlashbar(true)
+            .message(getRemoteNameErrorString())
+            .build()
+            .show()
+    }
+}
+

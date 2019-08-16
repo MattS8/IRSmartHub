@@ -1,17 +1,20 @@
 package com.ms8.smartirhub.android.utils
 
+import android.content.Context
 import com.wajahatkarim3.easyvalidation.core.Validator
 import com.wajahatkarim3.easyvalidation.core.rules.BaseRule
+import com.wajahatkarim3.easyvalidation.core.rules.NoSpecialCharacterRule
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validator
 
 @Suppress("FunctionName")
 object MyValidators {
-    fun PasswordValidator(str : String) = str.validator()
+    fun PasswordValidator(str : String, context: Context? = null) = str.validator()
         .nonEmpty()
         .atleastOneLowerCase()
         .atleastOneNumber()
         .atleastOneUpperCase()
-        .minLength(5)
+        .minLength(MIN_PASSWORD_LENGTH)
+        .maxLength(MAX_PASSWORD_LEGNTH)
 
     fun EmailValidator(str: String) = str.validator()
         .validEmail()
@@ -19,8 +22,8 @@ object MyValidators {
     fun UsernameValidator(str: String) = str.validator()
         .nonEmpty()
         .noSpecialCharacters()
-        .minLength(5)
-        .maxLength(15)
+        .minLength(MIN_USERNAME_LENGTH)
+        .maxLength(MAX_USERNAME_LENGTH)
 
     fun String.SignalNameValidator() = validator()
         .nonEmpty()
@@ -29,6 +32,27 @@ object MyValidators {
     fun String.ButtonNameValidator() = validator()
         .nonEmpty()
         .addRule(NoSpecialCharacterAllowSpaceAndUnderscoreRule())
+
+    fun String.RemoteNameValidator() = validator()
+        .nonEmpty()
+        .addRule(NoSpecialCharacterAllowSpaceAndUnderscoreRule())
+        .minLength(1)
+        .maxLength(MAX_REMOTE_NAME_LENGTH)
+
+    fun String.isValidRemoteName() = validator()
+        .nonEmpty()
+        .addRule(NoSpecialCharacterAllowSpaceAndUnderscoreRule())
+        .minLength(1)
+        .maxLength(MAX_REMOTE_NAME_LENGTH)
+        .check()
+
+
+    const val MIN_REMOTE_NAME_LENGTH = 2
+    const val MAX_REMOTE_NAME_LENGTH = 31
+    const val MAX_USERNAME_LENGTH = 15
+    const val MIN_USERNAME_LENGTH = 2
+    const val MIN_PASSWORD_LENGTH = 5
+    const val MAX_PASSWORD_LEGNTH = 50
 }
 
 /**

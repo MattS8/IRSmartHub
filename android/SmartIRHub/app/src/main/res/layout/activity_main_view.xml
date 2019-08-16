@@ -68,7 +68,7 @@
                 app:layout_anchorGravity="center"
                 app:layout_anchor="@id/fab_dummy"
                 app:backgroundTint="@color/white"
-                android:src="@drawable/ic_mode_edit_black_24dp"
+                app:srcCompat="@drawable/ic_mode_edit_black_24dp"
                 app:rippleColor="@color/colorAccent"
         />
 

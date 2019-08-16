@@ -41,7 +41,8 @@ object AppState {
     )
 
     data class ErrorData (
-        var userSignInError : ObservableField<Exception?> = ObservableField()
+        var userSignInError : ObservableField<Exception?> = ObservableField(),
+        var remoteSaveError : ObservableField<Exception?> = ObservableField()
     )
 
     fun resetTempRemote() {

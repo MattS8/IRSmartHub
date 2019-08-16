@@ -3,6 +3,9 @@ package com.ms8.smartirhub.android.main_view
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Animatable2
+import android.graphics.drawable.AnimatedVectorDrawable
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
@@ -19,8 +22,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import androidx.databinding.Observable
 import androidx.databinding.ObservableMap
 import androidx.fragment.app.FragmentPagerAdapter
+import androidx.vectordrawable.graphics.drawable.Animatable2Compat
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
 import androidx.viewpager.widget.ViewPager
 import com.andrognito.flashbar.Flashbar
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -40,9 +46,11 @@ import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity
 import com.ms8.smartirhub.android.main_view.fragments.*
 import com.ms8.smartirhub.android.remote_control.RemoteFragment
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
+import com.ms8.smartirhub.android.remote_control.models.getGenericErrorFlashbar
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
 import com.ms8.smartirhub.android.utils.extensions.findNavBarHeight
 import com.ms8.smartirhub.android.utils.extensions.getNavBarHeight
+import kotlin.properties.ObservableProperty
 
 
 class MainViewActivity : AppCompatActivity() {
@@ -143,6 +151,17 @@ class MainViewActivity : AppCompatActivity() {
         // get state
         state = savedInstanceState?.get(STATE) as State? ?: State()
 
+        // check to see if we were waiting for "save remote" response. Act on any change that happened during config change or keep listening
+        if (state.isListeningForSaveRemoteConfirmation)
+            if (!AppState.tempData.tempRemoteProfile.inEditMode.get())
+                state.isListeningForSaveRemoteConfirmation = false
+            else if (AppState.errorData.remoteSaveError.get() != null)
+                showRemoteSaveError()
+            else {
+                AppState.tempData.tempRemoteProfile.inEditMode.addOnPropertyChangedCallback(editModeListener)
+                AppState.errorData.remoteSaveError.addOnPropertyChangedCallback(remoteSaveErrorListener)
+            }
+
         // setup fab
         setupFab()
 
@@ -195,6 +214,8 @@ class MainViewActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         AppState.userData.remotes.removeOnMapChangedCallback(remoteProfilesListener)
+        AppState.tempData.tempRemoteProfile.inEditMode.removeOnPropertyChangedCallback(editModeListener)
+        AppState.errorData.remoteSaveError.removeOnPropertyChangedCallback(remoteSaveErrorListener)
     }
 
     override fun onResume() {
@@ -261,6 +282,7 @@ class MainViewActivity : AppCompatActivity() {
         override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
 
         override fun onPageSelected(position: Int) {
+            Log.d("TEST", "POSITION $position SELECTED")
             state.viewPagerPosition = position
             setupFab()
             setupToolbar()
@@ -287,10 +309,10 @@ class MainViewActivity : AppCompatActivity() {
 
                         Log.d("Toolbar", "tempRemoteProfile.name = ${AppState.tempData.tempRemoteProfile.name}")
                         // set title text
-                        binding.toolbar.title = if (AppState.tempData.tempRemoteProfile.name == "")
-                            getString(R.string.new_remote)
-                        else {
-                            AppState.tempData.tempRemoteProfile.name
+                        if (AppState.tempData.tempRemoteProfile.name == "") {
+                            binding.toolbar.setTitleHint(getString(R.string.name_new_remote))
+                        } else {
+                            binding.toolbar.title = AppState.tempData.tempRemoteProfile.name
                         }
                     }
                     VP_ALL_REMOTES -> {
@@ -330,6 +352,7 @@ class MainViewActivity : AppCompatActivity() {
     }
 
     private fun setupFab() {
+        Log.d("TEST", "state.navPosition = ${state.navPosition} (VP_FAV_REMOTE = $VP_FAV_REMOTE)")
         when (state.navPosition) {
             // My Remotes
             FP_MY_REMOTES -> {
@@ -341,15 +364,44 @@ class MainViewActivity : AppCompatActivity() {
                             binding.fab.imageTintList = ContextCompat.getColorStateList(this, R.color.black)
                             binding.fab.setOnClickListener { createRemote() }
                         } else {
-                            when (AppState.tempData.tempRemoteProfile.inEditMode.get()) {
-                            // Editing current remote
-                                true -> {
-                                    binding.fab.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_done_green_24dp))
+                            when {
+
+                                // Waiting for remote saved confirmation
+                                state.isListeningForSaveRemoteConfirmation -> {
+                                    val animatedDrawable = AnimatedVectorDrawableCompat.create(this, R.drawable.edit_to_save)
+                                        ?.apply {
+                                            registerAnimationCallback(object : Animatable2Compat.AnimationCallback() {
+                                                override fun onAnimationEnd(drawable: Drawable?) {
+                                                    val savingDrawable = AnimatedVectorDrawableCompat.create(this@MainViewActivity, R.drawable.remote_saving)
+                                                        ?.apply {
+                                                            registerAnimationCallback(object : Animatable2Compat.AnimationCallback() {
+                                                                override fun onAnimationEnd(drawable: Drawable?) {
+                                                                    binding.fab.post { start() }
+                                                                }
+                                                            })
+                                                        }
+                                                    if (this@MainViewActivity.state.navPosition == VP_FAV_REMOTE) {
+                                                        binding.fab.setImageDrawable(savingDrawable)
+                                                        binding.fab.imageTintList = ContextCompat.getColorStateList(this@MainViewActivity, R.color.black)
+                                                        savingDrawable?.start()
+                                                    }
+                                                }
+                                            })
+                                        }
+
+                                    binding.fab.setImageDrawable(animatedDrawable)
+                                    animatedDrawable?.start()
+                                }
+
+                                // Editing current remote
+                                AppState.tempData.tempRemoteProfile.inEditMode.get() -> {
+                                    binding.fab.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.edit_to_save))
                                     binding.fab.imageTintList = ContextCompat.getColorStateList(this, R.color.md_green_300)
                                     binding.fab.setOnClickListener { saveRemoteEdits() }
                                 }
-                            // Not editing current remote
-                                false -> {
+
+                                // Not editing current remote
+                                else -> {
                                     binding.fab.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_mode_edit_black_24dp))
                                     binding.fab.imageTintList = ContextCompat.getColorStateList(this, R.color.black)
                                     binding.fab.setOnClickListener { editRemote() }
@@ -369,12 +421,12 @@ class MainViewActivity : AppCompatActivity() {
                 when (state.viewPagerPosition) {
                 // Add Predefined Devices
                     VP_DEVICES -> {
-                        //binding.fab.labelText = getString(R.string.add_ir_device)
+                        // todo set fab icon
                         binding.fab.setOnClickListener { addDevice() }
                     }
                 // Set Up IRSmartHub
                     VP_IRSMART_DEVICES -> {
-                        //binding.fab.labelText = getString(R.string.setup_new_hub)
+                        // todo set fab icon
                         binding.fab.setOnClickListener { setupNewHub() }
                     }
                 }
@@ -455,6 +507,18 @@ class MainViewActivity : AppCompatActivity() {
         }
     }
 
+    private fun showRemoteSaveError() {
+        getGenericErrorFlashbar(true)
+            .message(getString(R.string.err_unknown_save_remote))
+            .build()
+            .show()
+            .also {
+                Log.e("SaveRemote", "$it")
+                AppState.errorData.remoteSaveError.removeOnPropertyChangedCallback(remoteSaveErrorListener)
+                AppState.errorData.remoteSaveError.set(null)
+            }
+    }
+
 /*
  ----------------------------------------------
     Navigation Functions
@@ -477,12 +541,36 @@ class MainViewActivity : AppCompatActivity() {
         setupFab()
     }
 
+    private val editModeListener = object : Observable.OnPropertyChangedCallback() {
+        override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+            setupToolbar()
+            setupFab()
+            AppState.tempData.tempRemoteProfile.inEditMode.removeOnPropertyChangedCallback(this)
+        }
+    }
+
+    private val remoteSaveErrorListener = object : Observable.OnPropertyChangedCallback() {
+        override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+            AppState.errorData.remoteSaveError.get()?.let {
+                showRemoteSaveError()
+            }
+        }
+    }
+
     private fun saveRemoteEdits() {
-        AppState.tempData.tempRemoteProfile.inEditMode.set(false)
-        //TODO Re-enable
-        //FirestoreActions.updateRemoteProfile()
-        setupToolbar()
-        setupFab()
+        // Check remote for valid name
+
+        if (AppState.tempData.tempRemoteProfile.saveRemote(this)) {
+            // set fab to loading animation
+            state.isListeningForSaveRemoteConfirmation = true
+            setupFab()
+
+            // listen for success via change to remote.isInEditMode
+            AppState.tempData.tempRemoteProfile.inEditMode.addOnPropertyChangedCallback(editModeListener)
+
+            // listen for failure via change to AppState.saveRemoteError
+            AppState.errorData.remoteSaveError.addOnPropertyChangedCallback(remoteSaveErrorListener)
+        }
     }
 
 //    private val remoteTemplatesSheet = RemoteTemplatesSheet().apply {
@@ -530,14 +618,18 @@ class MainViewActivity : AppCompatActivity() {
     private fun createFromExistingRemote() {
         createRemoteDialog?.dismiss()
 
-        createRemoteDialog = BottomSheetDialog(this)
+        //createRemoteDialog = BottomSheetDialog(this)
 
 
         debug_showComingSoonFlashbar()
     }
 
     private fun createFromDeviceTemplate() {
-        createRemoteDialog?.dismiss()
+        createRemoteDialog?.let {
+            Log.d("Test", "still have dialog link")
+            it.dismiss()
+        }
+        //createRemoteDialog?.dismiss()
         debug_showComingSoonFlashbar()
     }
 
@@ -557,7 +649,7 @@ class MainViewActivity : AppCompatActivity() {
         // show keyboard
         (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).toggleSoftInput(InputMethodManager.SHOW_FORCED, 0)
 
-        // select "remote name" text
+        // select toolbar title
         binding.toolbar.selectTitleText()
     }
 
@@ -588,7 +680,7 @@ class MainViewActivity : AppCompatActivity() {
             .showOverlay()
             .enableSwipeToDismiss()
             .dismissOnTapOutside()
-            .duration(Flashbar.DURATION_SHORT)
+            .duration(Flashbar.DURATION_LONG)
             .build()
             .show()
     }
@@ -622,12 +714,14 @@ class MainViewActivity : AppCompatActivity() {
         var viewPagerPosition = 0
         var adapterBaseID: Long = 0
         var isShowingCreateRemoteFromView = false
+        var isListeningForSaveRemoteConfirmation = false
 
         constructor(parcel: Parcel) : this() {
             navPosition = parcel.readInt()
             viewPagerPosition = parcel.readInt()
             adapterBaseID = parcel.readLong()
             isShowingCreateRemoteFromView = parcel.readByte() != 0.toByte()
+            isListeningForSaveRemoteConfirmation = parcel.readByte() != 0.toByte()
         }
 
         override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -635,9 +729,12 @@ class MainViewActivity : AppCompatActivity() {
             parcel.writeInt(viewPagerPosition)
             parcel.writeLong(adapterBaseID)
             parcel.writeByte(if (isShowingCreateRemoteFromView) 1 else 0)
+            parcel.writeByte(if (isListeningForSaveRemoteConfirmation) 1 else 0)
         }
 
-        override fun describeContents() = 0
+        override fun describeContents(): Int {
+            return 0
+        }
 
         companion object CREATOR : Parcelable.Creator<State> {
             override fun createFromParcel(parcel: Parcel): State {
@@ -648,6 +745,7 @@ class MainViewActivity : AppCompatActivity() {
                 return arrayOfNulls(size)
             }
         }
+
     }
 }
 

@@ -4,7 +4,6 @@
                                                        android:layout_height="wrap_content"
                                                        android:minHeight="250dp"
                                                        android:id="@+id/bottomSheetContainer"
-                                                       app:superBottomSheet_alwaysExpanded="true"
     >
         <Button android:id="@+id/btnNeg"
                 android:layout_width="wrap_content"

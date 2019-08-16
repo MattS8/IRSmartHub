@@ -8,8 +8,10 @@ import android.graphics.Color.TRANSPARENT
 import android.graphics.Rect
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
+import com.ms8.smartirhub.android.utils.MyValidators
 
 
 val AppCompatActivity.hasSourceBounds: Boolean get() = intent?.sourceBounds != null
@@ -66,3 +68,4 @@ fun Context.getNavBarHeight() : Int {
         resources.getDimensionPixelSize(resourceId)
     else 0
 }
+

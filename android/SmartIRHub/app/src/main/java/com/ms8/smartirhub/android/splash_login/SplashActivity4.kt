@@ -35,6 +35,8 @@ import com.ms8.smartirhub.android.main_view.MainViewActivity
 import com.ms8.smartirhub.android.models.firestore.Hub
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import com.ms8.smartirhub.android.utils.MyValidators
+import com.ms8.smartirhub.android.utils.extensions.DynamicStrings.getPasswordErrorString
+import com.ms8.smartirhub.android.utils.extensions.DynamicStrings.getUsernameErrorString
 
 class SplashActivity4 : AppCompatActivity() {
     lateinit var binding : ASplashLoginMainBinding
@@ -255,7 +257,7 @@ class SplashActivity4 : AppCompatActivity() {
 
         // check validity
         val isValidUsername = MyValidators.UsernameValidator(username)
-            .addErrorCallback { binding.layoutUsername.selectUsername.error = getString(R.string.err_invalid_username) }
+            .addErrorCallback { binding.layoutUsername.selectUsername.error = getUsernameErrorString() }
             .check()
         if (isValidUsername) {
             // start loading animation
@@ -313,7 +315,7 @@ class SplashActivity4 : AppCompatActivity() {
         val password = binding.layoutSignIn.password.editText?.text.toString()
 
         val isValidEmailAndPassword = MyValidators.PasswordValidator(password)
-            .addErrorCallback { binding.layoutSignIn.password.error = getString(R.string.err_pass) }
+            .addErrorCallback { binding.layoutSignIn.password.error = getPasswordErrorString() }
             .check()
                 &&
                 MyValidators.EmailValidator(email)

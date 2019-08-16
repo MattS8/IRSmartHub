@@ -16,10 +16,13 @@ import android.widget.EditText
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.utils.TypefaceCache
 import com.ms8.smartirhub.android.utils.extensions.hideKeyboard
+import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.singleLine
 import org.jetbrains.anko.textColor
 
@@ -30,7 +33,8 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
     private lateinit var _titleTextView: EditText
     private val location = IntArray(2)
     private var titleStr: String = ""
-    private var _titleTextViewBG: Drawable
+    private var _titleTextViewBG: Drawable?
+
     private var _isTitleEditable = false
     var centerTitle = true
     set(value) {
@@ -64,8 +68,7 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
 
     init {
         _screenWidth = getScreenSize().x
-
-        _titleTextView = EditText(context)
+        _titleTextView = TextInputEditText(context)
         _titleTextView.setSelectAllOnFocus(true)
         _titleTextView.textColor = ContextCompat.getColor(context, R.color.white)
         _titleTextView.maxLines = 1
@@ -76,6 +79,7 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
         makeTitleEditable(false)
         TypefaceCache.get("font/roboto_light.ttf", context)?.let { _titleTextView.typeface = it }
         TextViewCompat.setTextAppearance(_titleTextView, R.style.AppTheme_TextAppearance_ToolbarTitle)
+
         addView(_titleTextView)
     }
 
@@ -129,7 +133,6 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
                 _titleTextView.isFocusable = false
                 _titleTextView.background = null
                 _titleTextView.removeTextChangedListener(titleTextWatcher)
-                _titleTextView.textColor = ContextCompat.getColor(context, R.color.white)
             }
         }
 
@@ -145,5 +148,10 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
         Log.d("Toolbar", "text size = ${_titleTextView.text.toString().length}")
         _titleTextView.requestFocus()
         _titleTextView.selectAll()
+    }
+
+    fun setTitleHint(string: String) {
+        _titleTextView.setText("")
+        _titleTextView.hint = string
     }
 }

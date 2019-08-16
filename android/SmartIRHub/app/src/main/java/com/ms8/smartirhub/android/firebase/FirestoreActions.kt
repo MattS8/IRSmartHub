@@ -710,8 +710,17 @@ object FirestoreActions {
         return true
     }
 
-    fun updateRemote(remote: RemoteProfile): Task<Void> {
-        return FirebaseFirestore.getInstance().collection("remotes").document(remote.uid).set(remote.toFirebaseObject())
+    fun updateRemote() {
+        AppState.tempData.tempRemoteProfile.let { remote ->
+            FirebaseFirestore.getInstance().collection("remotes").document(remote.uid)
+                .set(remote.toFirebaseObject())
+                .addOnSuccessListener {
+                    AppState.tempData.tempRemoteProfile.inEditMode.set(false)
+                }
+                .addOnFailureListener { e ->
+                    AppState.errorData.remoteSaveError.set(e)
+                }
+        }
     }
 
     fun addRemote(remote: RemoteProfile): Task<DocumentReference> {
