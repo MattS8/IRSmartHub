@@ -30,26 +30,27 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
   Toolbar State
 ----------------------------------------------
 */
-
-    private lateinit var state : State
+    var layoutState = REMOTE_TITLE
+    var titleStr = ""
 
     override fun onSaveInstanceState(): Parcelable? {
         return State(super.onSaveInstanceState())
             .apply {
-                layoutState = state.layoutState
-                titleStr = state.titleStr
+                layoutState = this@ToolbarCenteredTitle.layoutState
+                titleStr = this@ToolbarCenteredTitle.titleStr
             }
     }
 
     override fun onRestoreInstanceState(state: Parcelable?) {
-        this.state = if (state is State) {
+        if (state is State) {
             super.onRestoreInstanceState(state.superState)
-            _titleET.setText(state.titleStr)
-            _titleTV.text = state.titleStr
+            titleStr = state.titleStr
+            layoutState = state.layoutState
+            _titleET.setText(titleStr)
+            _titleTV.text = titleStr
             state
         } else {
             super.onRestoreInstanceState(state)
-            State(state)
         }
     }
 
@@ -128,12 +129,14 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
         // add both views
         addView(_titleET)
         addView(_titleTV)
+
+        applyLayoutState()
     }
 
     @SuppressLint("LogNotTimber")
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         super.onLayout(changed, l, t, r, b)
-        when (state.layoutState) {
+        when (layoutState) {
         // Start-aligned title
             NORMAL_TITLE ->
             {
@@ -151,54 +154,12 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
                 _titleET.getLocationOnScreen(location)
                 _titleET.translationX = _titleET.translationX + (-location[0] + getScreenSize().x / 2 - _titleET.width / 2)
             }
-            else -> Log.w("CenteredTitleToolbar", "Unknown state found in onLayout call: ${state.layoutState}")
+            else -> Log.w("CenteredTitleToolbar", "Unknown state found in onLayout call: $layoutState")
         }
-    }
-
-   @Suppress("UNNECESSARY_SAFE_CALL")
-    override fun setTitle(resId: Int) {
-        state.titleStr = context.getString(resId)
-
-       _titleTV?.setText(resId)
-       _titleET?.setText(resId)
-
-       requestLayout()
-    }
-
-    @Suppress("UNNECESSARY_SAFE_CALL")
-    override fun setTitle(title : CharSequence) {
-        state.titleStr = title.toString()
-
-        _titleTV?.text = state.titleStr
-        _titleET?.setText(state.titleStr)
-
-        requestLayout()
-    }
-
-    fun setTitleMode(newMode : Int) {
-        state.layoutState = newMode
-        applyLayoutState()
-    }
-
-    @SuppressLint("LogNotTimber")
-    fun selectTitleText() {
-        if (state.layoutState != REMOTE_TITLE_EDITABLE) {
-            Log.e("ToolbarCenteredTitle", "Attempted to select toolbar title while not in edit mode.")
-            return
-        }
-
-        Log.d("Toolbar", "text size = ${_titleET.text.toString().length}")
-        _titleET.requestFocus()
-        _titleET.selectAll()
-    }
-
-    fun setTitleHint(string: String) {
-        _titleET.setText("")
-        _titleET.hint = string
     }
 
     private fun applyLayoutState() {
-        when (state.layoutState) {
+        when (layoutState) {
             NORMAL_TITLE ->
             {
                 _titleTV.visibility = View.VISIBLE
@@ -236,7 +197,53 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
         return screenSize
     }
 
+/*
+----------------------------------------------
+ Public Accessors
+----------------------------------------------
+*/
 
+    @Suppress("UNNECESSARY_SAFE_CALL")
+    override fun setTitle(resId: Int) {
+        titleStr = context.getString(resId)
+
+        _titleTV?.setText(resId)
+        _titleET?.setText(resId)
+
+        requestLayout()
+    }
+
+    @Suppress("UNNECESSARY_SAFE_CALL")
+    override fun setTitle(title : CharSequence) {
+        titleStr = title.toString()
+
+        _titleTV?.text = titleStr
+        _titleET?.setText(titleStr)
+
+        requestLayout()
+    }
+
+    fun setTitleMode(newMode : Int) {
+        layoutState = newMode
+        applyLayoutState()
+    }
+
+    @SuppressLint("LogNotTimber")
+    fun selectTitleText() {
+        if (layoutState != REMOTE_TITLE_EDITABLE) {
+            Log.e("ToolbarCenteredTitle", "Attempted to select toolbar title while not in edit mode.")
+            return
+        }
+
+        Log.d("Toolbar", "text size = ${_titleET.text.toString().length}")
+        _titleET.requestFocus()
+        _titleET.selectAll()
+    }
+
+    fun setTitleHint(string: String) {
+        _titleET.setText("")
+        _titleET.hint = string
+    }
 
 
 
