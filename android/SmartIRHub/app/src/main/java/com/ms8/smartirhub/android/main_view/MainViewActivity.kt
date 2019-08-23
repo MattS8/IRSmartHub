@@ -34,6 +34,7 @@ import com.mikepenz.materialdrawer.DrawerBuilder
 import com.mikepenz.materialdrawer.model.ProfileDrawerItem
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem
 import com.ms8.smartirhub.android.R
+import com.ms8.smartirhub.android.custom_views.ToolbarCenteredTitle
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.BottomSheet
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.databinding.ActivityMainViewBinding
@@ -298,10 +299,10 @@ class MainViewActivity : AppCompatActivity() {
 
                         if (AppState.tempData.tempRemoteProfile.inEditMode.get()) {
                             // make title editable
-                            binding.toolbar.makeTitleEditable()
+                            binding.toolbar.setTitleMode(ToolbarCenteredTitle.REMOTE_TITLE_EDITABLE)
                         } else {
                             // make title not editable
-                            binding.toolbar.makeTitleEditable(false)
+                            binding.toolbar.setTitleMode(ToolbarCenteredTitle.REMOTE_TITLE)
                         }
 
                         Log.d("Toolbar", "tempRemoteProfile.name = ${AppState.tempData.tempRemoteProfile.name}")
@@ -313,10 +314,8 @@ class MainViewActivity : AppCompatActivity() {
                         }
                     }
                     VP_ALL_REMOTES -> {
-                        // todo set small margins
-
                         // make title not editable
-                        binding.toolbar.makeTitleEditable(false)
+                        binding.toolbar.setTitleMode(ToolbarCenteredTitle.NORMAL_TITLE_CENTERED)
 
                         // set title text
                         binding.toolbar.title = getString(R.string.all_remotes)
@@ -328,7 +327,8 @@ class MainViewActivity : AppCompatActivity() {
             }
         // 'My Devices' page is currently show
             FP_MY_DEVICES -> {
-                binding.toolbar.makeTitleEditable(false)
+                binding.toolbar.setTitleMode(ToolbarCenteredTitle.NORMAL_TITLE_CENTERED)
+
                 when (state.viewPagerPosition) {
                     VP_DEVICES -> {
                         binding.toolbar.title = getString(R.string.title_my_devices)
