@@ -3,8 +3,6 @@ package com.ms8.smartirhub.android.main_view
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.Animatable2
-import android.graphics.drawable.AnimatedVectorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Parcel
@@ -23,7 +21,6 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.Observable
-import androidx.databinding.ObservableMap
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.vectordrawable.graphics.drawable.Animatable2Compat
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat
@@ -45,12 +42,10 @@ import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity
 import com.ms8.smartirhub.android.main_view.fragments.*
 import com.ms8.smartirhub.android.remote_control.RemoteFragment
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
-import com.ms8.smartirhub.android.remote_control.models.getGenericErrorFlashbar
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
 import com.ms8.smartirhub.android.utils.extensions.findNavBarHeight
+import com.ms8.smartirhub.android.utils.extensions.getGenericErrorFlashbar
 import com.ms8.smartirhub.android.utils.extensions.getNavBarHeight
-import kotlin.properties.ObservableProperty
 
 
 class MainViewActivity : AppCompatActivity() {
@@ -70,13 +65,6 @@ class MainViewActivity : AppCompatActivity() {
     Database Listeners
 -----------------------------------------------
 */
-
-    private val remoteProfilesListener: ObservableMap.OnMapChangedCallback<out ObservableMap<String, RemoteProfile>, String, RemoteProfile>? = object :
-        ObservableMap.OnMapChangedCallback<ObservableMap<String, RemoteProfile>, String, RemoteProfile>() {
-        override fun onMapChanged(sender: ObservableMap<String, RemoteProfile>?, key: String?) {
-            //todo ?
-        }
-    }
 
 /*
 ----------------------------------------------
@@ -111,42 +99,12 @@ class MainViewActivity : AppCompatActivity() {
             this@MainViewActivity.getString(R.string.leave),
             this@MainViewActivity.getString(android.R.string.cancel),
             { finishAndRemoveTask() })
-        exitWarningSheet.setup()
+            .apply {
+                setup()
+            }
 
-        // build drawer header layout
-        val header = AccountHeaderBuilder()
-            .withActivity(this)
-            .withHeaderBackground(R.drawable.side_nav_bar)
-            .addProfiles(
-                ProfileDrawerItem()
-                    .withName(AppState.userData.user.username.get())
-                    .withEmail(FirebaseAuth.getInstance().currentUser?.email)
-            )
-            .withCompactStyle(true)
-            .build()
-
-        // Account for nav/status bar height
-        val rotation = (getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.rotation
-        if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) {
-            try {
-                window.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
-                binding.navView.setPadding(0, 0, 0, getNavBarHeight())
-            } catch (e :Exception) {}
-        }
-
-        // setup side drawer
-        drawer = DrawerBuilder()
-            .withActivity(this)
-            .withToolbar(binding.toolbar)
-            .withAccountHeader(header)
-            .addDrawerItems()
-            .withOnDrawerItemClickListener(object : Drawer.OnDrawerItemClickListener {
-                override fun onItemClick(view: View?, position: Int, drawerItem: IDrawerItem<*>): Boolean {
-                    onDrawerItemClicked(view, position, drawerItem)
-                    return false
-                }
-            })
-            .build()
+        // set up side drawer
+        buildSideDrawer()
 
         // get state
         state = savedInstanceState?.get(STATE) as State? ?: State()
@@ -157,13 +115,24 @@ class MainViewActivity : AppCompatActivity() {
                 state.isListeningForSaveRemoteConfirmation = false
             else if (AppState.errorData.remoteSaveError.get() != null)
                 showRemoteSaveError()
+                    .also { state.isListeningForSaveRemoteConfirmation = false }
             else {
-                AppState.tempData.tempRemoteProfile.inEditMode.addOnPropertyChangedCallback(editModeListener)
-                AppState.errorData.remoteSaveError.addOnPropertyChangedCallback(remoteSaveErrorListener)
+                addSaveResponseListeners()
             }
 
-        // setup fab
-        setupFab()
+        // set tempRemote to fav if none is currently showing
+        AppState.userData.remotes.forEach {
+            Log.d("TEST_REMOTES", "\t - $it")
+        }
+        Log.d("TEST", "tempRemoteProfile.uid = ${AppState.tempData.tempRemoteProfile.uid}, " +
+                "inEditMode = ${AppState.tempData.tempRemoteProfile.inEditMode.get()}" +
+                ", contains ${AppState.userData.user.favRemote} = ${AppState.userData.remotes.containsKey(AppState.userData.user.favRemote)}")
+        if (AppState.tempData.tempRemoteProfile.uid.isEmpty()
+            && !AppState.tempData.tempRemoteProfile.inEditMode.get()
+            && AppState.userData.remotes.containsKey(AppState.userData.user.favRemote)
+        ) {
+            AppState.tempData.tempRemoteProfile.copyFrom(AppState.userData.remotes[AppState.userData.user.favRemote])
+        }
 
         // setup fragment pager adapter
         pagerAdapter = MainViewAdapter(supportFragmentManager, FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT, state.navPosition, state.adapterBaseID)
@@ -207,22 +176,50 @@ class MainViewActivity : AppCompatActivity() {
         when {
             state.isShowingCreateRemoteFromView -> createRemote(true)
         }
+    }
 
-        //createMockData()
+    private fun buildSideDrawer() {
+        // build drawer header layout
+        val header = AccountHeaderBuilder()
+            .withActivity(this)
+            .withHeaderBackground(R.drawable.side_nav_bar)
+            .addProfiles(
+                ProfileDrawerItem()
+                    .withName(AppState.userData.user.username.get())
+                    .withEmail(FirebaseAuth.getInstance().currentUser?.email)
+            )
+            .withCompactStyle(true)
+            .build()
+
+        // Account for nav/status bar height
+        val rotation = (getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.rotation
+        if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) {
+            try {
+                window.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+                binding.navView.setPadding(0, 0, 0, getNavBarHeight())
+            } catch (e :Exception) {}
+        }
+
+        // setup side drawer
+        drawer = DrawerBuilder()
+            .withActivity(this)
+            .withToolbar(binding.toolbar)
+            .withAccountHeader(header)
+            .addDrawerItems()
+            .withOnDrawerItemClickListener(object : Drawer.OnDrawerItemClickListener {
+                override fun onItemClick(view: View?, position: Int, drawerItem: IDrawerItem<*>): Boolean {
+                    onDrawerItemClicked(view, position, drawerItem)
+                    return false
+                }
+            })
+            .build()
     }
 
     override fun onPause() {
         super.onPause()
-        AppState.userData.remotes.removeOnMapChangedCallback(remoteProfilesListener)
         AppState.tempData.tempRemoteProfile.inEditMode.removeOnPropertyChangedCallback(editModeListener)
         AppState.errorData.remoteSaveError.removeOnPropertyChangedCallback(remoteSaveErrorListener)
     }
-
-    override fun onResume() {
-        super.onResume()
-        AppState.userData.remotes.addOnMapChangedCallback(remoteProfilesListener)
-    }
-
 
 /*
  ----------------------------------------------
@@ -365,9 +362,9 @@ class MainViewActivity : AppCompatActivity() {
                             binding.fab.setOnClickListener { createRemote() }
                         } else {
                             when {
-
                                 // Waiting for remote saved confirmation
                                 state.isListeningForSaveRemoteConfirmation -> {
+                                    Log.d("TEST", "Waiting for save response...")
                                     val animatedDrawable = AnimatedVectorDrawableCompat.create(this, R.drawable.edit_to_save)
                                         ?.apply {
                                             registerAnimationCallback(object : Animatable2Compat.AnimationCallback() {
@@ -380,7 +377,7 @@ class MainViewActivity : AppCompatActivity() {
                                                                 }
                                                             })
                                                         }
-                                                    if (this@MainViewActivity.state.navPosition == VP_FAV_REMOTE) {
+                                                    if (this@MainViewActivity.state.navPosition == VP_FAV_REMOTE && this@MainViewActivity.state.isListeningForSaveRemoteConfirmation) {
                                                         binding.fab.setImageDrawable(savingDrawable)
                                                         binding.fab.imageTintList = ContextCompat.getColorStateList(this@MainViewActivity, R.color.black)
                                                         savingDrawable?.start()
@@ -395,13 +392,15 @@ class MainViewActivity : AppCompatActivity() {
 
                                 // Editing current remote
                                 AppState.tempData.tempRemoteProfile.inEditMode.get() -> {
-                                    binding.fab.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.edit_to_save))
+                                    Log.d("TEST", "In Edit Mode")
+                                    binding.fab.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_done_green_24dp))
                                     binding.fab.imageTintList = ContextCompat.getColorStateList(this, R.color.md_green_300)
                                     binding.fab.setOnClickListener { saveRemoteEdits() }
                                 }
 
                                 // Not editing current remote
                                 else -> {
+                                    Log.d("TEST", "Not In Edit Mode")
                                     binding.fab.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_mode_edit_black_24dp))
                                     binding.fab.imageTintList = ContextCompat.getColorStateList(this, R.color.black)
                                     binding.fab.setOnClickListener { editRemote() }
@@ -543,18 +542,33 @@ class MainViewActivity : AppCompatActivity() {
 
     private val editModeListener = object : Observable.OnPropertyChangedCallback() {
         override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+            Log.d("TEST", "Changed!")
+            state.isListeningForSaveRemoteConfirmation = false
+            removeSaveResponseListeners()
             setupToolbar()
             setupFab()
-            AppState.tempData.tempRemoteProfile.inEditMode.removeOnPropertyChangedCallback(this)
         }
     }
 
     private val remoteSaveErrorListener = object : Observable.OnPropertyChangedCallback() {
         override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
             AppState.errorData.remoteSaveError.get()?.let {
+                state.isListeningForSaveRemoteConfirmation = false
+                removeSaveResponseListeners()
                 showRemoteSaveError()
+                setupFab()
             }
         }
+    }
+
+    private fun removeSaveResponseListeners() {
+        AppState.tempData.tempRemoteProfile.inEditMode.removeOnPropertyChangedCallback(editModeListener)
+        AppState.errorData.remoteSaveError.removeOnPropertyChangedCallback(remoteSaveErrorListener)
+    }
+
+    private fun addSaveResponseListeners() {
+        AppState.tempData.tempRemoteProfile.inEditMode.addOnPropertyChangedCallback(editModeListener)
+        AppState.errorData.remoteSaveError.addOnPropertyChangedCallback(remoteSaveErrorListener)
     }
 
     private fun saveRemoteEdits() {

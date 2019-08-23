@@ -79,12 +79,10 @@ class SplashActivity4 : AppCompatActivity() {
 
     private val usernameListener = object : Observable.OnPropertyChangedCallback() {
         override fun onPropertyChanged(sender: Observable?, propertyId: Int) { checkLoginState() }
-
     }
 
     private val uidListener = object : Observable.OnPropertyChangedCallback() {
         override fun onPropertyChanged(sender: Observable?, propertyId: Int) { checkLoginState() }
-
     }
 
     private val errorListener = object : Observable.OnPropertyChangedCallback() {
@@ -102,10 +100,12 @@ class SplashActivity4 : AppCompatActivity() {
             && AppState.userData.user.uid.get() != ""
             && AppState.userData.user.username.get() != ""
             && AppState.userData.remotes.size == AppState.userData.user.remotes.size
-            && AppState.userData.hubs.size == AppState.userData.user.hubs.size)
+            && AppState.userData.hubs.size == AppState.userData.user.hubs.size){
+            FirestoreActions.listenToUserData2() //TODO
             nextActivity()
+        }
 
-        Log.d("TEST###", "uid = ${AppState.userData.user.uid.get()} | username = ${AppState.userData.user.username.get()}")
+        Log.d("TEST#CLS", "uid = ${AppState.userData.user.uid.get()} | username = ${AppState.userData.user.username.get()} | remotesSize = ${AppState.userData.remotes.size}")
 
         when {
         // Not signed in

@@ -55,7 +55,8 @@ object FirestoreActions {
                     if (snapshots.size() == 0) {
                         AppState.userData.user.uid.set(FirebaseAuth.getInstance().currentUser!!.uid)
                     } else {
-                        AppState.userData.user.fromSnapshot(snapshots.documents[0])
+                        AppState.userData.user.copyFromSnapshot(snapshots.documents[0])
+                        listenToUserData2()
                     }
 
                     Log.d("TESTUSERUID", "user uid = ${AppState.userData.user.uid} | username = ${AppState.userData.user.username}")
@@ -321,16 +322,22 @@ object FirestoreActions {
 //            }
 //    }
 
-    fun listenToUserData2(username: String) {
+    @SuppressLint("LogNotTimber")
+    fun listenToUserData2(username: String = AppState.userData.user.username.get() ?: "") {
+        Log.d("T#listenToUserData2", "listening to userData from $username")
         doAsync {
+            if (userListener != null) {
+                Log.w("T#listenToUserData2", "Tried listening more than once!")
+                return@doAsync
+            }
             userListener = FirebaseFirestore.getInstance().collection("users")
                 .document(username)
                 .addSnapshotListener {snapshot, exception -> when {
                     exception != null -> { Log.e("listenToUserData", "snapshot error ($exception)") }
-                    !snapshot!!.exists() -> {Log.d("listenToUserData", "User data is null")}
+                    !snapshot!!.exists() -> {Log.d("T#listenToUserData2", "User data is null")}
                     else -> {
-                        Log.d("TEST###", "User before: \n${AppState.userData.user}")
-                        AppState.userData.user.fromSnapshot(snapshot)
+                        Log.d("T#listenToUserData2", "User before: \n${AppState.userData.user}")
+                        AppState.userData.user.copyFromSnapshot(snapshot)
 
                         // listen to hubs
                         hubListeners.clear()
@@ -339,15 +346,18 @@ object FirestoreActions {
                                 FirebaseFirestore.getInstance().collection("hubs").document(hubUID)
                                 .addSnapshotListener {snapshot, exception ->
                                     when {
+                                    // error
                                         exception != null -> {
                                             Log.e("listenToUserData", "$exception")
                                             AppState.userData.hubs.remove(hubUID)
+                                            AppState.errorData.userSignInError.set(exception)
                                         }
-
+                                    // hub not found
                                         !snapshot!!.exists() -> {
                                             AppState.userData.hubs.remove(hubUID)
+                                            AppState.errorData.userSignInError.set(Exception("Hub with uid '$hubUID' was not found!"))
                                         }
-
+                                    // success
                                         else -> {
                                             AppState.userData.hubs[hubUID] = Hub.fromSnapshot(snapshot)
                                         }
@@ -360,15 +370,18 @@ object FirestoreActions {
                             FirebaseFirestore.getInstance().collection("signals").document(irSignalUID)
                                 .addSnapshotListener {snapshot, exception ->
                                     when {
+                                    // error
                                         exception != null -> {
                                             Log.e("listenToUserData", "$exception")
                                             AppState.userData.irSignals.remove(irSignalUID)
+                                            AppState.errorData.userSignInError.set(exception)
                                         }
-
+                                    // irSignal not found
                                         !snapshot!!.exists() -> {
                                             AppState.userData.irSignals.remove(irSignalUID)
+                                            AppState.errorData.userSignInError.set(Exception("IrSignal with uid '$irSignalUID' was not found!"))
                                         }
-
+                                    // success
                                         else -> {
                                             AppState.userData.irSignals[irSignalUID] = (snapshot.toObject(IrSignal::class.java) ?: IrSignal())
                                                 .apply {
@@ -379,175 +392,184 @@ object FirestoreActions {
                         }
 
                         // listen to remotes
+                        Log.d("TEST", "Listening to ${AppState.userData.user.remotes.size} remotes")
                         AppState.userData.user.remotes.forEach { remoteUID ->
-                            FirebaseFirestore.getInstance().collection("remotes").document(remoteUID)
-                                .addSnapshotListener {snapshot, exception -> when {
-                                    exception != null -> {
-                                        Log.e("listenToUserData", "$exception")
-                                        AppState.userData.remotes.remove(remoteUID)
-                                    }
-
-                                    !snapshot!!.exists() -> {
-                                        AppState.userData.remotes.remove(remoteUID)
-                                    }
-
-                                    else -> {
-                                        // add remote
-                                        val newRemote = RemoteProfile.fromSnapshot(snapshot)
-                                        AppState.userData.remotes[remoteUID] = newRemote
-
-                                        // sync any new irSignals
-                                        val missingIrSignals = ArrayList<String>()
-                                        newRemote.buttons.forEach { button ->
-                                            button.commands.forEach { command ->
-                                                command.actions.forEach { action ->
-                                                    if (!AppState.userData.irSignals.containsKey(action.irSignal))
-                                                        missingIrSignals.add(action.irSignal)
-                                                }
-                                            }
-                                        }
-                                        if (missingIrSignals.size > 0)
-                                            getIrSignals(ArrayList(missingIrSignals.distinct()))
-                                    }
-                                }}
+                            listenToRemote(remoteUID)
                         }
 
-                        Log.d("TEST###", "User after: \n${AppState.userData.user}")
+                        Log.d("T#listenToUserData2", "User after: \n${AppState.userData.user}")
                     }
                 }}
         }
     }
 
     @SuppressLint("LogNotTimber")
-    @Suppress("UNCHECKED_CAST")
-    fun listenToGroupData() {
-        val groups = AppState.userData.user?.groups ?: return
-        groups.forEach { groupUID ->
-            if (groupUID != TEST_GROUP && !groupListeners.containsKey(groupUID)) {
-                // Listen to group
-                groupListeners[groupUID] = FirebaseFirestore.getInstance().collection("groups").document(groupUID)
-                    .addSnapshotListener {snapshot, e ->
-                        when {
-                            // Error
-                            e != null -> {
-                                Log.e("listenToGroupData", "$e")
-                                // Check all hubs in this group and remove any the user no longer has access to
-                                snapshot?.let { removeGroup(snapshot) }
-                            }
-                            // Null group?
-                            snapshot == null -> { Log.w("listenToUserGroup", "snapshot for $groupUID was null!") }
-                            // Group no longer exists
-                            !snapshot.exists() -> {
-                                Log.d("listenToGroupData", "nonexistent group: ${snapshot.id}")
-                                // Check all hubs in this group and remove any the user no longer has access to
-                                removeGroup(snapshot)
-                            }
-                            // Received group
-                            else -> {
-                                Log.d("listenToGroupData", "Received Group: ${snapshot.data}")
-                                try {
-                                    val group = Group().apply {
-                                        uid = snapshot.id
-                                        owner = snapshot["owner"] as String
-                                        personalGroup = snapshot["personalGroup"] as Boolean
-                                    }
-                                    AppState.userData.groups.remove(snapshot.id)
-                                    AppState.userData.groups[snapshot.id] = group
-                                } catch (e : Exception) { Log.e("listenToGroupData", "$e") }
+    private fun listenToRemote(remoteUID: String) {
+        FirebaseFirestore.getInstance().collection("remotes").document(remoteUID)
+            .addSnapshotListener {snapshot, exception -> when {
+                exception != null -> {
+                    Log.e("listenToRemote", "$exception")
+                    AppState.userData.remotes.remove(remoteUID)
+                    AppState.errorData.userSignInError.set(exception)
+                }
+
+                !snapshot!!.exists() -> {
+                    AppState.userData.remotes.remove(remoteUID)
+                    AppState.errorData.userSignInError.set(Exception("Remote with uid '$remoteUID' was not found!"))
+                }
+
+                else -> {
+                    // add remote
+                    val newRemote = RemoteProfile.fromSnapshot(snapshot)
+                    AppState.userData.remotes[remoteUID] = newRemote
+
+                    // sync any new irSignals
+                    val missingIrSignals = ArrayList<String>()
+                    newRemote.buttons.forEach { button ->
+                        button.commands.forEach { command ->
+                            command.actions.forEach { action ->
+                                if (!AppState.userData.irSignals.containsKey(action.irSignal))
+                                    missingIrSignals.add(action.irSignal)
                             }
                         }
                     }
-
-                // Get list of remotes associated with this group and spawn listeners
-                FirebaseFirestore.getInstance().collection("groups").document(groupUID)
-                    .collection("remotes").addSnapshotListener { snap, ex ->
-                        when {
-                            // Error
-                            ex != null -> { Log.e("listenToUserGroup", "Fetching remotes... $ex") }
-                            // Empty
-                            snap == null || snap.isEmpty -> { Log.d("listenToUserGroup", "No remote profiles associated with group $groupUID") }
-                            // Received Remote Profiles
-                            else -> {
-                                val listOfProfiles = ArrayList<String>()
-                                snap.documentChanges.forEach { docChange ->
-                                    when (docChange.type) {
-                                    // Remote removed from group
-                                        REMOVED -> {
-                                            // Check to see if user still has access to remote after it being removed from group
-                                            checkRemoteAccess(docChange.document.id, groupUID)
-                                        }
-                                    // Remote changed/added to group
-                                        MODIFIED, ADDED -> {
-                                            listOfProfiles.add(docChange.document.id)
-                                        }
-                                    }
-                                }
-                                listenToRemoteProfiles(listOfProfiles)
-                            }
-                        }
-                    }
-
-                // Get list of connectedDevices associated with this group and spawn listeners
-                FirebaseFirestore.getInstance().collection("groups").document(groupUID)
-                    .collection("connectedDevices").addSnapshotListener { snapshot2, e2 ->
-                        when {
-                            // Error
-                            e2 != null -> { Log.e("listenToUserGroup", "Fetching connectedDevices... $e2") }
-                            // Null
-                            snapshot2 == null -> { Log.w("listenToUserGroup", "connectedDevice snapshot for $groupUID was null") }
-                            // Empty
-                            snapshot2.isEmpty -> { Log.d("listenToUserGroup", "No devices associated with group $groupUID") }
-                            // Received devices
-                            else -> {
-                                val listOfHubs = ArrayList<String>()
-                                snapshot2.documentChanges.forEach { docChange ->
-                                    when (docChange.type) {
-                                    // SmartHub was removed from group
-                                        REMOVED -> {
-                                            // Check to see if user still has access to hub after it being removed from group
-                                            checkHubAccess(docChange.document.id, groupUID)
-                                        }
-                                    // SmartHub was added/changed to group
-                                        MODIFIED, ADDED -> {
-                                            listOfHubs.add(docChange.document.id)
-                                        }
-                                    }
-                                }
-                                listenToHubs(listOfHubs)
-                            }
-                        }
-                    }
-
-                // Get list of users associated with this group and spawn listeners
-                FirebaseFirestore.getInstance().collection("groups").document(groupUID)
-                    .collection("users").addSnapshotListener {usersSnapshot, usersError ->
-                        when {
-                        // Error
-                            usersError != null -> { Log.e("listenToUserGroup", "Fetching users... $usersError") }
-                        // Null
-                            usersSnapshot == null -> { Log.w("listenToUserGroup", "users snapshot for $groupUID was null!")}
-                        // Empty
-                            usersSnapshot.isEmpty -> { Log.w("listenToUserGroup", "No users associated with group $groupUID (huh?)")}
-                        // Received users
-                            else -> {
-                                usersSnapshot.documentChanges.forEach { documentChange ->
-                                    val docId = documentChange.document.id
-                                    // Remove group is user has been removed from group
-                                    if (docId == FirebaseAuth.getInstance().currentUser?.uid && documentChange.type == REMOVED) {
-                                        removeGroup(documentChange.document)
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-            } else {
-                Log.d("listenToGroupData", "tried to listen on group <$groupUID> while already subscribed... skipping...")
-            }
-        }
+                    if (missingIrSignals.size > 0)
+                        getIrSignals(ArrayList(missingIrSignals.distinct()))
+                }
+            }}
     }
 
+//    @SuppressLint("LogNotTimber")
+//    @Suppress("UNCHECKED_CAST")
+//    fun listenToGroupData() {
+//        val groups = AppState.userData.user?.groups ?: return
+//        groups.forEach { groupUID ->
+//            if (groupUID != TEST_GROUP && !groupListeners.containsKey(groupUID)) {
+//                // Listen to group
+//                groupListeners[groupUID] = FirebaseFirestore.getInstance().collection("groups").document(groupUID)
+//                    .addSnapshotListener {snapshot, e ->
+//                        when {
+//                            // Error
+//                            e != null -> {
+//                                Log.e("listenToGroupData", "$e")
+//                                // Check all hubs in this group and remove any the user no longer has access to
+//                                snapshot?.let { removeGroup(snapshot) }
+//                            }
+//                            // Null group?
+//                            snapshot == null -> { Log.w("listenToUserGroup", "snapshot for $groupUID was null!") }
+//                            // Group no longer exists
+//                            !snapshot.exists() -> {
+//                                Log.d("listenToGroupData", "nonexistent group: ${snapshot.id}")
+//                                // Check all hubs in this group and remove any the user no longer has access to
+//                                removeGroup(snapshot)
+//                            }
+//                            // Received group
+//                            else -> {
+//                                Log.d("listenToGroupData", "Received Group: ${snapshot.data}")
+//                                try {
+//                                    val group = Group().apply {
+//                                        uid = snapshot.id
+//                                        owner = snapshot["owner"] as String
+//                                        personalGroup = snapshot["personalGroup"] as Boolean
+//                                    }
+//                                    AppState.userData.groups.remove(snapshot.id)
+//                                    AppState.userData.groups[snapshot.id] = group
+//                                } catch (e : Exception) { Log.e("listenToGroupData", "$e") }
+//                            }
+//                        }
+//                    }
+//
+//                // Get list of remotes associated with this group and spawn listeners
+//                FirebaseFirestore.getInstance().collection("groups").document(groupUID)
+//                    .collection("remotes").addSnapshotListener { snap, ex ->
+//                        when {
+//                            // Error
+//                            ex != null -> { Log.e("listenToUserGroup", "Fetching remotes... $ex") }
+//                            // Empty
+//                            snap == null || snap.isEmpty -> { Log.d("listenToUserGroup", "No remote profiles associated with group $groupUID") }
+//                            // Received Remote Profiles
+//                            else -> {
+//                                val listOfProfiles = ArrayList<String>()
+//                                snap.documentChanges.forEach { docChange ->
+//                                    when (docChange.type) {
+//                                    // Remote removed from group
+//                                        REMOVED -> {
+//                                            // Check to see if user still has access to remote after it being removed from group
+//                                            checkRemoteAccess(docChange.document.id, groupUID)
+//                                        }
+//                                    // Remote changed/added to group
+//                                        MODIFIED, ADDED -> {
+//                                            listOfProfiles.add(docChange.document.id)
+//                                        }
+//                                    }
+//                                }
+//                                listenToRemoteProfiles(listOfProfiles)
+//                            }
+//                        }
+//                    }
+//
+//                // Get list of connectedDevices associated with this group and spawn listeners
+//                FirebaseFirestore.getInstance().collection("groups").document(groupUID)
+//                    .collection("connectedDevices").addSnapshotListener { snapshot2, e2 ->
+//                        when {
+//                            // Error
+//                            e2 != null -> { Log.e("listenToUserGroup", "Fetching connectedDevices... $e2") }
+//                            // Null
+//                            snapshot2 == null -> { Log.w("listenToUserGroup", "connectedDevice snapshot for $groupUID was null") }
+//                            // Empty
+//                            snapshot2.isEmpty -> { Log.d("listenToUserGroup", "No devices associated with group $groupUID") }
+//                            // Received devices
+//                            else -> {
+//                                val listOfHubs = ArrayList<String>()
+//                                snapshot2.documentChanges.forEach { docChange ->
+//                                    when (docChange.type) {
+//                                    // SmartHub was removed from group
+//                                        REMOVED -> {
+//                                            // Check to see if user still has access to hub after it being removed from group
+//                                            checkHubAccess(docChange.document.id, groupUID)
+//                                        }
+//                                    // SmartHub was added/changed to group
+//                                        MODIFIED, ADDED -> {
+//                                            listOfHubs.add(docChange.document.id)
+//                                        }
+//                                    }
+//                                }
+//                                listenToHubs(listOfHubs)
+//                            }
+//                        }
+//                    }
+//
+//                // Get list of users associated with this group and spawn listeners
+//                FirebaseFirestore.getInstance().collection("groups").document(groupUID)
+//                    .collection("users").addSnapshotListener {usersSnapshot, usersError ->
+//                        when {
+//                        // Error
+//                            usersError != null -> { Log.e("listenToUserGroup", "Fetching users... $usersError") }
+//                        // Null
+//                            usersSnapshot == null -> { Log.w("listenToUserGroup", "users snapshot for $groupUID was null!")}
+//                        // Empty
+//                            usersSnapshot.isEmpty -> { Log.w("listenToUserGroup", "No users associated with group $groupUID (huh?)")}
+//                        // Received users
+//                            else -> {
+//                                usersSnapshot.documentChanges.forEach { documentChange ->
+//                                    val docId = documentChange.document.id
+//                                    // Remove group is user has been removed from group
+//                                    if (docId == FirebaseAuth.getInstance().currentUser?.uid && documentChange.type == REMOVED) {
+//                                        removeGroup(documentChange.document)
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//
+//            } else {
+//                Log.d("listenToGroupData", "tried to listen on group <$groupUID> while already subscribed... skipping...")
+//            }
+//        }
+//    }
+
     private fun listenToRemoteProfiles(remotes: ArrayList<String>) {
+        Log.d("TEST", "Listening to ${remotes.size} remotes")
         remotes.forEach { uid ->
             if (uid != TEST_REMOTE_PROFILE && !remoteProfileListeners.contains(uid)) {
                 remoteProfileListeners[uid] = FirebaseFirestore.getInstance().collection("hubs").document(uid)
@@ -625,8 +647,60 @@ object FirestoreActions {
                 this.uid.set(uid)
                 this.username.set(username)
             }.toFirebaseObject())
-            .addOnSuccessListener { listenToUserData2(username) }
+            .addOnSuccessListener {
+                Log.d("T#addUser", "Created new user! ($username)")
+                listenToUserData2(username)
+            }
             .addOnFailureListener { e -> AppState.errorData.userSignInError.set(e) }
+    }
+
+    @SuppressLint("LogNotTimber")
+    fun addRemote() {
+        if (AppState.userData.user.username.get() == null) {
+            AppState.errorData.remoteSaveError.set(Exception("No username found in userData."))
+            return
+        }
+        val remote = AppState.tempData.tempRemoteProfile
+        remote.owner = AppState.userData.user.username.get()!!
+
+
+        // Add to 'remotes' collection, then add new uid to userData
+        FirebaseFirestore.getInstance().collection("remotes").add(remote.toFirebaseObject())
+            .addOnSuccessListener { ref ->
+                // Set remote uid
+                remote.uid = ref.id
+
+                // Get updated list of remote UIDs
+                val updatedUserData : MutableMap<String, Any?> = hashMapOf()
+                updatedUserData["remotes"] = ArrayList<String>()
+                    .apply {
+                        addAll(AppState.userData.user.remotes)
+                        add(ref.id)
+                    }
+                // Add as favRemote if user doesn't have one currently
+                if (AppState.userData.user.favRemote.isEmpty())
+                    updatedUserData["favRemote"] = remote.uid
+
+                // Update userData
+                FirebaseFirestore.getInstance().collection("users").document(remote.owner)
+                    .update(updatedUserData)
+                    .addOnSuccessListener {
+                        // Add new remote to listener group
+                        listenToRemote(remote.uid)
+
+                        // Denote success by setting editMode to false
+                        AppState.tempData.tempRemoteProfile.inEditMode.set(false)
+                    }
+                    .addOnFailureListener {e ->
+                        Log.e("addRemote", "$e")
+                        AppState.errorData.remoteSaveError.set(e)
+                    }
+
+            }
+            .addOnFailureListener { e ->
+                Log.e("addRemote", "$e")
+                AppState.errorData.remoteSaveError.set(e)
+            }
     }
 
 /*
@@ -718,18 +792,12 @@ object FirestoreActions {
                     AppState.tempData.tempRemoteProfile.inEditMode.set(false)
                 }
                 .addOnFailureListener { e ->
+                    Log.d("updateRemote", "$e")
                     AppState.errorData.remoteSaveError.set(e)
                 }
         }
     }
 
-    fun addRemote(remote: RemoteProfile): Task<DocumentReference> {
-        return FirebaseFirestore.getInstance().collection("remotes").add(remote.toFirebaseObject())
-    }
-
-    fun updateRemoteProfile() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
 
 
     const val TEST_REMOTE_PROFILE_TEMPLATE = "_TEST_TEMPLATE"

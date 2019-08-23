@@ -8,6 +8,7 @@ import android.graphics.Color.TRANSPARENT
 import android.graphics.Rect
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import com.andrognito.flashbar.Flashbar
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
@@ -68,4 +69,23 @@ fun Context.getNavBarHeight() : Int {
         resources.getDimensionPixelSize(resourceId)
     else 0
 }
+
+fun AppCompatActivity.getGenericErrorFlashbar(showPositiveAction : Boolean = false) = Flashbar.Builder(this)
+    .gravity(Flashbar.Gravity.BOTTOM)
+    .showOverlay()
+    .backgroundColorRes(R.color.colorCardDark)
+    .messageColorRes(android.R.color.holo_red_dark)
+    .enableSwipeToDismiss()
+    .dismissOnTapOutside()
+    .duration(Flashbar.DURATION_LONG)
+    .apply {
+        if (showPositiveAction) {
+            positiveActionText(R.string.dismiss)
+            positiveActionTapListener(object : Flashbar.OnActionTapListener {
+                override fun onActionTapped(bar: Flashbar) {
+                    bar.dismiss()
+                }
+            })
+        }
+    }
 

@@ -68,7 +68,7 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
 
     init {
         _screenWidth = getScreenSize().x
-        _titleTextView = TextInputEditText(context)
+        _titleTextView = EditText(context)
         _titleTextView.setSelectAllOnFocus(true)
         _titleTextView.textColor = ContextCompat.getColor(context, R.color.white)
         _titleTextView.maxLines = 1

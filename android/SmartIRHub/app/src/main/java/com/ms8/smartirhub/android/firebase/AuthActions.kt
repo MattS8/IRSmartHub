@@ -110,9 +110,14 @@ object AuthActions {
             .addOnFailureListener { e -> AppState.errorData.userSignInError.set(e) }
     }
 
-    fun signInWithEmail(email: String, password: String) {
+    fun signInWithEmail(email: String, password: String, fetchUsername : Boolean = true) {
         FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
-            .addOnSuccessListener { AppState.userData.user.uid.set(FirebaseAuth.getInstance().currentUser!!.uid) }
+            .addOnSuccessListener {
+                if (fetchUsername) {
+                    FirestoreActions.getUserFromUID()
+                } else {
+                    AppState.userData.user.uid.set(FirebaseAuth.getInstance().currentUser!!.uid) }
+                }
             .addOnFailureListener { e -> AppState.errorData.userSignInError.set(e) }
     }
 

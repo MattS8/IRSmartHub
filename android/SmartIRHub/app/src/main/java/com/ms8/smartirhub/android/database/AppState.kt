@@ -2,6 +2,7 @@ package com.ms8.smartirhub.android.database
 
 import androidx.databinding.ObservableArrayMap
 import androidx.databinding.ObservableField
+import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.main_view.MainViewActivity
 import com.ms8.smartirhub.android.models.firestore.IrSignal
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
@@ -31,6 +32,14 @@ object AppState {
             remotes.clear()
             hubs.clear()
             irSignals.clear()
+
+            FirestoreActions.removeAllListeners()
+        }
+
+        fun hasFetchedUserData(): Boolean {
+            return hubs.size == user.hubs.size
+                    && remotes.size == user.remotes.size
+                    && irSignals.size == user.irSignals.size
         }
     }
 
@@ -51,5 +60,4 @@ object AppState {
         tempData.tempRemoteProfile.inEditMode.set(false)
         tempData.tempRemoteProfile.buttons.clear()
     }
-
 }

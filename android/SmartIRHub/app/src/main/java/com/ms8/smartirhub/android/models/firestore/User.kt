@@ -15,6 +15,7 @@ import java.lang.Exception
 @IgnoreExtraProperties
 data class User(
     var defaultHub  : String                        = "",
+    var favRemote   : String                        = "",
     @get: Exclude
     var uid         : ObservableField<String>       = ObservableField(""),
     @get: Exclude
@@ -38,6 +39,7 @@ data class User(
         return HashMap<String, Any?>()
             .apply {
                 put("uid", uid.get())
+                put("favRemote", favRemote)
                 put("defaultHub", defaultHub)
                 put("hubs", ArrayList<String>()
                     .apply {
@@ -56,6 +58,7 @@ data class User(
 
     fun clear() {
         defaultHub = ""
+        favRemote = ""
         uid.set("")
         username.set("")
         groups.clear()
@@ -65,9 +68,11 @@ data class User(
     }
 
     @SuppressLint("LogNotTimber")
-    fun fromSnapshot(snapshot: DocumentSnapshot) {
+    fun copyFromSnapshot(snapshot: DocumentSnapshot) {
         // set default hub
         defaultHub = snapshot["defaultHub"] as String
+
+        favRemote = snapshot["favRemote"] as String
 
         // set username
         username.set(snapshot.id)
@@ -100,6 +105,7 @@ data class User(
             try {
                 remotes.clear()
                 remotes.addAll(snapshot["remotes"] as Collection<String>)
+                Log.d("TEST", "found some remotes (${remotes.size})")
             } catch (e : Exception) {
                 Log.e("user", "$e")
             }
