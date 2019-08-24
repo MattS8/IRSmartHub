@@ -391,9 +391,6 @@ fun AppCompatActivity.getRemoteNameErrorString() : String {
     return "${getString(R.string.remote_names_must_be)} ${MyValidators.MIN_REMOTE_NAME_LENGTH} - ${MyValidators.MAX_REMOTE_NAME_LENGTH} ${getString(R.string.and_no_characters)}"
 }
 
-
-
-
  fun AppCompatActivity?.showRemoteNameEmptyFlashbar() {
      this?.let {
          getGenericErrorFlashbar(true)
@@ -407,6 +404,15 @@ fun AppCompatActivity?.showInvalidRemoteNameFlashbar() {
     this?.let {
         getGenericErrorFlashbar(true)
             .message(getRemoteNameErrorString())
+            .build()
+            .show()
+    }
+}
+
+fun AppCompatActivity?.showUnknownRemoteSaveError() {
+    this?.let {
+        getGenericErrorFlashbar(true)
+            .message(getString(R.string.err_unknown_save_remote))
             .build()
             .show()
     }

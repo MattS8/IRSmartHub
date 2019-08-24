@@ -246,7 +246,7 @@
     <string name="create_from">Create from</string>
     <string name="device_template">Device Template</string>
     <string name="existing_remote">Existing Remote</string>
-    <string name="blank_layout">Black Layout</string>
+    <string name="blank_layout">Blank Layout</string>
     <string name="must_be_between">Must be between</string>
     <string name="and_no_characters">characters and contain no special characters</string>
     <string name="pasasword_length_must_be">Password length must be</string>

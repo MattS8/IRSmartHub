@@ -89,3 +89,12 @@ fun AppCompatActivity.getGenericErrorFlashbar(showPositiveAction : Boolean = fal
         }
     }
 
+fun AppCompatActivity.getGenericComingSoonFlashbar() = Flashbar.Builder(this)
+    .gravity(Flashbar.Gravity.BOTTOM)
+    .showOverlay()
+    .backgroundColorRes(R.color.colorCardDark)
+    .messageColorRes(R.color.md_yellow_A100)
+    .enableSwipeToDismiss()
+    .dismissOnTapOutside()
+    .duration(Flashbar.DURATION_LONG)
+
