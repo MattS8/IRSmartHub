@@ -4,7 +4,6 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
-import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.Surface
@@ -34,6 +33,8 @@ import com.ms8.smartirhub.android.databinding.VCreateRemoteFromBinding
 import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.main_view.fragments.*
 import com.ms8.smartirhub.android.remote_control.RemoteFragment
+import com.ms8.smartirhub.android.remote_control.creation.RemoteCreator
+import com.ms8.smartirhub.android.remote_control.models.showUnknownRemoteSaveError
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
 import com.ms8.smartirhub.android.utils.extensions.findNavBarHeight
 import com.ms8.smartirhub.android.utils.extensions.getGenericComingSoonFlashbar
@@ -83,8 +84,6 @@ class MainViewActivity : AppCompatActivity() {
                                 }
                             }
                         }
-                        //setupFab()
-                        //setupToolbar()
                         showUiElements()
                     }
                 })
@@ -175,27 +174,13 @@ class MainViewActivity : AppCompatActivity() {
     }
 
     // 'create remote' dialog
-    private var createRemoteDialog : BottomSheetDialog? = null
-    private var createRemoteFromBinding : VCreateRemoteFromBinding? = null
-    private fun showCreateRemoteDialog() {
-        // set up bottom sheet dialog
-        val createRemoteView = layoutInflater.inflate(R.layout.v_create_remote_from, null)
-        createRemoteDialog = BottomSheetDialog(this)
-        createRemoteFromBinding = DataBindingUtil.bind(createRemoteView)
-        createRemoteDialog?.setContentView(createRemoteView)
-        createRemoteDialog?.setOnDismissListener { isShowingCreateRemoteFromView = false }
-
-        // set up onClick listeners (device template, existing remote, blank layout)
-        createRemoteFromBinding?.tvFromScratch?.setOnClickListener { createBlankRemote() }
-        createRemoteFromBinding?.tvFromDeviceTemplate?.setOnClickListener { createFromDeviceTemplate() }
-        createRemoteFromBinding?.tvFromExistingRemote?.setOnClickListener { createFromExistingRemote() }
-
-        // Hide "From Existing Remote" if user doesn't have any
-        if (AppState.userData.remotes.size == 0)
-            createRemoteFromBinding?.tvFromExistingRemote?.visibility = View.GONE
-
-        createRemoteDialog?.show()
-    }
+    private var remoteCreator : RemoteCreator = RemoteCreator()
+        .apply {
+            onCreateDialogDismiss = { isShowingCreateRemoteFromView = false }
+            onCreateBlankRemote = { createBlankRemote() }
+            onCreateFromDeviceTemplate = { createFromDeviceTemplate() }
+            onCreateFromExistingRemote = { createFromExistingRemote() }
+        }
 
 /*
 ----------------------------------------------
@@ -216,10 +201,12 @@ class MainViewActivity : AppCompatActivity() {
         binding.fab.isListeningForSaveRemoteConfirmation = field
     }
     private var isShowingCreateRemoteFromView: Boolean = false
+    private var isCreatingButton: Boolean = false
     private fun setupStateVariables() {
         layoutState = state.layoutState
         isShowingCreateRemoteFromView = state.isShowingCreateRemoteFromView
         isListeningForSaveRemoteConfirmation = state.isListeningForSaveRemoteConfirmation
+        isCreatingButton = state.isCreatingButton
     }
 
 /*
@@ -241,6 +228,9 @@ class MainViewActivity : AppCompatActivity() {
         setupDrawer()
         setupPagerAdapter()
         setupBinding()
+
+        if (isShowingCreateRemoteFromView)
+            remoteCreator.showCreateRemoteDialog(this)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -249,8 +239,40 @@ class MainViewActivity : AppCompatActivity() {
             layoutState,
             (binding.frameLayout.adapter as MainViewAdapter).getBaseItemId(),
             isShowingCreateRemoteFromView,
-            isListeningForSaveRemoteConfirmation)
+            isListeningForSaveRemoteConfirmation,
+            isCreatingButton)
         outState.putParcelable(STATE, state)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (isListeningForSaveRemoteConfirmation)
+            removeSaveResponseListener()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (isListeningForSaveRemoteConfirmation){
+            when {
+            // save response occurred already
+                !AppState.tempData.tempRemoteProfile.inEditMode.get() -> { editModeListener.onEditComplete() }
+            // error occurred
+                AppState.errorData.remoteSaveError.get() != null -> { remoteSaveErrorListener.onErrorOccurred() }
+            // still waiting for response
+                else -> { addSaveResponseListener() }
+            }
+        }
+    }
+
+    override fun onBackPressed() {
+        when {
+        // check remoteTemplateSheet state
+            //remoteTemplatesSheet.onBackPressed() -> {}
+        // show exit warning before leaving
+            !exitWarningSheet.isShowing -> { exitWarningSheet.show() }
+        // proceed with normal onBackPressed
+            else -> { super.onBackPressed() }
+        }
     }
 
 /*
@@ -385,33 +407,21 @@ class MainViewActivity : AppCompatActivity() {
         if (!state.isShowingCreateRemoteFromView) {
             isShowingCreateRemoteFromView = true
             FirestoreActions.getRemoteTemplates()
-            showCreateRemoteDialog()
+            remoteCreator.showCreateRemoteDialog(this)
         }
     }
 
     private fun createFromExistingRemote() {
-        createRemoteDialog?.dismiss()
-
         //todo show list of existing remotes, then copy selected remote
         getGenericComingSoonFlashbar().build().show()
     }
 
     private fun createFromDeviceTemplate() {
-        createRemoteDialog?.dismiss()
-
         //todo show list of device templates, then copy selected template
         getGenericComingSoonFlashbar().build().show()
     }
 
     private fun createBlankRemote() {
-        createRemoteDialog?.dismiss()
-
-        // create blank remote in tempData
-        AppState.resetTempRemote()
-
-        // set remote to edit mode
-        AppState.tempData.tempRemoteProfile.inEditMode.set(true)
-
         // Trigger update to fragment
         onMyRemotesClicked(true)
 
@@ -436,11 +446,8 @@ class MainViewActivity : AppCompatActivity() {
             // set fab to loading animation
             isListeningForSaveRemoteConfirmation = true
 
-            // listen for success via change to remote.isInEditMode
-            AppState.tempData.tempRemoteProfile.inEditMode.addOnPropertyChangedCallback(editModeListener)
-
-            // listen for failure via change to AppState.saveRemoteError
-            AppState.errorData.remoteSaveError.addOnPropertyChangedCallback(remoteSaveErrorListener)
+            // listen for response
+            addSaveResponseListener()
         }
     }
 
@@ -452,25 +459,41 @@ class MainViewActivity : AppCompatActivity() {
 
     private val editModeListener = object : Observable.OnPropertyChangedCallback() {
         override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
-            Log.d("TEST", "Changed!")
+            onEditComplete()
+        }
+
+        fun onEditComplete() {
             isListeningForSaveRemoteConfirmation = false
             if (layoutState == LayoutState.REMOTES_FAV_EDITING)
                 layoutState = LayoutState.REMOTES_FAV
-            removeSaveResponseListeners()
+            removeSaveResponseListener()
         }
     }
 
     private val remoteSaveErrorListener = object : Observable.OnPropertyChangedCallback() {
         override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+            onErrorOccurred()
+        }
+
+        fun onErrorOccurred() {
             AppState.errorData.remoteSaveError.get()?.let {
                 isListeningForSaveRemoteConfirmation = false
-                removeSaveResponseListeners()
+                showUnknownRemoteSaveError()
+                removeSaveResponseListener()
                 binding.fab.applyLayoutState()
             }
         }
     }
 
-    private fun removeSaveResponseListeners() {
+    private fun addSaveResponseListener() {
+        // listen for success via change to remote.isInEditMode
+        AppState.tempData.tempRemoteProfile.inEditMode.addOnPropertyChangedCallback(editModeListener)
+
+        // listen for failure via change to AppState.saveRemoteError
+        AppState.errorData.remoteSaveError.addOnPropertyChangedCallback(remoteSaveErrorListener)
+    }
+
+    private fun removeSaveResponseListener() {
         AppState.tempData.tempRemoteProfile.inEditMode.removeOnPropertyChangedCallback(editModeListener)
         AppState.errorData.remoteSaveError.removeOnPropertyChangedCallback(remoteSaveErrorListener)
     }
@@ -500,25 +523,29 @@ class MainViewActivity : AppCompatActivity() {
 */
 
     internal class State() : Parcelable {
-        var layoutState : LayoutState = LayoutState.REMOTES_FAV
+        var layoutState                          : LayoutState  = LayoutState.REMOTES_FAV
             private set
-        var adapterBaseID: Long = 0
+        var adapterBaseID                        : Long         = 0
             private set
-        var isShowingCreateRemoteFromView = false
+        var isShowingCreateRemoteFromView        : Boolean      = false
             private set
-        var isListeningForSaveRemoteConfirmation = false
+        var isListeningForSaveRemoteConfirmation : Boolean      = false
+            private set
+        var isCreatingButton                     : Boolean      = false
             private set
 
         constructor(layoutState: LayoutState,
                     adapterBaseID: Long,
                     isShowingCreateRemoteFromView: Boolean,
-                    isListeningForSaveRemoteConfirmation: Boolean)
+                    isListeningForSaveRemoteConfirmation: Boolean,
+                    isCreatingButton: Boolean)
                 : this()
         {
             this.layoutState = layoutState
             this.adapterBaseID = adapterBaseID
             this.isShowingCreateRemoteFromView = isShowingCreateRemoteFromView
             this.isListeningForSaveRemoteConfirmation = isListeningForSaveRemoteConfirmation
+            this.isCreatingButton = isCreatingButton
         }
 
         constructor(parcel: Parcel) : this() {
@@ -526,6 +553,7 @@ class MainViewActivity : AppCompatActivity() {
             adapterBaseID = parcel.readLong()
             isShowingCreateRemoteFromView = parcel.readByte() != 0.toByte()
             isListeningForSaveRemoteConfirmation = parcel.readByte() != 0.toByte()
+            isCreatingButton = parcel.readByte() != 0.toByte()
         }
 
         override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -533,6 +561,7 @@ class MainViewActivity : AppCompatActivity() {
             parcel.writeLong(adapterBaseID)
             parcel.writeByte(if (isShowingCreateRemoteFromView) 1 else 0)
             parcel.writeByte(if (isListeningForSaveRemoteConfirmation) 1 else 0)
+            parcel.writeByte(if (isCreatingButton) 1 else 0)
         }
 
         fun getNavPosition() =
@@ -1051,7 +1080,7 @@ class MainViewActivity : AppCompatActivity() {
 //        override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
 //            Log.d("TEST", "Changed!")
 //            state.isListeningForSaveRemoteConfirmation = false
-//            removeSaveResponseListeners()
+//            removeSaveResponseListener()
 //            setupToolbar()
 //            setupFab()
 //        }
@@ -1061,14 +1090,14 @@ class MainViewActivity : AppCompatActivity() {
 //        override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
 //            AppState.errorData.remoteSaveError.get()?.let {
 //                state.isListeningForSaveRemoteConfirmation = false
-//                removeSaveResponseListeners()
+//                removeSaveResponseListener()
 //                showRemoteSaveError()
 //                setupFab()
 //            }
 //        }
 //    }
 //
-//    private fun removeSaveResponseListeners() {
+//    private fun removeSaveResponseListener() {
 //        AppState.tempData.tempRemoteProfile.inEditMode.removeOnPropertyChangedCallback(editModeListener)
 //        AppState.errorData.remoteSaveError.removeOnPropertyChangedCallback(remoteSaveErrorListener)
 //    }
