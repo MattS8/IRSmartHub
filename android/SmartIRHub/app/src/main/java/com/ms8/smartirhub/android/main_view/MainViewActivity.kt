@@ -183,7 +183,7 @@ class MainViewActivity : AppCompatActivity() {
         createRemoteDialog = BottomSheetDialog(this)
         createRemoteFromBinding = DataBindingUtil.bind(createRemoteView)
         createRemoteDialog?.setContentView(createRemoteView)
-        createRemoteDialog?.setOnDismissListener { state.isShowingCreateRemoteFromView = false }
+        createRemoteDialog?.setOnDismissListener { isShowingCreateRemoteFromView = false }
 
         // set up onClick listeners (device template, existing remote, blank layout)
         createRemoteFromBinding?.tvFromScratch?.setOnClickListener { createBlankRemote() }
@@ -215,6 +215,12 @@ class MainViewActivity : AppCompatActivity() {
         field = value
         binding.fab.isListeningForSaveRemoteConfirmation = field
     }
+    private var isShowingCreateRemoteFromView: Boolean = false
+    private fun setupStateVariables() {
+        layoutState = state.layoutState
+        isShowingCreateRemoteFromView = state.isShowingCreateRemoteFromView
+        isListeningForSaveRemoteConfirmation = state.isListeningForSaveRemoteConfirmation
+    }
 
 /*
 ----------------------------------------------
@@ -227,9 +233,10 @@ class MainViewActivity : AppCompatActivity() {
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main_view)
 
-        state = savedInstanceState?.get(STATE) as State? ?: State()
-        layoutState = state.layoutState
 
+        state = savedInstanceState?.get(STATE) as State? ?: State()
+
+        setupStateVariables()
         setupExitWarningSheet()
         setupDrawer()
         setupPagerAdapter()
@@ -238,8 +245,11 @@ class MainViewActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        state.layoutState = layoutState
-        state.adapterBaseID = (binding.frameLayout.adapter as MainViewAdapter).getBaseItemId()
+        state = State(
+            layoutState,
+            (binding.frameLayout.adapter as MainViewAdapter).getBaseItemId(),
+            isShowingCreateRemoteFromView,
+            isListeningForSaveRemoteConfirmation)
         outState.putParcelable(STATE, state)
     }
 
@@ -373,7 +383,7 @@ class MainViewActivity : AppCompatActivity() {
 
     fun createRemote() {
         if (!state.isShowingCreateRemoteFromView) {
-            state.isShowingCreateRemoteFromView = true
+            isShowingCreateRemoteFromView = true
             FirestoreActions.getRemoteTemplates()
             showCreateRemoteDialog()
         }
@@ -415,14 +425,16 @@ class MainViewActivity : AppCompatActivity() {
     fun editRemote() {
         AppState.tempData.tempRemoteProfile.inEditMode.set(true)
         layoutState = LayoutState.REMOTES_FAV_EDITING
+
+        // Trigger update to fragment
+        onMyRemotesClicked(true)
     }
 
     fun saveRemote() {
         // Check remote for valid name
         if (AppState.tempData.tempRemoteProfile.saveRemote(this)) {
             // set fab to loading animation
-            state.isListeningForSaveRemoteConfirmation = true
-            layoutState = LayoutState.REMOTES_FAV_EDITING
+            isListeningForSaveRemoteConfirmation = true
 
             // listen for success via change to remote.isInEditMode
             AppState.tempData.tempRemoteProfile.inEditMode.addOnPropertyChangedCallback(editModeListener)
@@ -441,7 +453,6 @@ class MainViewActivity : AppCompatActivity() {
     private val editModeListener = object : Observable.OnPropertyChangedCallback() {
         override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
             Log.d("TEST", "Changed!")
-            state.isListeningForSaveRemoteConfirmation = false
             isListeningForSaveRemoteConfirmation = false
             if (layoutState == LayoutState.REMOTES_FAV_EDITING)
                 layoutState = LayoutState.REMOTES_FAV
@@ -452,7 +463,6 @@ class MainViewActivity : AppCompatActivity() {
     private val remoteSaveErrorListener = object : Observable.OnPropertyChangedCallback() {
         override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
             AppState.errorData.remoteSaveError.get()?.let {
-                state.isListeningForSaveRemoteConfirmation = false
                 isListeningForSaveRemoteConfirmation = false
                 removeSaveResponseListeners()
                 binding.fab.applyLayoutState()
@@ -491,14 +501,28 @@ class MainViewActivity : AppCompatActivity() {
 
     internal class State() : Parcelable {
         var layoutState : LayoutState = LayoutState.REMOTES_FAV
-        var viewPagerPosition : Int = FP_MY_REMOTES
+            private set
         var adapterBaseID: Long = 0
+            private set
         var isShowingCreateRemoteFromView = false
+            private set
         var isListeningForSaveRemoteConfirmation = false
+            private set
+
+        constructor(layoutState: LayoutState,
+                    adapterBaseID: Long,
+                    isShowingCreateRemoteFromView: Boolean,
+                    isListeningForSaveRemoteConfirmation: Boolean)
+                : this()
+        {
+            this.layoutState = layoutState
+            this.adapterBaseID = adapterBaseID
+            this.isShowingCreateRemoteFromView = isShowingCreateRemoteFromView
+            this.isListeningForSaveRemoteConfirmation = isListeningForSaveRemoteConfirmation
+        }
 
         constructor(parcel: Parcel) : this() {
             layoutState = layoutStateFromInt(parcel.readInt()) ?: LayoutState.REMOTES_FAV
-            viewPagerPosition = parcel.readInt()
             adapterBaseID = parcel.readLong()
             isShowingCreateRemoteFromView = parcel.readByte() != 0.toByte()
             isListeningForSaveRemoteConfirmation = parcel.readByte() != 0.toByte()
@@ -506,7 +530,6 @@ class MainViewActivity : AppCompatActivity() {
 
         override fun writeToParcel(parcel: Parcel, flags: Int) {
             parcel.writeInt(layoutState.value)
-            parcel.writeInt(viewPagerPosition)
             parcel.writeLong(adapterBaseID)
             parcel.writeByte(if (isShowingCreateRemoteFromView) 1 else 0)
             parcel.writeByte(if (isListeningForSaveRemoteConfirmation) 1 else 0)

@@ -92,6 +92,7 @@ fun AppCompatActivity.getGenericErrorFlashbar(showPositiveAction : Boolean = fal
 fun AppCompatActivity.getGenericComingSoonFlashbar() = Flashbar.Builder(this)
     .gravity(Flashbar.Gravity.BOTTOM)
     .showOverlay()
+    .message(R.string.coming_soon)
     .backgroundColorRes(R.color.colorCardDark)
     .messageColorRes(R.color.md_yellow_A100)
     .enableSwipeToDismiss()
