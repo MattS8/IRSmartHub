@@ -205,6 +205,7 @@ class SplashActivity5 : AppCompatActivity() {
                 currentUser?.uid != null && AppState.userData.user.username.get()?.isNotEmpty() == true -> {
                     state.isListeningForUserData = true
                     FirestoreActions.listenToUserData2()
+                    addUserDataListeners()
                 }
             // Have only uid -> get user from uid
                 currentUser?.uid != null -> {
@@ -445,12 +446,16 @@ class SplashActivity5 : AppCompatActivity() {
         // still waiting for user data
             else -> {
                 state.isListeningForUserData = true
-                AppState.userData.hubs.addOnMapChangedCallback(hubDataListener)
-                AppState.userData.remotes.addOnMapChangedCallback(remoteDataListener)
-                AppState.userData.irSignals.addOnMapChangedCallback(irSignalDataListener)
-                AppState.errorData.userSignInError.addOnPropertyChangedCallback(errorListener)
+                addUserDataListeners()
             }
         }
+    }
+
+    private fun addUserDataListeners() {
+        AppState.userData.hubs.addOnMapChangedCallback(hubDataListener)
+        AppState.userData.remotes.addOnMapChangedCallback(remoteDataListener)
+        AppState.userData.irSignals.addOnMapChangedCallback(irSignalDataListener)
+        AppState.errorData.userSignInError.addOnPropertyChangedCallback(errorListener)
     }
 
     private fun stopListeningForUserData() {
