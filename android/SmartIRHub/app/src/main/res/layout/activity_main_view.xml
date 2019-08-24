@@ -60,7 +60,7 @@
                 <!--app:rippleColor="@color/accent"-->
         <!--/>-->
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
+        <com.ms8.smartirhub.android.main_view.views.MainViewFAB
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/fab"
@@ -160,7 +160,7 @@
 
 
         <!-- Toolbar -->
-        <com.ms8.smartirhub.android.custom_views.ToolbarCenteredTitle
+        <com.ms8.smartirhub.android.main_view.views.CenteredToolbar
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:id="@+id/toolbar"

@@ -8,7 +8,8 @@
             android:clipChildren="false"
     >
         <!-- Toolbar -->
-        <com.ms8.smartirhub.android.custom_views.ToolbarCenteredTitle android:id="@+id/toolbar"
+        <com.ms8.smartirhub.android.main_view.views.CenteredToolbar
+                android:id="@+id/toolbar"
                                            android:layout_width="0dp"
                                            android:layout_height="?attr/actionBarSize"
                                            app:layout_constraintStart_toStartOf="parent"

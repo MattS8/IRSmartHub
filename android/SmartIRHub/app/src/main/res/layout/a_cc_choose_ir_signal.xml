@@ -34,7 +34,7 @@
                     android:drawableStart="@drawable/ic_add_accent_24dp" android:gravity="center"
                     android:layout_gravity="center" android:drawablePadding="8dp"/>
         </FrameLayout>
-        <com.ms8.smartirhub.android.custom_views.ToolbarCenteredTitle
+        <com.ms8.smartirhub.android.main_view.views.CenteredToolbar
                 android:id="@+id/toolbar"
                 android:layout_width="0dp"
                 android:layout_height="?attr/actionBarSize"

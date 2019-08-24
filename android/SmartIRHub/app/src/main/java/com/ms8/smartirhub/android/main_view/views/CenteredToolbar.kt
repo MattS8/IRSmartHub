@@ -1,88 +1,38 @@
-package com.ms8.smartirhub.android.custom_views
+package com.ms8.smartirhub.android.main_view.views
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Point
-import android.os.Parcel
-import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
-import android.view.animation.DecelerateInterpolator
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
 import com.ms8.smartirhub.android.R
+import com.ms8.smartirhub.android.database.AppState
+import com.ms8.smartirhub.android.main_view.MainViewActivity.Companion.LayoutState
 import com.ms8.smartirhub.android.utils.extensions.hideKeyboard
 import org.jetbrains.anko.singleLine
 import org.jetbrains.anko.textColor
 
 
 @Suppress("JoinDeclarationAndAssignment")
-class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.appcompat.widget.Toolbar(context, attrs) {
+class CenteredToolbar(context: Context, attrs: AttributeSet) : androidx.appcompat.widget.Toolbar(context, attrs) {
 
 /*
 ----------------------------------------------
   Toolbar State
 ----------------------------------------------
 */
-    var layoutState = REMOTE_TITLE
-    var titleStr = ""
-
-    override fun onSaveInstanceState(): Parcelable? {
-        return State(super.onSaveInstanceState())
-            .apply {
-                layoutState = this@ToolbarCenteredTitle.layoutState
-                titleStr = this@ToolbarCenteredTitle.titleStr
-            }
-    }
-
-    override fun onRestoreInstanceState(state: Parcelable?) {
-        if (state is State) {
-            super.onRestoreInstanceState(state.superState)
-            titleStr = state.titleStr
-            layoutState = state.layoutState
-            _titleET.setText(titleStr)
-            _titleTV.text = titleStr
-            state
-        } else {
-            super.onRestoreInstanceState(state)
-        }
-    }
-
-    internal class State : BaseSavedState {
-        var layoutState : Int       = REMOTE_TITLE
-        var titleStr    : String    = ""
-
-        constructor(source: Parcel) : super(source) {
-            layoutState = source.readInt()
-            titleStr = source.readString() ?: ""
-        }
-
-        constructor(superState: Parcelable?) : super(superState)
-
-        override fun writeToParcel(parcel: Parcel, flags: Int) {
-            parcel.writeInt(layoutState)
-            parcel.writeString(titleStr)
-        }
-
-        override fun describeContents(): Int {
-            return 0
-        }
-
-        companion object CREATOR : Parcelable.Creator<State> {
-            override fun createFromParcel(parcel: Parcel): State {
-                return State(parcel)
-            }
-
-            override fun newArray(size: Int): Array<State?> {
-                return arrayOfNulls(size)
-            }
-        }
+    var layoutState : LayoutState? = null
+    set(value) {
+        field = value
+        applyLayoutState()
     }
 
 /*
@@ -118,6 +68,7 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
         _titleET.singleLine = true
         TextViewCompat.setTextAppearance(_titleET, R.style.AppTheme_TextAppearance_ToolbarTitle)
         _titleET.setOnEditorActionListener(titleEditorAction)
+        _titleET.hint = context.getString(R.string.name_new_remote)
 
         // setup titleTV
         _titleTV = TextView(context)
@@ -136,58 +87,88 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
     @SuppressLint("LogNotTimber")
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         super.onLayout(changed, l, t, r, b)
-        when (layoutState) {
-        // Start-aligned title
-            NORMAL_TITLE ->
-            {
-                //todo set title to start-aligned instead of centered
-            }
-        // Centered title
-            REMOTE_TITLE, NORMAL_TITLE_CENTERED ->
-            {
-                _titleTV.getLocationOnScreen(location)
-                _titleTV.translationX = _titleTV.translationX + (-location[0] + getScreenSize().x / 2 - _titleTV.width / 2)
-            }
-        // Centered, editable title
-            REMOTE_TITLE_EDITABLE ->
-            {
-                _titleET.getLocationOnScreen(location)
-                _titleET.translationX = _titleET.translationX + (-location[0] + getScreenSize().x / 2 - _titleET.width / 2)
-            }
-            else -> Log.w("CenteredTitleToolbar", "Unknown state found in onLayout call: $layoutState")
-        }
+        _titleTV.getLocationOnScreen(location)
+        _titleTV.translationX = _titleTV.translationX + (-location[0] + getScreenSize().x / 2 - _titleTV.width / 2)
+        _titleET.getLocationOnScreen(location)
+        _titleET.translationX = _titleET.translationX + (-location[0] + getScreenSize().x / 2 - _titleET.width / 2)
     }
 
     private fun applyLayoutState() {
+        val newLayoutParams = layoutParams as MarginLayoutParams?
+
         when (layoutState) {
-            NORMAL_TITLE ->
+            LayoutState.REMOTES_FAV ->
             {
-                _titleTV.visibility = View.VISIBLE
-                _titleET.visibility = View.GONE
-            }
-            REMOTE_TITLE ->
-            {
-                //todo set large margins
+                // get toolbar title
+                _titleTV.text =  if (AppState.tempData.tempRemoteProfile.name == "")
+                    context.getString(R.string.title_remotes)
+                else
+                    AppState.tempData.tempRemoteProfile.name
+
+                // set margins
+                val sideMargins = context.resources.getDimension(R.dimen.toolbar_horizontal_margin_remote).toInt()
+                val topMargins = context.resources.getDimension(R.dimen.fsw_nav_height).toInt()
+                newLayoutParams?.setMargins(sideMargins, topMargins, sideMargins, 0)
 
                 _titleTV.visibility = View.VISIBLE
                 _titleET.visibility = View.GONE
             }
-            NORMAL_TITLE_CENTERED ->
+            LayoutState.REMOTES_FAV_EDITING ->
             {
-                //todo set small margins
+                // get toolbar title
+                _titleET.setText(AppState.tempData.tempRemoteProfile.name)
 
-                _titleTV.visibility = View.VISIBLE
-                _titleET.visibility = View.GONE
-            }
-            REMOTE_TITLE_EDITABLE ->
-            {
-                //todo set large margins
+                // set margins
+                val sideMargins = context.resources.getDimension(R.dimen.toolbar_horizontal_margin_remote).toInt()
+                val topMargins = context.resources.getDimension(R.dimen.fsw_nav_height).toInt()
+                newLayoutParams?.setMargins(sideMargins, topMargins, sideMargins, 0)
 
                 _titleTV.visibility = View.GONE
                 _titleET.visibility = View.VISIBLE
             }
+            LayoutState.REMOTES_ALL ->
+            {
+                // get toolbar title
+                _titleTV.text = context.getString(R.string.all_remotes)
+
+                // set margins
+                val sideMargins = context.resources.getDimension(R.dimen.toolbar_horizontal_margin).toInt()
+                val topMargins = context.resources.getDimension(R.dimen.fsw_nav_height).toInt()
+                newLayoutParams?.setMargins(sideMargins, topMargins, sideMargins, 0)
+
+                _titleTV.visibility = View.VISIBLE
+                _titleET.visibility = View.GONE
+            }
+            LayoutState.DEVICES_ALL ->
+            {
+                // get toolbar title
+                _titleTV.text = context.getString(R.string.title_my_devices)
+
+                // set margins
+                val sideMargins = context.resources.getDimension(R.dimen.toolbar_horizontal_margin).toInt()
+                val topMargins = context.resources.getDimension(R.dimen.fsw_nav_height).toInt()
+                newLayoutParams?.setMargins(sideMargins, topMargins, sideMargins, 0)
+
+                _titleTV.visibility = View.VISIBLE
+                _titleET.visibility = View.GONE
+            }
+            LayoutState.DEVICES_HUBS ->
+            {
+                // get toolbar title
+                _titleTV.text = context.getString(R.string.title_my_ir_hubs)
+
+                // set margins
+                val sideMargins = context.resources.getDimension(R.dimen.toolbar_horizontal_margin).toInt()
+                val topMargins = context.resources.getDimension(R.dimen.fsw_nav_height).toInt()
+                newLayoutParams?.setMargins(sideMargins, topMargins, sideMargins, 0)
+
+                _titleTV.visibility = View.VISIBLE
+                _titleET.visibility = View.GONE
+            }
         }
-        requestLayout()
+
+        newLayoutParams?.let { layoutParams = it }
+        requestLayout ()
     }
 
     private fun getScreenSize(): Point {
@@ -203,34 +184,9 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
 ----------------------------------------------
 */
 
-    @Suppress("UNNECESSARY_SAFE_CALL")
-    override fun setTitle(resId: Int) {
-        titleStr = context.getString(resId)
-
-        _titleTV?.setText(resId)
-        _titleET?.setText(resId)
-
-        requestLayout()
-    }
-
-    @Suppress("UNNECESSARY_SAFE_CALL")
-    override fun setTitle(title : CharSequence) {
-        titleStr = title.toString()
-
-        _titleTV?.text = titleStr
-        _titleET?.setText(titleStr)
-
-        requestLayout()
-    }
-
-    fun setTitleMode(newMode : Int) {
-        layoutState = newMode
-        applyLayoutState()
-    }
-
     @SuppressLint("LogNotTimber")
     fun selectTitleText() {
-        if (layoutState != REMOTE_TITLE_EDITABLE) {
+        if (layoutState != LayoutState.REMOTES_FAV_EDITING) {
             Log.e("ToolbarCenteredTitle", "Attempted to select toolbar title while not in edit mode.")
             return
         }
@@ -238,21 +194,6 @@ class ToolbarCenteredTitle(context: Context, attrs: AttributeSet) : androidx.app
         Log.d("Toolbar", "text size = ${_titleET.text.toString().length}")
         _titleET.requestFocus()
         _titleET.selectAll()
-    }
-
-    fun setTitleHint(string: String) {
-        _titleET.setText("")
-        _titleET.hint = string
-    }
-
-
-
-
-    companion object {
-        const val REMOTE_TITLE          = 0
-        const val REMOTE_TITLE_EDITABLE = 1
-        const val NORMAL_TITLE          = 2
-        const val NORMAL_TITLE_CENTERED = 3
     }
 
 //    private var _screenWidth: Int
