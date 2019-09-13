@@ -22,12 +22,12 @@ import com.ms8.smartirhub.android.custom_views.bottom_sheets.SimpleListDescSheet
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.PickNameSheet
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Command
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.ADD_TO_END
 import com.ms8.smartirhub.android.databinding.ACreateButtonWalkthroughBinding
 import com.ms8.smartirhub.android.databinding.VChooseNameSheetBinding
 import com.ms8.smartirhub.android.databinding.VSimpleListDescSheetBinding
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity
+import com.ms8.smartirhub.android.remote_control.button.models.Button
+import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.ADD_TO_END
 import com.ms8.smartirhub.android.utils.MyValidators.ButtonNameValidator
 
 class CBWalkThroughActivity : AppCompatActivity() {
@@ -109,7 +109,7 @@ class CBWalkThroughActivity : AppCompatActivity() {
                 pickNameSheet.dismiss()
             }
             binding.prog3.bOnThisStep -> {
-                AppState.tempData.tempButton?.let { it.commands = RemoteProfile.Button.newCommandList()}
+                AppState.tempData.tempButton?.let { it.commands = Button.newCommandList()}
                 determineWalkThroughState()
             }
             binding.prog2.bOnThisStep -> {
@@ -163,7 +163,8 @@ class CBWalkThroughActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this, R.layout.a_create_button_walkthrough)
 
         if (AppState.tempData.tempButton == null)
-            AppState.tempData.tempButton = RemoteProfile.Button()
+            AppState.tempData.tempButton =
+                Button()
 
         // set up warning sheet
         warningSheet = BottomSheet(this,
@@ -278,7 +279,8 @@ class CBWalkThroughActivity : AppCompatActivity() {
     private fun determineWalkThroughState() {
         when {
             AppState.tempData.tempButton == null || AppState.tempData.tempButton?.name == "" -> {
-                AppState.tempData.tempButton = RemoteProfile.Button()
+                AppState.tempData.tempButton =
+                    Button()
                 binding.prog1.bOnThisStep = true
                 binding.prog2.bOnThisStep = false
                 binding.prog3.bOnThisStep = false

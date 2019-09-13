@@ -1,4 +1,4 @@
-package com.ms8.smartirhub.android.remote_control
+package com.ms8.smartirhub.android.main_view.fragments
 
 
 import android.annotation.SuppressLint
@@ -20,17 +20,17 @@ import com.ms8.smartirhub.android.create_button.CBWalkThroughActivity.Companion.
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.databinding.FRemoteCurrentBinding
 import com.ms8.smartirhub.android.main_view.MainViewActivity
-import com.ms8.smartirhub.android.main_view.fragments.MainFragment
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import android.util.DisplayMetrics
 import android.util.Log
 import com.ms8.smartirhub.android.create_button.CBWalkThroughActivity
-import com.ms8.smartirhub.android.remote_control.RemoteFragment.Companion.LayoutState.*
+import com.ms8.smartirhub.android.main_view.fragments.OLD_RemoteFragment.Companion.LayoutState.*
 
 
-class RemoteFragment : MainFragment() {
+class OLD_RemoteFragment : MainFragment() {
     lateinit var binding: FRemoteCurrentBinding
-    var state : State = State()
+    var state : State =
+        State()
     var screenHeight = 800
 
     val remotesListener = object : ObservableMap.OnMapChangedCallback<ObservableArrayMap<String, RemoteProfile>, String, RemoteProfile>() {
@@ -118,7 +118,7 @@ class RemoteFragment : MainFragment() {
         Overridden Functions
     ----------------------------------------------
 */
-    override fun newInstance(): MainFragment { return RemoteFragment()
+    override fun newInstance(): MainFragment { return OLD_RemoteFragment()
 }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -140,7 +140,9 @@ class RemoteFragment : MainFragment() {
         binding = DataBindingUtil.inflate(inflater, R.layout.f_remote_current, container, false)
 
         // Restore state
-        state = savedInstanceState?.getParcelable<State>(REMOTE_FRAG_STATE) ?: state
+        state = savedInstanceState?.getParcelable<State>(
+            REMOTE_FRAG_STATE
+        ) ?: state
             .apply {
                 // check for create remote prompt
                 layoutState = if (AppState.userData.remotes.size == 0 && !AppState.tempData.tempRemoteProfile.inEditMode.get())
@@ -221,8 +223,8 @@ class RemoteFragment : MainFragment() {
         @SuppressLint("LogNotTimber")
         fun toLayoutState(intVal : Int) : LayoutState {
             return when (intVal) {
-                LayoutState.SHOW_CREATE_FIRST_REMOTE.ordinal -> Companion.LayoutState.SHOW_CREATE_FIRST_REMOTE
-                LayoutState.SHOW_FAV_REMOTE.ordinal -> Companion.LayoutState.SHOW_FAV_REMOTE
+                LayoutState.SHOW_CREATE_FIRST_REMOTE.ordinal -> LayoutState.SHOW_CREATE_FIRST_REMOTE
+                LayoutState.SHOW_FAV_REMOTE.ordinal -> LayoutState.SHOW_FAV_REMOTE
                 else -> {
                     Log.e("RemoteFragment", "Unknown int val conversion to layout state: $intVal")
                     LayoutState.SHOW_FAV_REMOTE
@@ -232,11 +234,14 @@ class RemoteFragment : MainFragment() {
 
         class State() : Parcelable {
             var isShowingTemplateSheet = false
-            var layoutState = Companion.LayoutState.SHOW_CREATE_FIRST_REMOTE
+            var layoutState = LayoutState.SHOW_CREATE_FIRST_REMOTE
 
             constructor(parcel: Parcel) : this() {
                 isShowingTemplateSheet = parcel.readByte() != 0.toByte()
-                layoutState = toLayoutState(parcel.readInt())
+                layoutState =
+                    toLayoutState(
+                        parcel.readInt()
+                    )
             }
 
             override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -250,7 +255,9 @@ class RemoteFragment : MainFragment() {
 
             companion object CREATOR : Parcelable.Creator<State> {
                 override fun createFromParcel(parcel: Parcel): State {
-                    return State(parcel)
+                    return State(
+                        parcel
+                    )
                 }
 
                 override fun newArray(size: Int): Array<State?> {

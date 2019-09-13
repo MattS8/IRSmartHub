@@ -3,13 +3,13 @@ package com.ms8.smartirhub.android.database
 import androidx.databinding.ObservableArrayMap
 import androidx.databinding.ObservableField
 import com.ms8.smartirhub.android.firebase.FirestoreActions
-import com.ms8.smartirhub.android.main_view.MainViewActivity
 import com.ms8.smartirhub.android.models.firestore.IrSignal
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import com.ms8.smartirhub.android.models.firestore.Group
 import com.ms8.smartirhub.android.models.firestore.Hub
 import com.ms8.smartirhub.android.models.firestore.RemoteProfileTemplate
 import com.ms8.smartirhub.android.models.firestore.User
+import com.ms8.smartirhub.android.remote_control.button.models.Button
 import java.lang.Exception
 
 object AppState {
@@ -45,7 +45,7 @@ object AppState {
 
     data class TempData (
         val tempRemoteProfile   : RemoteProfile         = RemoteProfile(),
-        var tempButton          : RemoteProfile.Button? = null,
+        var tempButton          : Button? = null,
         var tempSignal          : IrSignal?             = null
     )
 

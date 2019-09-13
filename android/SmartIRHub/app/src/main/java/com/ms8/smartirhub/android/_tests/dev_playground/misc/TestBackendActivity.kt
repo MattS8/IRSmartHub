@@ -5,13 +5,13 @@ import android.os.Bundle
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.firebase.FirestoreActions.TEST_REMOTE
 import com.ms8.smartirhub.android.models.firestore.Hub.Companion.DEFAULT_HUB
+import com.ms8.smartirhub.android.remote_control.button.models.Button
+import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.IMG_ADD
+import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.IMG_SUBTRACT
+import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.STYLE_BTN_INCREMENTER_VERTICAL
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_ADD
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_SUBTRACT
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_INCREMENTER_VERTICAL
 
 class TestBackendActivity : AppCompatActivity() {
 
@@ -27,12 +27,13 @@ class TestBackendActivity : AppCompatActivity() {
         val testRemote = RemoteProfile()
             .apply {
                 name = "_TEST_REMOTE"
-                buttons.add(RemoteProfile.Button())
-                buttons.add(RemoteProfile.Button()
+                buttons.add(Button())
+                buttons.add(
+                    Button()
                     .apply {
-                        properties[0] = RemoteProfile.Button.Properties()
+                        properties[0] = Button.Properties()
                             .apply {
-                                bgStyle = RemoteProfile.Button.Properties.BgStyle.BG_ROUND_RECT
+                                bgStyle = Button.Properties.BgStyle.BG_ROUND_RECT
                                 name = "B0"
                             }
                         commands.add(RemoteProfile.Command()
@@ -45,20 +46,22 @@ class TestBackendActivity : AppCompatActivity() {
                             })
                         name = "TEST BUTTON 1"
                     })
-                buttons.add(RemoteProfile.Button()
+                buttons.add(
+                    Button()
                     .apply {
                         name = "Test Incr"
-                        properties[0] = RemoteProfile.Button.Properties()
+                        properties[0] = Button.Properties()
                             .apply {
                                 marginBottom = 0
                                 image = IMG_ADD
-                                bgStyle = RemoteProfile.Button.Properties.BgStyle.BG_ROUND_RECT_TOP
+                                bgStyle = Button.Properties.BgStyle.BG_ROUND_RECT_TOP
                             }
-                        properties.add(RemoteProfile.Button.Properties()
+                        properties.add(
+                            Button.Properties()
                             .apply {
                                 marginTop = 0
                                 image = IMG_SUBTRACT
-                                bgStyle = RemoteProfile.Button.Properties.BgStyle.BG_ROUND_RECT_BOTTOM
+                                bgStyle = Button.Properties.BgStyle.BG_ROUND_RECT_BOTTOM
                             })
                         commands.add(RemoteProfile.Command()
                             .apply {

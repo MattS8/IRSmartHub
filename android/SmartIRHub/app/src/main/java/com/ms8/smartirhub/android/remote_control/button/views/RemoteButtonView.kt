@@ -1,4 +1,4 @@
-package com.ms8.smartirhub.android.remote_control.views
+package com.ms8.smartirhub.android.remote_control.button.views
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -21,20 +21,18 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.ms8.smartirhub.android.R
+import com.ms8.smartirhub.android.remote_control.button.models.Button
+import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.IMG_ADD
+import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.IMG_RADIAL_DOWN
+import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.IMG_RADIAL_LEFT
+import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.IMG_RADIAL_RIGHT
+import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.IMG_RADIAL_UP
+import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.IMG_SUBTRACT
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_ADD
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_RADIAL_DOWN
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_RADIAL_LEFT
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_RADIAL_RIGHT
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_RADIAL_UP
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.IMG_SUBTRACT
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Properties.BgStyle
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validUrl
 import org.jetbrains.anko.backgroundResource
-import java.lang.Exception
 
-class RemoteButton(context: Context, attrs: AttributeSet) : FrameLayout(context, attrs) {
+class RemoteButtonView(context: Context, attrs: AttributeSet) : FrameLayout(context, attrs) {
     private var buttonTextView  : TextView?     = null
     private var buttonImageView : ImageView?    = null
 
@@ -54,7 +52,7 @@ class RemoteButton(context: Context, attrs: AttributeSet) : FrameLayout(context,
         Set visibility
         Set text
      */
-    var properties: RemoteProfile.Button.Properties = RemoteProfile.Button.Properties()
+    var properties: Button.Properties = Button.Properties()
     set(value) {
         field = value
 
@@ -69,12 +67,12 @@ class RemoteButton(context: Context, attrs: AttributeSet) : FrameLayout(context,
 
         // set background resource
         when (properties.bgStyle) {
-            BgStyle.BG_CIRCLE -> { backgroundResource = R.drawable.btn_bg_circle_ripple }
-            BgStyle.BG_ROUND_RECT -> { backgroundResource = R.drawable.btn_bg_round_rect_ripple }
-            BgStyle.BG_ROUND_RECT_BOTTOM -> { backgroundResource = R.drawable.btn_bg_round_bottom_ripple }
-            BgStyle.BG_ROUND_RECT_TOP -> { backgroundResource = R.drawable.btn_bg_round_top_ripple }
-            BgStyle.BG_INVISIBLE -> { backgroundResource = 0 }
-            BgStyle.BG_CUSTOM_IMAGE -> {
+            Button.Properties.BgStyle.BG_CIRCLE -> { backgroundResource = R.drawable.btn_bg_circle_ripple }
+            Button.Properties.BgStyle.BG_ROUND_RECT -> { backgroundResource = R.drawable.btn_bg_round_rect_ripple }
+            Button.Properties.BgStyle.BG_ROUND_RECT_BOTTOM -> { backgroundResource = R.drawable.btn_bg_round_bottom_ripple }
+            Button.Properties.BgStyle.BG_ROUND_RECT_TOP -> { backgroundResource = R.drawable.btn_bg_round_top_ripple }
+            Button.Properties.BgStyle.BG_INVISIBLE -> { backgroundResource = 0 }
+            Button.Properties.BgStyle.BG_CUSTOM_IMAGE -> {
                 //TODO Test
                 //TODO add ripple effect
                 if (properties.bgUrl.validUrl()) {
@@ -152,32 +150,32 @@ class RemoteButton(context: Context, attrs: AttributeSet) : FrameLayout(context,
                     height = MATCH_PARENT
                     gravity = Gravity.CENTER
                     when (properties.bgStyle) {
-                        BgStyle.BG_CIRCLE ->  {
+                        Button.Properties.BgStyle.BG_CIRCLE ->  {
                             val margin = Utils.dpToPx(context,
                                 BG_CIRCLE_MARGIN
                             )
                             setMargins(margin, margin, margin, margin)
                         }
-                        BgStyle.BG_ROUND_RECT -> {
+                        Button.Properties.BgStyle.BG_ROUND_RECT -> {
                             val margin = Utils.dpToPx(context,
                                 BG_ROUND_RECT_MARGIN
                             )
                             setMargins(margin, margin, margin, margin)
                         }
-                        BgStyle.BG_ROUND_RECT_TOP -> {
+                        Button.Properties.BgStyle.BG_ROUND_RECT_TOP -> {
                             val margin = Utils.dpToPx(context,
                                 BG_ROUND_RECT_TOP_MARGIN
                             )
                             setMargins(margin, margin, margin, margin)
                         }
-                        BgStyle.BG_ROUND_RECT_BOTTOM -> {
+                        Button.Properties.BgStyle.BG_ROUND_RECT_BOTTOM -> {
                             val margin = Utils.dpToPx(context,
                                 BG_ROUND_RECT_BOTTOM_MARGIN
                             )
                             setMargins(margin, margin, margin, margin)
                         }
-                        BgStyle.BG_CUSTOM_IMAGE -> { /*TODO*/ }
-                        BgStyle.BG_INVISIBLE -> { /*TODO*/ }
+                        Button.Properties.BgStyle.BG_CUSTOM_IMAGE -> { /*TODO*/ }
+                        Button.Properties.BgStyle.BG_INVISIBLE -> { /*TODO*/ }
                     }
                 }
         } catch (e: Exception) {
@@ -199,25 +197,25 @@ class RemoteButton(context: Context, attrs: AttributeSet) : FrameLayout(context,
 
         The drawback is that the current implementation does NOT support custom image outlines foo
      */
-    class ButtonOutlineProvider(private var buttonProperties: RemoteProfile.Button.Properties): ViewOutlineProvider() {
+    class ButtonOutlineProvider(private var buttonProperties: Button.Properties): ViewOutlineProvider() {
         override fun getOutline(view: View?, outline: Outline?) {
             when (buttonProperties.bgStyle) {
-                BgStyle.BG_CIRCLE -> {
+                Button.Properties.BgStyle.BG_CIRCLE -> {
                     outline?.setOval(0, 0, view?.width ?: 0, view?.height ?: 0)
                 }
-                BgStyle.BG_ROUND_RECT -> {
+                Button.Properties.BgStyle.BG_ROUND_RECT -> {
                     outline?.setRoundRect(0, 0, view?.width ?: 0, view?.height ?: 0, (view?.height ?: 0 / 2).toFloat())
                 }
-                BgStyle.BG_ROUND_RECT_BOTTOM -> {
+                Button.Properties.BgStyle.BG_ROUND_RECT_BOTTOM -> {
                     outline?.setRoundRect(0, 0, view?.width ?: 0, view?.height ?: 0, (view?.height ?: 0 / 2).toFloat())
                 }
-                BgStyle.BG_ROUND_RECT_TOP -> {
+                Button.Properties.BgStyle.BG_ROUND_RECT_TOP -> {
                     outline?.setRoundRect(0, 0, view?.width ?: 0, view?.height ?: 0, (view?.height ?: 0 / 2).toFloat())
                 }
-                BgStyle.BG_CUSTOM_IMAGE -> {
+                Button.Properties.BgStyle.BG_CUSTOM_IMAGE -> {
                     //todo find outline?
                 }
-                BgStyle.BG_INVISIBLE -> {
+                Button.Properties.BgStyle.BG_INVISIBLE -> {
 
                 }
             }

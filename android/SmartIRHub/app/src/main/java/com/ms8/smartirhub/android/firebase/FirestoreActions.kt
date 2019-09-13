@@ -14,6 +14,7 @@ import com.google.firebase.firestore.DocumentChange.Type.ADDED
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.models.firestore.IrSignal
 import com.ms8.smartirhub.android.models.firestore.*
+import com.ms8.smartirhub.android.remote_control.button.models.Button
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import org.jetbrains.anko.doAsync
 import java.lang.Exception
@@ -161,7 +162,7 @@ object FirestoreActions {
         try {
             newProfile = RemoteProfile().apply {
                 (snapshot["buttons"] as List<Map<String, Any?>>).forEach { buttonMap ->
-                    buttons.add(RemoteProfile.Button().apply {
+                    buttons.add(Button().apply {
                         name = buttonMap["name"] as String
                         style = (buttonMap["style"] as Number).toInt()
                         rowSpan = (buttonMap["rowSpan"] as Number).toInt()
@@ -656,13 +657,22 @@ object FirestoreActions {
 
     @SuppressLint("LogNotTimber")
     fun addRemote() {
-        if (AppState.userData.user.username.get() == null) {
-            AppState.errorData.remoteSaveError.set(Exception("No username found in userData."))
-            return
+        // check for username and uid
+        when {
+            AppState.userData.user.username.get() == null -> {
+                AppState.errorData.remoteSaveError.set(Exception("No username found in userData."))
+                return
+            }
+            FirebaseAuth.getInstance().currentUser?.uid == null -> {
+                AppState.errorData.remoteSaveError.set(Exception("No user currently logged in!"))
+                return
+            }
         }
-        val remote = AppState.tempData.tempRemoteProfile
-        remote.owner = AppState.userData.user.username.get()!!
 
+
+        val remote = AppState.tempData.tempRemoteProfile
+        remote.owner = FirebaseAuth.getInstance().currentUser!!.uid
+        remote.owner = AppState.userData.user.username.get()!!
 
         // Add to 'remotes' collection, then add new uid to userData
         FirebaseFirestore.getInstance().collection("remotes").add(remote.toFirebaseObject())

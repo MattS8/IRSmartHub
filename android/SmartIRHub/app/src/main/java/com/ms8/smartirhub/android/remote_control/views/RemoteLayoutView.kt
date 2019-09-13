@@ -1,4 +1,4 @@
-package com.ms8.smartirhub.android.remote_control
+package com.ms8.smartirhub.android.remote_control.views
 
 import android.content.Context
 import android.graphics.Outline
@@ -11,7 +11,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
-import android.widget.Button
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.TextViewCompat
@@ -26,44 +25,46 @@ import com.ms8.smartirhub.android._tests.dev_playground.remote_layout.asymmetric
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
 import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_INCREMENTER_VERTICAL
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_RADIAL
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_RADIAL_W_CENTER
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_BTN_SINGLE_ACTION
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Button.Companion.STYLE_CREATE_BUTTON
-import com.ms8.smartirhub.android.remote_control.views.RemoteButton
+import com.ms8.smartirhub.android.remote_control.button.models.Button
+import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.STYLE_BTN_INCREMENTER_VERTICAL
+import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.STYLE_BTN_RADIAL
+import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.STYLE_BTN_RADIAL_W_CENTER
+import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.STYLE_BTN_SINGLE_ACTION
+import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.STYLE_CREATE_BUTTON
+import com.ms8.smartirhub.android.remote_control.button.views.RemoteButtonView
 
-class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerView(context, attrs) {
+
+class RemoteLayoutView(context: Context, attrs: AttributeSet): AsymmetricRecyclerView(context, attrs) {
 
     var topPadding = Utils.dpToPx(context, 56f)
 
     private var isListening : Boolean = false
-    private val buttonListener = object : ObservableList.OnListChangedCallback<ObservableList<RemoteProfile.Button>>() {
-        override fun onChanged(sender: ObservableList<RemoteProfile.Button>?) {
+    private val buttonListener = object : ObservableList.OnListChangedCallback<ObservableList<Button>>() {
+        override fun onChanged(sender: ObservableList<Button>?) {
             adapter?.notifyDataSetChanged()
         }
 
-        override fun onItemRangeRemoved(sender: ObservableList<RemoteProfile.Button>?, positionStart: Int, itemCount: Int) {
+        override fun onItemRangeRemoved(sender: ObservableList<Button>?, positionStart: Int, itemCount: Int) {
             adapter?.notifyItemRangeRemoved(positionStart, itemCount)
         }
 
-        override fun onItemRangeMoved(sender: ObservableList<RemoteProfile.Button>?, fromPosition: Int, toPosition: Int, itemCount: Int) {
+        override fun onItemRangeMoved(sender: ObservableList<Button>?, fromPosition: Int, toPosition: Int, itemCount: Int) {
             adapter?.notifyDataSetChanged()
         }
 
-        override fun onItemRangeInserted(sender: ObservableList<RemoteProfile.Button>?, positionStart: Int, itemCount: Int) {
+        override fun onItemRangeInserted(sender: ObservableList<Button>?, positionStart: Int, itemCount: Int) {
             adapter?.notifyItemRangeInserted(positionStart, itemCount)
         }
 
-        override fun onItemRangeChanged(sender: ObservableList<RemoteProfile.Button>?, positionStart: Int, itemCount: Int) {
+        override fun onItemRangeChanged(sender: ObservableList<Button>?, positionStart: Int, itemCount: Int) {
             adapter?.notifyItemRangeChanged(positionStart, itemCount)
         }
     }
     private val editModeListener  =  object : Observable.OnPropertyChangedCallback() {
         override fun onPropertyChanged(sender: Observable?, propertyId: Int) { remoteLayoutAdapter.notifyDataSetChanged() }
     }
-    private val remoteLayoutAdapter = RemoteLayoutAdapter()
+    private val remoteLayoutAdapter =
+        RemoteLayoutAdapter()
 
 
     init {
@@ -108,11 +109,16 @@ class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerVie
                     DemoItem(
                         b.columnSpan,
                         b.rowSpan,
-                        position)
+                        position
+                    )
                 }
             // get 'Add Button' item
                  else -> {
-                     DemoItem(2, 1, position)
+                     DemoItem(
+                         2,
+                         1,
+                         position
+                     )
                  }
             }
         }
@@ -125,13 +131,16 @@ class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerVie
                 }
                 else -> {
                 // get 'Add Button' view type
-                    RemoteProfile.Button.STYLE_CREATE_BUTTON
+                    Button.STYLE_CREATE_BUTTON
                 }
             }
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ButtonViewHolder {
-            return ButtonViewHolder(parent, viewType)
+            return ButtonViewHolder(
+                parent,
+                viewType
+            )
         }
 
         override fun getItemCount() : Int {
@@ -156,7 +165,7 @@ class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerVie
             else -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false)
         }
     ) {
-        var button: RemoteProfile.Button? = null
+        var button: Button? = null
 
         fun bind(position: Int) {
             if (position >= AppState.tempData.tempRemoteProfile.buttons.size) {
@@ -183,12 +192,12 @@ class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerVie
             }
         }
 
-        private fun bindRadialButton(button: RemoteProfile.Button, withCenterButton: Boolean) {
-            val topButtonView = itemView.findViewById<RemoteButton>(R.id.btnTop)
-            val bottomButtonView = itemView.findViewById<RemoteButton>(R.id.btnBottom)
-            val startButtonView = itemView.findViewById<RemoteButton>(R.id.btnStart)
-            val endButtonView = itemView.findViewById<RemoteButton>(R.id.btnEnd)
-            val centerButtonView = itemView.findViewById<RemoteButton>(R.id.btnCenter)
+        private fun bindRadialButton(button: Button, withCenterButton: Boolean) {
+            val topButtonView = itemView.findViewById<RemoteButtonView>(R.id.btnTop)
+            val bottomButtonView = itemView.findViewById<RemoteButtonView>(R.id.btnBottom)
+            val startButtonView = itemView.findViewById<RemoteButtonView>(R.id.btnStart)
+            val endButtonView = itemView.findViewById<RemoteButtonView>(R.id.btnEnd)
+            val centerButtonView = itemView.findViewById<RemoteButtonView>(R.id.btnCenter)
 
             // set top button properties
             topButtonView.properties = button.properties[0]
@@ -233,9 +242,9 @@ class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerVie
             }
         }
 
-        private fun bindIncrementerButton(button: RemoteProfile.Button) {
-            val topButtonView = itemView.findViewById<RemoteButton>(R.id.btnTop)
-            val bottomButtonView = itemView.findViewById<RemoteButton>(R.id.btnBottom)
+        private fun bindIncrementerButton(button: Button) {
+            val topButtonView = itemView.findViewById<RemoteButtonView>(R.id.btnTop)
+            val bottomButtonView = itemView.findViewById<RemoteButtonView>(R.id.btnBottom)
             val buttonText = itemView.findViewById<TextView>(R.id.txtButtonName)
 
             // set top button properties
@@ -252,8 +261,8 @@ class RemoteLayout(context: Context, attrs: AttributeSet): AsymmetricRecyclerVie
             TextViewCompat.setAutoSizeTextTypeWithDefaults(buttonText, TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM)
         }
 
-        private fun bindSingleActionButton(button: RemoteProfile.Button) {
-            val buttonView = itemView.findViewById<RemoteButton>(R.id.btnBackground)
+        private fun bindSingleActionButton(button: Button) {
+            val buttonView = itemView.findViewById<RemoteButtonView>(R.id.btnBackground)
 
             // set button properties
             buttonView.properties = button.properties[0]

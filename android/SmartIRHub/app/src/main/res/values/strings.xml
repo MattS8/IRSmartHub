@@ -255,4 +255,8 @@
     <string name="remote_names_must_be">Remote names must be between</string>
     <string name="err_unknown_save_remote">Something went wrong while saving. Please try again.</string>
     <string name="coming_soon">Feature coming soon!</string>
+    <string name="create_from_existing_remote">Existing Remotes</string>
+    <string name="create_from_device_templates">Device Templates</string>
+    <string name="from">From</string>
+    <string name="copy_of">Copy of</string>
 </resources>

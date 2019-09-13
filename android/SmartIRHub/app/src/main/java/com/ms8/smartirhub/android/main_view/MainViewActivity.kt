@@ -18,7 +18,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.databinding.Observable
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.auth.FirebaseAuth
 import com.mikepenz.materialdrawer.AccountHeaderBuilder
 import com.mikepenz.materialdrawer.Drawer
@@ -29,10 +28,9 @@ import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.custom_views.bottom_sheets.BottomSheet
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.databinding.ActivityMainViewBinding
-import com.ms8.smartirhub.android.databinding.VCreateRemoteFromBinding
 import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.main_view.fragments.*
-import com.ms8.smartirhub.android.remote_control.RemoteFragment
+import com.ms8.smartirhub.android.main_view.fragments.OLD_RemoteFragment
 import com.ms8.smartirhub.android.remote_control.creation.RemoteCreator
 import com.ms8.smartirhub.android.remote_control.models.showUnknownRemoteSaveError
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
@@ -105,7 +103,7 @@ class MainViewActivity : AppCompatActivity() {
     }
 
     // pages
-    private val remoteFragment = RemoteFragment()
+    private val remoteFragment = OLD_RemoteFragment()
     private lateinit var pagerAdapter: MainViewAdapter
     private fun setupPagerAdapter() {
         pagerAdapter = MainViewAdapter(supportFragmentManager, FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT, state.getNavPosition(), state.adapterBaseID)
@@ -230,7 +228,7 @@ class MainViewActivity : AppCompatActivity() {
         setupBinding()
 
         if (isShowingCreateRemoteFromView)
-            remoteCreator.showCreateRemoteDialog(this)
+            remoteCreator.showBottomDialog(this)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -268,6 +266,11 @@ class MainViewActivity : AppCompatActivity() {
         when {
         // check remoteTemplateSheet state
             //remoteTemplatesSheet.onBackPressed() -> {}
+        // check createRemoteDialog showing
+            isShowingCreateRemoteFromView -> {
+                isShowingCreateRemoteFromView = false
+                remoteCreator.dismissBottomDialog()
+            }
         // show exit warning before leaving
             !exitWarningSheet.isShowing -> { exitWarningSheet.show() }
         // proceed with normal onBackPressed
@@ -407,7 +410,7 @@ class MainViewActivity : AppCompatActivity() {
         if (!state.isShowingCreateRemoteFromView) {
             isShowingCreateRemoteFromView = true
             FirestoreActions.getRemoteTemplates()
-            remoteCreator.showCreateRemoteDialog(this)
+            remoteCreator.showBottomDialog(this)
         }
     }
 

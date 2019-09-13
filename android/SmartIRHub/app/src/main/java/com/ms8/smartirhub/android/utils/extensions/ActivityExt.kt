@@ -11,8 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.andrognito.flashbar.Flashbar
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.database.AppState
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
-import com.ms8.smartirhub.android.utils.MyValidators
+import com.ms8.smartirhub.android.remote_control.button.models.Button
 
 
 val AppCompatActivity.hasSourceBounds: Boolean get() = intent?.sourceBounds != null
@@ -52,7 +51,7 @@ fun AppCompatActivity.findNavBarHeight(): Int {
 }
 
 fun AppCompatActivity.startCreateButtonProcess() {
-    AppState.tempData.tempButton = RemoteProfile.Button()
+    AppState.tempData.tempButton = Button()
 
 }
 

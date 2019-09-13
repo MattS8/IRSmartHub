@@ -13,10 +13,10 @@ import androidx.databinding.ObservableList
 import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.database.AppState
+import com.ms8.smartirhub.android.remote_control.button.models.Button
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.AsymmetricGridView
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.AsymmetricGridViewAdapter
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.AsymmetricItem
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 
 class RemoteLayout(context: Context, attrs: AttributeSet) : AsymmetricGridView(context, attrs) {
 
@@ -28,7 +28,7 @@ class RemoteLayout(context: Context, attrs: AttributeSet) : AsymmetricGridView(c
                     .apply {
                         for (i in 0 until 35) {
                             add(
-                                RemoteProfile.Button()
+                                Button()
                                 .apply {
                                     name = "Button $i"
                                 })
@@ -67,7 +67,7 @@ class RemoteLayout(context: Context, attrs: AttributeSet) : AsymmetricGridView(c
         override var rowSpan: Int
             get() = _rowSpan
             set(value) { _rowSpan = rowSpan }
-        var button: RemoteProfile.Button? = null
+        var button: Button? = null
 
         constructor(parcel: Parcel) : this(
             parcel.readInt(),
@@ -150,12 +150,12 @@ class RemoteLayout(context: Context, attrs: AttributeSet) : AsymmetricGridView(c
 
     class RemoteRecyclerAdapter: RecyclerView.Adapter<RemoteRecyclerAdapter.RemoteViewHolder>() {
         private val listListener = object :
-            ObservableList.OnListChangedCallback<ObservableArrayList<RemoteProfile.Button>>() {
-            override fun onChanged(sender: ObservableArrayList<RemoteProfile.Button>?) = notifyDataSetChanged()
-            override fun onItemRangeRemoved(s: ObservableArrayList<RemoteProfile.Button>?, positionStart: Int, itemCount: Int) = notifyItemRangeRemoved(positionStart, itemCount)
-            override fun onItemRangeMoved(sender: ObservableArrayList<RemoteProfile.Button>?, fromPosition: Int, toPosition: Int, itemCount: Int) = notifyDataSetChanged()
-            override fun onItemRangeInserted(sender: ObservableArrayList<RemoteProfile.Button>?, positionStart: Int, itemCount: Int) = notifyItemRangeInserted(positionStart, itemCount)
-            override fun onItemRangeChanged(sender: ObservableArrayList<RemoteProfile.Button>?, positionStart: Int, itemCount: Int) = notifyItemRangeChanged(positionStart, itemCount)
+            ObservableList.OnListChangedCallback<ObservableArrayList<Button>>() {
+            override fun onChanged(sender: ObservableArrayList<Button>?) = notifyDataSetChanged()
+            override fun onItemRangeRemoved(s: ObservableArrayList<Button>?, positionStart: Int, itemCount: Int) = notifyItemRangeRemoved(positionStart, itemCount)
+            override fun onItemRangeMoved(sender: ObservableArrayList<Button>?, fromPosition: Int, toPosition: Int, itemCount: Int) = notifyDataSetChanged()
+            override fun onItemRangeInserted(sender: ObservableArrayList<Button>?, positionStart: Int, itemCount: Int) = notifyItemRangeInserted(positionStart, itemCount)
+            override fun onItemRangeChanged(sender: ObservableArrayList<Button>?, positionStart: Int, itemCount: Int) = notifyItemRangeChanged(positionStart, itemCount)
         }
 
         var remoteProperties: RemoteLayoutProperties? = null
@@ -195,9 +195,9 @@ class RemoteLayout(context: Context, attrs: AttributeSet) : AsymmetricGridView(c
         }
 
         class RemoteViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
-            private var button: RemoteProfile.Button? = null
+            private var button: Button? = null
 
-            fun bind(button: RemoteProfile.Button) {
+            fun bind(button: Button) {
                 this.button = button
                 //itemView.findViewById<TextView>(R.id.btnText).text = this.button?.name
             }

@@ -3,9 +3,9 @@ package com.ms8.smartirhub.android.create_command
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableArrayList
 import androidx.databinding.ObservableList
@@ -15,10 +15,10 @@ import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.create_command.CC_ChooseIrSignalActivity.Companion.REQ_EDIT_ACTION
 import com.ms8.smartirhub.android.create_command.CC_ChooseIrSignalActivity.Companion.REQ_NEW_ACTION
 import com.ms8.smartirhub.android.database.AppState
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Command
 import com.ms8.smartirhub.android.databinding.ACcChooseActionBinding
 import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity
-import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
+import com.ms8.smartirhub.android.remote_control.button.models.Button
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Command
 
 class CC_ChooseActionsActivity : AppCompatActivity() {
     lateinit var binding: ACcChooseActionBinding
@@ -123,7 +123,7 @@ class CC_ChooseActionsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         if (AppState.tempData.tempButton?.commands == null)
-            AppState.tempData.tempButton?.commands = RemoteProfile.Button.newCommandList()
+            AppState.tempData.tempButton?.commands = Button.newCommandList()
 
         binding = DataBindingUtil.setContentView(this, R.layout.a_cc_choose_action)
         binding.actionsList.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
