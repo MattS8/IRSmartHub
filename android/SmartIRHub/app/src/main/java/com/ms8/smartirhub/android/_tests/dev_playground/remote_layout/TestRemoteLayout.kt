@@ -27,7 +27,7 @@ class TestRemoteLayout : AppCompatActivity() {
         val displayMetrics = DisplayMetrics()
         windowManager.defaultDisplay.getMetrics(displayMetrics)
         //val height = displayMetrics.heightPixels
-        val width = displayMetrics.widthPixels
+        //val width = displayMetrics.widthPixels
         //remoteLayout.setRequestedColumnWidth(((1 / 5) * width.toFloat()).roundToInt())
         remoteLayout.setRequestedColumnCount(4)
         createMockData()
@@ -48,7 +48,7 @@ class TestRemoteLayout : AppCompatActivity() {
                                     }
                                     2 -> {
                                         rowSpan = 2
-                                        style = Button.STYLE_BTN_INCREMENTER_VERTICAL
+                                        style = Button.Companion.ButtonStyle.STYLE_BTN_INCREMENTER_VERTICAL
                                         properties[0].bgStyle = Button.Properties.BgStyle.BG_ROUND_RECT_TOP
                                         properties[0].marginTop = 16
                                         properties[0].marginStart = 16
@@ -71,7 +71,7 @@ class TestRemoteLayout : AppCompatActivity() {
                                     }
                                     4 -> {
                                         rowSpan = 2
-                                        style = Button.STYLE_BTN_INCREMENTER_VERTICAL
+                                        style = Button.Companion.ButtonStyle.STYLE_BTN_INCREMENTER_VERTICAL
                                         properties[0].bgStyle = Button.Properties.BgStyle.BG_ROUND_RECT_TOP
                                         properties[0].marginTop = 16
                                         properties[0].marginStart = 16
@@ -95,7 +95,7 @@ class TestRemoteLayout : AppCompatActivity() {
                                     3 -> {
                                         rowSpan = 2
                                         columnSpan = 2
-                                        style = Button.STYLE_BTN_RADIAL_W_CENTER
+                                        style = Button.Companion.ButtonStyle.STYLE_BTN_RADIAL_W_CENTER
 
                                         // add topButton Properties
                                         properties[0].bgStyle = Button.Properties.BgStyle.BG_NONE

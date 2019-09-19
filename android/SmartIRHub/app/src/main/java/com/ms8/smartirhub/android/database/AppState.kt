@@ -45,7 +45,7 @@ object AppState {
 
     data class TempData (
         val tempRemoteProfile   : RemoteProfile         = RemoteProfile(),
-        var tempButton          : Button? = null,
+        var tempButton          : Button?               = null,
         var tempSignal          : IrSignal?             = null
     )
 

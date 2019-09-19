@@ -20,7 +20,7 @@ object DebugUtils {
                                     }
                                     2 -> {
                                         rowSpan = 2
-                                        style = Button.STYLE_BTN_INCREMENTER_VERTICAL
+                                        style = Button.Companion.ButtonStyle.STYLE_BTN_INCREMENTER_VERTICAL
                                         properties[0].bgStyle = Button.Properties.BgStyle.BG_ROUND_RECT_TOP
                                         properties[0].marginTop = 16
                                         properties[0].marginStart = 16
@@ -43,7 +43,7 @@ object DebugUtils {
                                     }
                                     4 -> {
                                         rowSpan = 2
-                                        style = Button.STYLE_BTN_INCREMENTER_VERTICAL
+                                        style = Button.Companion.ButtonStyle.STYLE_BTN_INCREMENTER_VERTICAL
                                         properties[0].bgStyle = Button.Properties.BgStyle.BG_ROUND_RECT_TOP
                                         properties[0].marginTop = 16
                                         properties[0].marginStart = 16
@@ -67,7 +67,7 @@ object DebugUtils {
                                     3 -> {
                                         rowSpan = 2
                                         columnSpan = 2
-                                        style = Button.STYLE_BTN_RADIAL_W_CENTER
+                                        style = Button.Companion.ButtonStyle.STYLE_BTN_RADIAL_W_CENTER
 
                                         // add topButton Properties
                                         properties[0].bgStyle = Button.Properties.BgStyle.BG_NONE

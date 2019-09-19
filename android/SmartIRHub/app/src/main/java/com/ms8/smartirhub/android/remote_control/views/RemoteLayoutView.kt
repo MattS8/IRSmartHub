@@ -26,11 +26,6 @@ import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
 import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
 import com.ms8.smartirhub.android.remote_control.button.models.Button
-import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.STYLE_BTN_INCREMENTER_VERTICAL
-import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.STYLE_BTN_RADIAL
-import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.STYLE_BTN_RADIAL_W_CENTER
-import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.STYLE_BTN_SINGLE_ACTION
-import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.STYLE_CREATE_BUTTON
 import com.ms8.smartirhub.android.remote_control.button.views.RemoteButtonView
 
 
@@ -127,11 +122,11 @@ class RemoteLayoutView(context: Context, attrs: AttributeSet): AsymmetricRecycle
             return when {
                 // get button view type
                 position < AppState.tempData.tempRemoteProfile.buttons.size -> {
-                    AppState.tempData.tempRemoteProfile.buttons[position].style
+                    AppState.tempData.tempRemoteProfile.buttons[position].style.value
                 }
                 else -> {
                 // get 'Add Button' view type
-                    Button.STYLE_CREATE_BUTTON
+                    Button.Companion.ButtonStyle.STYLE_CREATE_BUTTON.value
                 }
             }
         }
@@ -156,11 +151,11 @@ class RemoteLayoutView(context: Context, attrs: AttributeSet): AsymmetricRecycle
 
     class ButtonViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder(
         when (viewType) {
-            STYLE_BTN_SINGLE_ACTION -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false)
-            STYLE_BTN_INCREMENTER_VERTICAL -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_inc_vert, parent, false)
-            STYLE_BTN_RADIAL_W_CENTER -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_radial_w_center_btn, parent, false)
-            STYLE_BTN_RADIAL -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_radial_w_center_btn, parent, false)
-            STYLE_CREATE_BUTTON -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_create_new, parent, false)
+            Button.Companion.ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND.value -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false)
+            Button.Companion.ButtonStyle.STYLE_BTN_INCREMENTER_VERTICAL.value -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_inc_vert, parent, false)
+            Button.Companion.ButtonStyle.STYLE_BTN_RADIAL_W_CENTER.value -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_radial_w_center_btn, parent, false)
+            Button.Companion.ButtonStyle.STYLE_BTN_RADIAL.value -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_radial_w_center_btn, parent, false)
+            Button.Companion.ButtonStyle.STYLE_CREATE_BUTTON.value -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_create_new, parent, false)
 
             else -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false)
         }
@@ -174,10 +169,10 @@ class RemoteLayoutView(context: Context, attrs: AttributeSet): AsymmetricRecycle
                 button = AppState.tempData.tempRemoteProfile.buttons[position]
                 button?.let { b ->
                     when (b.style) {
-                        STYLE_BTN_SINGLE_ACTION -> bindSingleActionButton(b)
-                        STYLE_BTN_INCREMENTER_VERTICAL -> bindIncrementerButton(b)
-                        STYLE_BTN_RADIAL_W_CENTER -> bindRadialButton(b, true)
-                        STYLE_BTN_RADIAL -> bindRadialButton(b, false)
+                        Button.Companion.ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND -> bindSingleActionButton(b)
+                        Button.Companion.ButtonStyle.STYLE_BTN_INCREMENTER_VERTICAL -> bindIncrementerButton(b)
+                        Button.Companion.ButtonStyle.STYLE_BTN_RADIAL_W_CENTER -> bindRadialButton(b, true)
+                        Button.Companion.ButtonStyle.STYLE_BTN_RADIAL -> bindRadialButton(b, false)
                         else -> bindSingleActionButton(b)
                     }
                 }

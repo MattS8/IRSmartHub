@@ -15,7 +15,7 @@ import com.ms8.smartirhub.android.databinding.VItemExistingRemoteBinding
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import org.jetbrains.anko.layoutInflater
 
-class RemoteCreator {
+class RemoteCreator() {
     // Listeners
     var onCreateDialogDismiss: () -> Unit = {}
     var onCreateBlankRemote: () -> Unit = {}
@@ -29,24 +29,24 @@ class RemoteCreator {
 */
 
     // Bottom Dialog State
-    private enum class BottomDialogState(var value: Int) { CREATE_FROM(1), TEMPLATES(2), EXISTING_REMOTE(3) }
-    private fun BottomDialogState.fromIntVal(intVal : Int) = BottomDialogState.values().associateBy(BottomDialogState::value)[intVal]
-    private var dialogState : BottomDialogState = BottomDialogState.CREATE_FROM
+    enum class RemoteDialogState(var value: Int) { CREATE_FROM(1), TEMPLATES(2), EXISTING_REMOTE(3) }
+    var dialogState : RemoteDialogState = RemoteDialogState.CREATE_FROM
     private var createRemoteDialog : BottomSheetDialog? = null
     private var isTransitioning : Boolean = false
 
 
     fun showBottomDialog(context: Context) {
         when (dialogState) {
-            BottomDialogState.CREATE_FROM -> { showCreateRemoteDialog(context) }
-            BottomDialogState.TEMPLATES -> { showCreateFromDeviceTemplateDialog(context) }
-            BottomDialogState.EXISTING_REMOTE -> { showCreateFromExistingRemoteDialog(context) }
+            RemoteDialogState.CREATE_FROM -> { showCreateRemoteDialog(context) }
+            RemoteDialogState.TEMPLATES -> { showCreateFromDeviceTemplateDialog(context) }
+            RemoteDialogState.EXISTING_REMOTE -> { showCreateFromExistingRemoteDialog(context) }
         }
     }
 
     fun dismissBottomDialog() {
-        // set state
-        dialogState = BottomDialogState.CREATE_FROM
+        // set state if not transitioning
+        if(!isTransitioning)
+            dialogState = RemoteDialogState.CREATE_FROM
 
         // dismiss dialog if set
         createRemoteDialog?.dismiss()
@@ -62,6 +62,9 @@ class RemoteCreator {
 */
 
     private fun showCreateRemoteDialog(context: Context) {
+        // change state
+        dialogState = RemoteDialogState.CREATE_FROM
+
         // set up bottom sheet dialog
         val createRemoteView = context.layoutInflater.inflate(R.layout.v_create_remote_from, null)
         createRemoteDialog = BottomSheetDialog(context)
@@ -85,6 +88,10 @@ class RemoteCreator {
     }
 
     private fun showCreateFromExistingRemoteDialog(context: Context) {
+        // change state
+        dialogState = RemoteDialogState.EXISTING_REMOTE
+
+        // set up bottom sheet dialog
         val existingDeviceView = context.layoutInflater.inflate(R.layout.v_create_from_existing_remote, null)
         createRemoteDialog = BottomSheetDialog(context)
         val existingBinding = DataBindingUtil.bind<VCreateFromExistingRemoteBinding>(existingDeviceView)
@@ -162,6 +169,10 @@ class RemoteCreator {
 
         // run listener
         onCreateFromDeviceTemplate
+    }
+
+    companion object {
+        fun stateFromIntVal(intVal : Int) = RemoteDialogState.values().associateBy(RemoteDialogState::value)[intVal]
     }
 
 /*

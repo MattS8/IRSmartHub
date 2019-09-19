@@ -31,6 +31,7 @@ import com.ms8.smartirhub.android.databinding.ActivityMainViewBinding
 import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.main_view.fragments.*
 import com.ms8.smartirhub.android.main_view.fragments.OLD_RemoteFragment
+import com.ms8.smartirhub.android.remote_control.button.creation.ButtonCreator
 import com.ms8.smartirhub.android.remote_control.creation.RemoteCreator
 import com.ms8.smartirhub.android.remote_control.models.showUnknownRemoteSaveError
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
@@ -174,10 +175,16 @@ class MainViewActivity : AppCompatActivity() {
     // 'create remote' dialog
     private var remoteCreator : RemoteCreator = RemoteCreator()
         .apply {
-            onCreateDialogDismiss = { isShowingCreateRemoteFromView = false }
+            onCreateDialogDismiss = { isShowingCreateRemoteView = false }
             onCreateBlankRemote = { createBlankRemote() }
             onCreateFromDeviceTemplate = { createFromDeviceTemplate() }
             onCreateFromExistingRemote = { createFromExistingRemote() }
+        }
+
+    // 'create button' dialog
+    private var buttonCreator : ButtonCreator = ButtonCreator()
+        .apply {
+            //todo set up listeners
         }
 
 /*
@@ -198,13 +205,14 @@ class MainViewActivity : AppCompatActivity() {
         field = value
         binding.fab.isListeningForSaveRemoteConfirmation = field
     }
-    private var isShowingCreateRemoteFromView: Boolean = false
-    private var isCreatingButton: Boolean = false
+    private var isShowingCreateRemoteView: Boolean = false
+    private var isShowingCreateButtonView: Boolean = false
     private fun setupStateVariables() {
         layoutState = state.layoutState
-        isShowingCreateRemoteFromView = state.isShowingCreateRemoteFromView
+        isShowingCreateRemoteView = state.isShowingCreateRemoteFromView
         isListeningForSaveRemoteConfirmation = state.isListeningForSaveRemoteConfirmation
-        isCreatingButton = state.isCreatingButton
+        isShowingCreateButtonView = state.isCreatingButton
+        remoteCreator.dialogState = state.savedCreateRemoteDialogState
     }
 
 /*
@@ -227,8 +235,10 @@ class MainViewActivity : AppCompatActivity() {
         setupPagerAdapter()
         setupBinding()
 
-        if (isShowingCreateRemoteFromView)
-            remoteCreator.showBottomDialog(this)
+        when {
+            isShowingCreateRemoteView -> remoteCreator.showBottomDialog(this)
+            isShowingCreateButtonView -> buttonCreator.showBottomDialog(this)
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -236,9 +246,10 @@ class MainViewActivity : AppCompatActivity() {
         state = State(
             layoutState,
             (binding.frameLayout.adapter as MainViewAdapter).getBaseItemId(),
-            isShowingCreateRemoteFromView,
+            isShowingCreateRemoteView,
             isListeningForSaveRemoteConfirmation,
-            isCreatingButton)
+            isShowingCreateButtonView,
+            remoteCreator.dialogState)
         outState.putParcelable(STATE, state)
     }
 
@@ -267,8 +278,8 @@ class MainViewActivity : AppCompatActivity() {
         // check remoteTemplateSheet state
             //remoteTemplatesSheet.onBackPressed() -> {}
         // check createRemoteDialog showing
-            isShowingCreateRemoteFromView -> {
-                isShowingCreateRemoteFromView = false
+            isShowingCreateRemoteView -> {
+                isShowingCreateRemoteView = false
                 remoteCreator.dismissBottomDialog()
             }
         // show exit warning before leaving
@@ -408,7 +419,7 @@ class MainViewActivity : AppCompatActivity() {
 
     fun createRemote() {
         if (!state.isShowingCreateRemoteFromView) {
-            isShowingCreateRemoteFromView = true
+            isShowingCreateRemoteView = true
             FirestoreActions.getRemoteTemplates()
             remoteCreator.showBottomDialog(this)
         }
@@ -536,12 +547,15 @@ class MainViewActivity : AppCompatActivity() {
             private set
         var isCreatingButton                     : Boolean      = false
             private set
+        var savedCreateRemoteDialogState         : RemoteCreator.RemoteDialogState = RemoteCreator.RemoteDialogState.CREATE_FROM
+            private set
 
         constructor(layoutState: LayoutState,
                     adapterBaseID: Long,
                     isShowingCreateRemoteFromView: Boolean,
                     isListeningForSaveRemoteConfirmation: Boolean,
-                    isCreatingButton: Boolean)
+                    isCreatingButton: Boolean,
+                    savedCreateRemoteDialogState: RemoteCreator.RemoteDialogState)
                 : this()
         {
             this.layoutState = layoutState
@@ -549,6 +563,7 @@ class MainViewActivity : AppCompatActivity() {
             this.isShowingCreateRemoteFromView = isShowingCreateRemoteFromView
             this.isListeningForSaveRemoteConfirmation = isListeningForSaveRemoteConfirmation
             this.isCreatingButton = isCreatingButton
+            this.savedCreateRemoteDialogState = savedCreateRemoteDialogState
         }
 
         constructor(parcel: Parcel) : this() {
@@ -557,6 +572,7 @@ class MainViewActivity : AppCompatActivity() {
             isShowingCreateRemoteFromView = parcel.readByte() != 0.toByte()
             isListeningForSaveRemoteConfirmation = parcel.readByte() != 0.toByte()
             isCreatingButton = parcel.readByte() != 0.toByte()
+            savedCreateRemoteDialogState = RemoteCreator.stateFromIntVal(parcel.readInt()) ?: RemoteCreator.RemoteDialogState.CREATE_FROM
         }
 
         override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -565,6 +581,7 @@ class MainViewActivity : AppCompatActivity() {
             parcel.writeByte(if (isShowingCreateRemoteFromView) 1 else 0)
             parcel.writeByte(if (isListeningForSaveRemoteConfirmation) 1 else 0)
             parcel.writeByte(if (isCreatingButton) 1 else 0)
+            parcel.writeInt(savedCreateRemoteDialogState.value)
         }
 
         fun getNavPosition() =
@@ -714,7 +731,7 @@ class MainViewActivity : AppCompatActivity() {
 //
 //        // check if was showing bottom sheets
 //        when {
-//            state.isShowingCreateRemoteFromView -> createRemote(true)
+//            state.isShowingCreateRemoteView -> createRemote(true)
 //        }
 //    }
 //
@@ -1141,14 +1158,14 @@ class MainViewActivity : AppCompatActivity() {
 //
 //    private fun createRemote(forceShow : Boolean = false) {
 //        FirestoreActions.getRemoteTemplates()
-//        if (!state.isShowingCreateRemoteFromView || forceShow) {
+//        if (!state.isShowingCreateRemoteView || forceShow) {
 //
 //            // set up bottom sheet dialog
 //            val createRemoteView = layoutInflater.inflate(R.layout.v_create_remote_from, null)
 //            createRemoteDialog = BottomSheetDialog(this)
 //            createRemoteFromBinding = DataBindingUtil.bind(createRemoteView)
 //            createRemoteDialog?.setContentView(createRemoteView)
-//            createRemoteDialog?.setOnDismissListener { state.isShowingCreateRemoteFromView = false }
+//            createRemoteDialog?.setOnDismissListener { state.isShowingCreateRemoteView = false }
 //
 //            // set up onClick listeners (device template, existing remote, blank layout)
 //            createRemoteFromBinding?.tvFromScratch?.setOnClickListener { createBlankRemote() }
@@ -1160,7 +1177,7 @@ class MainViewActivity : AppCompatActivity() {
 //                createRemoteFromBinding?.tvFromExistingRemote?.visibility = View.GONE
 //
 //            createRemoteDialog?.show()
-//            state.isShowingCreateRemoteFromView = true
+//            state.isShowingCreateRemoteView = true
 //        }
 //
 //        //remoteTemplatesSheet.show(supportFragmentManager, "RemoteTemplateSheet")
@@ -1275,14 +1292,14 @@ class MainViewActivity : AppCompatActivity() {
 //        var navPosition = FP_MY_REMOTES
 //        var viewPagerPosition = 0
 //        var adapterBaseID: Long = 0
-//        var isShowingCreateRemoteFromView = false
+//        var isShowingCreateRemoteView = false
 //        var isListeningForSaveRemoteConfirmation = false
 //
 //        constructor(parcel: Parcel) : this() {
 //            navPosition = parcel.readInt()
 //            viewPagerPosition = parcel.readInt()
 //            adapterBaseID = parcel.readLong()
-//            isShowingCreateRemoteFromView = parcel.readByte() != 0.toByte()
+//            isShowingCreateRemoteView = parcel.readByte() != 0.toByte()
 //            isListeningForSaveRemoteConfirmation = parcel.readByte() != 0.toByte()
 //        }
 //
@@ -1290,7 +1307,7 @@ class MainViewActivity : AppCompatActivity() {
 //            parcel.writeInt(navPosition)
 //            parcel.writeInt(viewPagerPosition)
 //            parcel.writeLong(adapterBaseID)
-//            parcel.writeByte(if (isShowingCreateRemoteFromView) 1 else 0)
+//            parcel.writeByte(if (isShowingCreateRemoteView) 1 else 0)
 //            parcel.writeByte(if (isListeningForSaveRemoteConfirmation) 1 else 0)
 //        }
 //

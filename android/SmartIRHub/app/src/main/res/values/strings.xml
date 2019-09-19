@@ -259,4 +259,11 @@
     <string name="create_from_device_templates">Device Templates</string>
     <string name="from">From</string>
     <string name="copy_of">Copy of</string>
+    <string name="button_space_title">Spacer</string>
+    <string name="button_round_title">Round</string>
+    <string name="button_full_title">Full</string>
+    <string name="button_incrementer_title">Incrementer</string>
+    <string name="button_radial_w_center_title">Radial with Center Button</string>
+    <string name="button_radial_title">Radial</string>
+    <string name="button_types_title">Button Types</string>
 </resources>

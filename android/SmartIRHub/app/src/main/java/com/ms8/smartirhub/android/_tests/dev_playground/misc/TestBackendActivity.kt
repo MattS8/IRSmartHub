@@ -10,7 +10,6 @@ import com.ms8.smartirhub.android.models.firestore.Hub.Companion.DEFAULT_HUB
 import com.ms8.smartirhub.android.remote_control.button.models.Button
 import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.IMG_ADD
 import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.IMG_SUBTRACT
-import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.STYLE_BTN_INCREMENTER_VERTICAL
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 
 class TestBackendActivity : AppCompatActivity() {
@@ -72,7 +71,7 @@ class TestBackendActivity : AppCompatActivity() {
                                 name = "Test Down"
                             })
                         rowSpan = 2
-                        style = STYLE_BTN_INCREMENTER_VERTICAL
+                        style = Button.Companion.ButtonStyle.STYLE_BTN_INCREMENTER_VERTICAL
                     })
             }
         testRemote.uid = TEST_REMOTE

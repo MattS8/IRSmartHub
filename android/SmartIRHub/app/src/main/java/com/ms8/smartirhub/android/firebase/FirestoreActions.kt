@@ -164,7 +164,10 @@ object FirestoreActions {
                 (snapshot["buttons"] as List<Map<String, Any?>>).forEach { buttonMap ->
                     buttons.add(Button().apply {
                         name = buttonMap["name"] as String
-                        style = (buttonMap["style"] as Number).toInt()
+                        style = Button.buttonStyleFromInt((buttonMap["style"] as Number).toInt()) ?: run {
+                            Log.e("FirestoreActions", "parseRemoteProfile - Unknown style found (${(buttonMap["style"] as Number).toInt()})")
+                            Button.Companion.ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND
+                        }
                         rowSpan = (buttonMap["rowSpan"] as Number).toInt()
                         columnSpan = (buttonMap["columnSpan"] as Number).toInt()
                         commands = ArrayList()

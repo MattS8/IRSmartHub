@@ -1,8 +1,10 @@
 package com.ms8.smartirhub.android.remote_control.button.models
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.util.ArrayMap
 import android.util.Log
+import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 
 @Suppress("UNCHECKED_CAST")
@@ -14,8 +16,7 @@ class Button {
         RemoteProfile.Command()
     ) }
     var name            : String                = ""
-    var style           : Int                   =
-        STYLE_BTN_SINGLE_ACTION
+    var style           : ButtonStyle           = ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND
     var columnSpan      : Int                   = 1
     var rowSpan         : Int                   = 1
 
@@ -52,7 +53,7 @@ class Button {
             val newButton = Button()
                 .apply {
                     name = buttonMap["name"] as String
-                    style = (buttonMap["style"] as Number).toInt()
+                    style = buttonStyleFromInt((buttonMap["style"] as Number).toInt()) ?: ButtonStyle.STYLE_CREATE_BUTTON
                     rowSpan = (buttonMap["rowSpan"] as Number).toInt()
                     columnSpan = (buttonMap["columnSpan"] as Number).toInt()
                 }
@@ -83,13 +84,33 @@ class Button {
             return newButton
         }
 
-        const val STYLE_CREATE_BUTTON = 0
-        const val STYLE_SPACE = 1
-        const val STYLE_BTN_SINGLE_ACTION = 2
-        const val STYLE_BTN_NO_MARGIN = 3
-        const val STYLE_BTN_INCREMENTER_VERTICAL = 4
-        const val STYLE_BTN_RADIAL_W_CENTER = 5
-        const val STYLE_BTN_RADIAL = 6
+        //NOTE: STYLE_CREATE_BUTTON must always be the last one as it is excluded from lists showing available buttons to choose from
+        enum class ButtonStyle(val value: Int) {STYLE_BTN_SINGLE_ACTION_ROUND(0), STYLE_BTN_INCREMENTER_VERTICAL(1), STYLE_BTN_RADIAL(2), STYLE_SPACE(3), STYLE_BTN_NO_MARGIN(4), STYLE_BTN_RADIAL_W_CENTER(5), STYLE_CREATE_BUTTON(6)}
+        fun buttonStyleFromInt(stateAsInt: Int) = ButtonStyle.values().associateBy(ButtonStyle::value)[stateAsInt]
+
+        fun nameFromStyle(context: Context, style: ButtonStyle) : String {
+            return when (style) {
+                ButtonStyle.STYLE_CREATE_BUTTON -> context.getString(R.string.create_button_title)
+                ButtonStyle.STYLE_SPACE -> context.getString(R.string.button_space_title)
+                ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND -> context.getString(R.string.button_round_title)
+                ButtonStyle.STYLE_BTN_NO_MARGIN -> context.getString(R.string.button_full_title)
+                ButtonStyle.STYLE_BTN_INCREMENTER_VERTICAL -> context.getString(R.string.button_incrementer_title)
+                ButtonStyle.STYLE_BTN_RADIAL_W_CENTER -> context.getString(R.string.button_radial_w_center_title)
+                ButtonStyle.STYLE_BTN_RADIAL -> context.getString(R.string.button_radial_title)
+            }
+        }
+
+        fun imageResourceFromStyle(style: ButtonStyle) : Int {
+            return when (style) {
+                ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND -> R.drawable.btn_bg_circle
+                ButtonStyle.STYLE_BTN_INCREMENTER_VERTICAL -> R.drawable.btn_template_incrementer
+                ButtonStyle.STYLE_BTN_RADIAL -> R.drawable.btn_template_radial
+                ButtonStyle.STYLE_SPACE -> 0
+                ButtonStyle.STYLE_BTN_NO_MARGIN -> R.drawable.btn_bg_round_rect
+                ButtonStyle.STYLE_BTN_RADIAL_W_CENTER -> R.drawable.btn_template_radial_w_center_button
+                ButtonStyle.STYLE_CREATE_BUTTON -> R.drawable.btn_bg_round_rect
+            }
+        }
 
         const val ID_BUTTONS = 80839
         const val ID_NAME = 80840
@@ -105,8 +126,7 @@ class Button {
     }
 
     class Properties {
-        var bgStyle         : BgStyle =
-            BgStyle.BG_CIRCLE
+        var bgStyle         : BgStyle   = BgStyle.BG_CIRCLE
         var bgUrl           : String    = ""
         var image           : String    = ""
         var marginBottom    : Int       = 16
