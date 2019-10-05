@@ -26,13 +26,13 @@ class TestBackendActivity : AppCompatActivity() {
         val testRemote = RemoteProfile()
             .apply {
                 name = "_TEST_REMOTE"
-                buttons.add(Button())
+                buttons.add(Button(Button.Companion.ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND))
                 buttons.add(
-                    Button()
+                    Button(Button.Companion.ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND)
                     .apply {
-                        properties[0] = Button.Properties()
+                        properties[0] = this.Properties ()
                             .apply {
-                                bgStyle = Button.Properties.BgStyle.BG_ROUND_RECT
+                                bgStyle = Button.Companion.BgStyle.BG_ROUND_RECT
                                 name = "B0"
                             }
                         commands.add(RemoteProfile.Command()
@@ -46,21 +46,21 @@ class TestBackendActivity : AppCompatActivity() {
                         name = "TEST BUTTON 1"
                     })
                 buttons.add(
-                    Button()
+                    Button(Button.Companion.ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND)
                     .apply {
                         name = "Test Incr"
-                        properties[0] = Button.Properties()
+                        properties[0] = this.Properties ()
                             .apply {
                                 marginBottom = 0
                                 image = IMG_ADD
-                                bgStyle = Button.Properties.BgStyle.BG_ROUND_RECT_TOP
+                                bgStyle = Button.Companion.BgStyle.BG_ROUND_RECT_TOP
                             }
                         properties.add(
-                            Button.Properties()
+                            this.Properties ()
                             .apply {
                                 marginTop = 0
                                 image = IMG_SUBTRACT
-                                bgStyle = Button.Properties.BgStyle.BG_ROUND_RECT_BOTTOM
+                                bgStyle = Button.Companion.BgStyle.BG_ROUND_RECT_BOTTOM
                             })
                         commands.add(RemoteProfile.Command()
                             .apply {
@@ -71,7 +71,7 @@ class TestBackendActivity : AppCompatActivity() {
                                 name = "Test Down"
                             })
                         rowSpan = 2
-                        style = Button.Companion.ButtonStyle.STYLE_BTN_INCREMENTER_VERTICAL
+                        type = Button.Companion.ButtonStyle.STYLE_BTN_INCREMENTER_VERTICAL
                     })
             }
         testRemote.uid = TEST_REMOTE

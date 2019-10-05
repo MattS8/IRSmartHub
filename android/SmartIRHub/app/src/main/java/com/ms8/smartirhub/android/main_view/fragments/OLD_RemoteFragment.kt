@@ -16,15 +16,14 @@ import android.view.animation.DecelerateInterpolator
 import androidx.databinding.*
 import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.create_button.CBWalkThroughActivity.Companion.REQ_NEW_BUTTON
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.databinding.FRemoteCurrentBinding
 import com.ms8.smartirhub.android.main_view.MainViewActivity
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import android.util.DisplayMetrics
 import android.util.Log
-import com.ms8.smartirhub.android.create_button.CBWalkThroughActivity
 import com.ms8.smartirhub.android.main_view.fragments.OLD_RemoteFragment.Companion.LayoutState.*
+import com.ms8.smartirhub.android.utils.RequestCodes
 
 
 class OLD_RemoteFragment : MainFragment() {
@@ -42,7 +41,7 @@ class OLD_RemoteFragment : MainFragment() {
     val createNewButtonListener = object : Observable.OnPropertyChangedCallback() {
         override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
             if (AppState.tempData.tempRemoteProfile.isCreatingNewButton.get()) {
-                startActivityForResult(Intent(activity, CBWalkThroughActivity::class.java), REQ_NEW_BUTTON)
+                //startActivityForResult(Intent(activity, CBWalkThroughActivity::class.java), REQ_NEW_BUTTON)
             }
         }
     }
@@ -127,7 +126,7 @@ class OLD_RemoteFragment : MainFragment() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQ_NEW_BUTTON) {
+        if (requestCode == RequestCodes.BUTTON_SETUP) {
             // Only need to worry about enabling "create new button". The tempButton
             //  should already be added at the end of a successful process
             AppState.tempData.tempRemoteProfile.isCreatingNewButton.set(false)

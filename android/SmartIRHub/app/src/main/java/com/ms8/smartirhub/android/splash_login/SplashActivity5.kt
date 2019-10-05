@@ -39,6 +39,7 @@ import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import com.ms8.smartirhub.android.utils.MyValidators
 import com.ms8.smartirhub.android.utils.extensions.DynamicStrings.getPasswordErrorString
 import com.ms8.smartirhub.android.utils.extensions.DynamicStrings.getUsernameErrorString
+import com.ms8.smartirhub.android.utils.extensions.RES_SIGN_IN
 import com.ms8.smartirhub.android.utils.extensions.getGenericErrorFlashbar
 import kotlinx.android.synthetic.main.a_splash_login_main.view.*
 import kotlinx.android.synthetic.main.v_splash_login_sign_up.view.*
@@ -235,6 +236,10 @@ class SplashActivity5 : AppCompatActivity() {
             listenForUserData()
         if (state.isListeningForUserFromUID)
             listenForUserFromUID()
+
+        // Determines if all user data was received in the background
+        // If so, we need to move on!
+        checkUserData()
     }
 
     override fun onPause() {
@@ -252,7 +257,7 @@ class SplashActivity5 : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
-            AuthActions.RC_SIGN_IN -> {
+            RES_SIGN_IN -> {
                 state.isWaitingForGoogleSignIn = false
                 when (resultCode) {
                     Activity.RESULT_OK -> {
@@ -469,7 +474,7 @@ class SplashActivity5 : AppCompatActivity() {
     }
 
     private fun checkUserData() {
-        if (AppState.userData.hasFetchedUserData()) {
+        if (AppState.userData.user.uid.get()?.isNotEmpty() == true && AppState.userData.hasFetchedUserData()) {
             Log.d("T#checkUserData", "Got all data! username = ${AppState.userData.user.username}")
             state.isListeningForUserData = false
             stopListeningForUserData()

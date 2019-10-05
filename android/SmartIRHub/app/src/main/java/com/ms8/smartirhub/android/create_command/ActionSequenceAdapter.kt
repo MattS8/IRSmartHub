@@ -39,7 +39,7 @@ class ActionSequenceAdapter(var callback: ActionSequenceAdapterCallbacks?) : Rec
                 holder.itemView.setOnClickListener { callback?.startEditAction(actionList[holder.adapterPosition], holder.adapterPosition) }
                 holder.bindAction(actionList[position])
                 holder.itemView.findViewById<ImageButton>(R.id.btnDeleteAction).setOnClickListener {
-                    AppState.tempData.tempButton?.commands?.get(0)?.actions?.removeAt(holder.adapterPosition)
+                    AppState.tempData.tempButton.get()?.commands?.get(0)?.actions?.removeAt(holder.adapterPosition)
                 }
                 // Show delay input for actions with additional actions after
                 if (position > 0 && position < itemCount - 2) {

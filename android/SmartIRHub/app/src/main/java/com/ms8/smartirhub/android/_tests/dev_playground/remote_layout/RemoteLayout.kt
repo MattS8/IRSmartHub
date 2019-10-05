@@ -28,7 +28,7 @@ class RemoteLayout(context: Context, attrs: AttributeSet) : AsymmetricGridView(c
                     .apply {
                         for (i in 0 until 35) {
                             add(
-                                Button()
+                                Button(Button.Companion.ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND)
                                 .apply {
                                     name = "Button $i"
                                 })

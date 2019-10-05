@@ -37,6 +37,7 @@ import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import com.ms8.smartirhub.android.utils.MyValidators
 import com.ms8.smartirhub.android.utils.extensions.DynamicStrings.getPasswordErrorString
 import com.ms8.smartirhub.android.utils.extensions.DynamicStrings.getUsernameErrorString
+import com.ms8.smartirhub.android.utils.extensions.RES_SIGN_IN
 
 class SplashActivity4 : AppCompatActivity() {
     lateinit var binding : ASplashLoginMainBinding
@@ -191,7 +192,7 @@ class SplashActivity4 : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
-            AuthActions.RC_SIGN_IN -> {
+            RES_SIGN_IN -> {
                 when (resultCode) {
                     Activity.RESULT_OK -> {
                         AuthActions.handleGoogleSignInResult2(data)

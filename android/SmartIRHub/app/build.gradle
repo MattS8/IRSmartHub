@@ -94,4 +94,7 @@ dependencies {
 
     //Better FAB
     implementation 'com.github.clans:fab:1.6.4'
+
+    // Expandable Items (for Command Creation View)
+    implementation 'com.diegodobelo.expandingview:expanding-view:0.9.4'
 }

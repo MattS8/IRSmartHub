@@ -50,11 +50,6 @@ fun AppCompatActivity.findNavBarHeight(): Int {
     } else 0
 }
 
-fun AppCompatActivity.startCreateButtonProcess() {
-    AppState.tempData.tempButton = Button()
-
-}
-
 fun Activity.getStatusBarHeight() : Int {
     val rectangle = Rect()
     window.decorView.getWindowVisibleDisplayFrame(rectangle)
@@ -97,4 +92,23 @@ fun AppCompatActivity.getGenericComingSoonFlashbar() = Flashbar.Builder(this)
     .enableSwipeToDismiss()
     .dismissOnTapOutside()
     .duration(Flashbar.DURATION_LONG)
+
+fun AppCompatActivity.getGenericNotificationFlashbar(message : String) = Flashbar.Builder(this)
+    .gravity(Flashbar.Gravity.BOTTOM)
+    .showOverlay()
+    .message(message)
+    .backgroundColorRes(R.color.colorCardDark)
+    .messageColorRes(R.color.white)
+    .enableSwipeToDismiss()
+    .dismissOnTapOutside()
+    .duration(Flashbar.DURATION_LONG)
+
+/*
+-----------------------------------------------
+    Result Codes
+-----------------------------------------------
+*/
+
+const val RES_SIGN_IN = 4
+const val RES_BUTTON_SETUP = 5
 

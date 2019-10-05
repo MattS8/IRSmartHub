@@ -127,7 +127,7 @@ class PickNameSheet(context: Context) : BottomSheetDialog(context) {
             .addErrorCallback { binding?.txtInput?.error = context.getString(R.string.err_invalid_button_name) }
             .check()
         if (isValidName) {
-            AppState.tempData.tempButton?.name = binding?.txtInput?.editText!!.text.toString()
+            AppState.tempData.tempButton.get()?.name = binding?.txtInput?.editText!!.text.toString()
             dismiss()
         }
     }

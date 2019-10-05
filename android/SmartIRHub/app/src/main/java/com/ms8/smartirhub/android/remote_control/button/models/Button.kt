@@ -8,18 +8,57 @@ import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 
 @Suppress("UNCHECKED_CAST")
-class Button {
-    var properties      : ArrayList<Properties> = ArrayList<Properties>().apply { add(
+class Button(typeTemp : ButtonStyle) {
+    var properties      : ArrayList<Properties>                 = ArrayList<Properties>().apply { add(
         Properties()
     ) }
-    var commands        : ArrayList<RemoteProfile.Command>    = ArrayList<RemoteProfile.Command>().apply { add(
+    var commands        : ArrayList<RemoteProfile.Command>      = ArrayList<RemoteProfile.Command>().apply { add(
         RemoteProfile.Command()
     ) }
-    var name            : String                = ""
-    var style           : ButtonStyle           = ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND
-    var columnSpan      : Int                   = 1
-    var rowSpan         : Int                   = 1
+    var name            : String                                = ""
+    var columnSpan      : Int                                   = 1
+    var rowSpan         : Int                                   = 1
+    var type            : ButtonStyle                           = typeTemp
+    set(value) {
+        field = value
 
+        // different button types require different number of properties/commands
+        // this ensures whenever the type is changed, there are enough property/command variables to support the selected type
+        when (field) {
+        // no property/command needed
+            ButtonStyle.STYLE_SPACE,
+            ButtonStyle.STYLE_CREATE_BUTTON ->
+            {
+                properties.clear()
+                commands.clear()
+            }
+        // 1 property/command needed
+            ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND,
+            ButtonStyle.STYLE_BTN_NO_MARGIN ->
+            {
+                properties.clear().also { properties.add(Properties()) }
+                commands.clear().also { commands.add(RemoteProfile.Command()) }
+            }
+        // 2 properties/commands needed
+            ButtonStyle.STYLE_BTN_INCREMENTER_VERTICAL ->
+            {
+                properties.clear().also { properties.addAll(listOf(Properties(), Properties())) }
+                commands.clear().also { commands.addAll(listOf(RemoteProfile.Command(), RemoteProfile.Command())) }
+            }
+        // 4 properties/commands needed
+            ButtonStyle.STYLE_BTN_RADIAL ->
+            {
+                properties.clear().also { properties.addAll(listOf(Properties(), Properties(), Properties(), Properties())) }
+                commands.clear().also { commands.addAll(listOf(RemoteProfile.Command(), RemoteProfile.Command(), RemoteProfile.Command(), RemoteProfile.Command())) }
+            }
+        // 5 properties/commands needed
+            ButtonStyle.STYLE_BTN_RADIAL_W_CENTER ->
+            {
+                properties.clear().also { properties.addAll(listOf(Properties(), Properties(), Properties(), Properties(), Properties())) }
+                commands.clear().also { commands.addAll(listOf(RemoteProfile.Command(), RemoteProfile.Command(), RemoteProfile.Command(), RemoteProfile.Command(), RemoteProfile.Command())) }
+            }
+        }
+    }
 
     fun toFirebaseObject() : Map<String, Any?> {
         return HashMap<String, Any?>()
@@ -37,9 +76,32 @@ class Button {
                         }
                     })
                 put("name", name)
-                put("style", style)
+                put("type", type.value)
                 put("columnSpan", columnSpan)
                 put("rowSpan", rowSpan)
+            }
+    }
+
+    fun propertiesFromMap(propertiesMap: Map<String, Any?>) : Properties {
+        return Properties()
+            .apply {
+                if (propertiesMap.containsKey("bgUrl")) {
+                    bgUrl = propertiesMap["bgUrl"] as String
+                }
+
+                if (propertiesMap.containsKey("image")) {
+                    image = propertiesMap["image"] as String
+                }
+
+                marginEnd = (propertiesMap["marginEnd"] as Number).toInt()
+                marginBottom = (propertiesMap["marginBottom"] as Number).toInt()
+                marginTop = (propertiesMap["marginTop"] as Number).toInt()
+                marginStart = (propertiesMap["marginStart"] as Number).toInt()
+
+                bgStyle =
+                    intToBgStyle(
+                        (propertiesMap["bgStyle"] as Number).toInt()
+                    )
             }
     }
 
@@ -50,10 +112,9 @@ class Button {
 
         @SuppressLint("LogNotTimber")
         fun fromMap(buttonMap: Map<String, Any?>): Button {
-            val newButton = Button()
+            val newButton = Button(buttonStyleFromInt((buttonMap["type"] as Number).toInt()) ?: ButtonStyle.STYLE_CREATE_BUTTON)
                 .apply {
                     name = buttonMap["name"] as String
-                    style = buttonStyleFromInt((buttonMap["style"] as Number).toInt()) ?: ButtonStyle.STYLE_CREATE_BUTTON
                     rowSpan = (buttonMap["rowSpan"] as Number).toInt()
                     columnSpan = (buttonMap["columnSpan"] as Number).toInt()
                 }
@@ -64,9 +125,7 @@ class Button {
                     newButton.properties.clear()
                     (buttonMap["properties"] as List<Map<String, Any?>>).forEach { p ->
                         newButton.properties.add(
-                            Properties.fromMap(
-                                p
-                            )
+                            newButton.propertiesFromMap(p)
                         )
                     }
                 } catch (e : Exception) { Log.e("Button", "$e") }
@@ -85,8 +144,18 @@ class Button {
         }
 
         //NOTE: STYLE_CREATE_BUTTON must always be the last one as it is excluded from lists showing available buttons to choose from
-        enum class ButtonStyle(val value: Int) {STYLE_BTN_SINGLE_ACTION_ROUND(0), STYLE_BTN_INCREMENTER_VERTICAL(1), STYLE_BTN_RADIAL(2), STYLE_SPACE(3), STYLE_BTN_NO_MARGIN(4), STYLE_BTN_RADIAL_W_CENTER(5), STYLE_CREATE_BUTTON(6)}
+        enum class ButtonStyle(val value: Int) {STYLE_BTN_SINGLE_ACTION_ROUND(0), STYLE_BTN_NO_MARGIN(1), STYLE_BTN_INCREMENTER_VERTICAL(2), STYLE_SPACE(3), STYLE_BTN_RADIAL(4), STYLE_BTN_RADIAL_W_CENTER(5), STYLE_CREATE_BUTTON(6)}
         fun buttonStyleFromInt(stateAsInt: Int) = ButtonStyle.values().associateBy(ButtonStyle::value)[stateAsInt]
+
+        enum class BgStyle {
+            BG_INVISIBLE,
+            BG_CIRCLE,
+            BG_ROUND_RECT,
+            BG_ROUND_RECT_TOP,
+            BG_ROUND_RECT_BOTTOM,
+            BG_CUSTOM_IMAGE,
+            BG_NONE
+        }
 
         fun nameFromStyle(context: Context, style: ButtonStyle) : String {
             return when (style) {
@@ -112,6 +181,26 @@ class Button {
             }
         }
 
+
+
+        @SuppressLint("LogNotTimber")
+        fun intToBgStyle(intVal : Int) : BgStyle {
+            return when(intVal) {
+                BgStyle.BG_INVISIBLE.ordinal -> BgStyle.BG_INVISIBLE
+                BgStyle.BG_CIRCLE.ordinal -> BgStyle.BG_CIRCLE
+                BgStyle.BG_ROUND_RECT.ordinal -> BgStyle.BG_ROUND_RECT
+                BgStyle.BG_ROUND_RECT_TOP.ordinal -> BgStyle.BG_ROUND_RECT_TOP
+                BgStyle.BG_ROUND_RECT_BOTTOM.ordinal -> BgStyle.BG_ROUND_RECT_BOTTOM
+                BgStyle.BG_CUSTOM_IMAGE.ordinal -> BgStyle.BG_CUSTOM_IMAGE
+                BgStyle.BG_NONE.ordinal -> BgStyle.BG_NONE
+
+                else -> {
+                    Log.e("BgStyle", "Received unknown int value ($intVal)")
+                    BgStyle.BG_NONE
+                }
+            }
+        }
+
         const val ID_BUTTONS = 80839
         const val ID_NAME = 80840
 
@@ -125,7 +214,7 @@ class Button {
         const val IMG_RADIAL_RIGHT  = "_IMG_RADIAL_RIGHT"
     }
 
-    class Properties {
+    inner class Properties {
         var bgStyle         : BgStyle   = BgStyle.BG_CIRCLE
         var bgUrl           : String    = ""
         var image           : String    = ""
@@ -133,16 +222,6 @@ class Button {
         var marginTop       : Int       = 16
         var marginStart     : Int       = 16
         var marginEnd       : Int       = 16
-
-        enum class BgStyle {
-            BG_INVISIBLE,
-            BG_CIRCLE,
-            BG_ROUND_RECT,
-            BG_ROUND_RECT_TOP,
-            BG_ROUND_RECT_BOTTOM,
-            BG_CUSTOM_IMAGE,
-            BG_NONE
-        }
 
         fun toFirebaseObject() : Map<String, Any?> {
             return ArrayMap<String, Any?>()
@@ -156,50 +235,5 @@ class Button {
                     put("marginEnd", marginEnd)
                 }
         }
-
-        companion object {
-            fun fromMap(propertiesMap: Map<String, Any?>) : Properties {
-                return Properties()
-                    .apply {
-                        if (propertiesMap.containsKey("bgUrl")) {
-                            bgUrl = propertiesMap["bgUrl"] as String
-                        }
-
-                        if (propertiesMap.containsKey("image")) {
-                            image = propertiesMap["image"] as String
-                        }
-
-                        marginEnd = (propertiesMap["marginEnd"] as Number).toInt()
-                        marginBottom = (propertiesMap["marginBottom"] as Number).toInt()
-                        marginTop = (propertiesMap["marginTop"] as Number).toInt()
-                        marginStart = (propertiesMap["marginStart"] as Number).toInt()
-
-                        bgStyle =
-                            toBgStyle(
-                                (propertiesMap["bgStyle"] as Number).toInt()
-                            )
-                    }
-            }
-
-            @SuppressLint("LogNotTimber")
-            fun toBgStyle(intVal : Int) : BgStyle {
-                return when(intVal) {
-                    BgStyle.BG_INVISIBLE.ordinal -> BgStyle.BG_INVISIBLE
-                    BgStyle.BG_CIRCLE.ordinal -> BgStyle.BG_CIRCLE
-                    BgStyle.BG_ROUND_RECT.ordinal -> BgStyle.BG_ROUND_RECT
-                    BgStyle.BG_ROUND_RECT_TOP.ordinal -> BgStyle.BG_ROUND_RECT_TOP
-                    BgStyle.BG_ROUND_RECT_BOTTOM.ordinal -> BgStyle.BG_ROUND_RECT_BOTTOM
-                    BgStyle.BG_CUSTOM_IMAGE.ordinal -> BgStyle.BG_CUSTOM_IMAGE
-                    BgStyle.BG_NONE.ordinal -> BgStyle.BG_NONE
-
-                    else -> {
-                        Log.e("BgStyle", "Received unknown int value ($intVal)")
-                        BgStyle.BG_NONE
-                    }
-                }
-            }
-        }
-
-
     }
 }

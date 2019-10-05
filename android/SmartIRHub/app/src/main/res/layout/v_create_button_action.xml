@@ -100,7 +100,7 @@
     <!--app:layout_constraintEnd_toEndOf="parent"-->
     <!--app:layout_constraintTop_toTopOf="parent" app:layout_constraintBottom_toBottomOf="parent"-->
     <!--android:layout_marginTop="16dp" android:layout_marginBottom="16dp"-->
-    <!--android:textAppearance="@style/AppTheme.TextAppearance.DialogTitle" android:textSize="18sp"-->
+    <!--android:textAppearance="@type/AppTheme.TextAppearance.DialogTitle" android:textSize="18sp"-->
     <!--app:layout_constraintVertical_bias="0.0"/>-->
     <!--<TextView-->
     <!--tools:text="@string/wrn_create_button_desc"-->
@@ -124,7 +124,7 @@
     <!--app:layout_constraintVertical_bias="1.0"-->
     <!--tools:text="Go Back"-->
     <!--app:layout_constraintStart_toEndOf="@+id/btnNeg" app:layout_constraintHorizontal_bias="0.5"-->
-    <!--app:layout_constraintEnd_toEndOf="parent" style="@style/Widget.AppCompat.Button.Borderless.Colored"-->
+    <!--app:layout_constraintEnd_toEndOf="parent" type="@type/Widget.AppCompat.Button.Borderless.Colored"-->
     <!--android:textColor="@android:color/holo_red_dark"/>-->
     <!--<Button-->
     <!--android:layout_width="wrap_content"-->
@@ -135,7 +135,7 @@
     <!--app:layout_constraintVertical_bias="1.0"-->
     <!--tools:text="Stay"-->
     <!--app:layout_constraintStart_toStartOf="parent" app:layout_constraintHorizontal_bias="0.5"-->
-    <!--app:layout_constraintEnd_toStartOf="@+id/btnPos" style="@style/Widget.AppCompat.Button.Borderless"-->
+    <!--app:layout_constraintEnd_toStartOf="@+id/btnPos" type="@type/Widget.AppCompat.Button.Borderless"-->
     <!--android:textColor="@color/colorPrimary"/>-->
     <!--</androidx.constraintlayout.widget.ConstraintLayout>-->
 </layout>

@@ -52,27 +52,28 @@ class RemoteButtonView(context: Context, attrs: AttributeSet) : FrameLayout(cont
         Set visibility
         Set text
      */
-    var properties: Button.Properties = Button.Properties()
-    set(value) {
-        field = value
+    lateinit var bgStyle: Button.Companion.BgStyle
+    fun setupProperties(properties : Button.Properties) {
+        // save bgStyle
+        bgStyle = properties.bgStyle
 
         // set layout margins
         val newLayoutParams = layoutParams as MarginLayoutParams
         newLayoutParams.setMargins(
-            Utils.dpToPx(context, field.marginStart.toFloat()),
-            Utils.dpToPx(context, field.marginTop.toFloat()),
-            Utils.dpToPx(context, field.marginEnd.toFloat()),
-            Utils.dpToPx(context, field.marginBottom.toFloat())
+            Utils.dpToPx(context, properties.marginStart.toFloat()),
+            Utils.dpToPx(context, properties.marginTop.toFloat()),
+            Utils.dpToPx(context, properties.marginEnd.toFloat()),
+            Utils.dpToPx(context, properties.marginBottom.toFloat())
         )
 
         // set background resource
         when (properties.bgStyle) {
-            Button.Properties.BgStyle.BG_CIRCLE -> { backgroundResource = R.drawable.btn_bg_circle_ripple }
-            Button.Properties.BgStyle.BG_ROUND_RECT -> { backgroundResource = R.drawable.btn_bg_round_rect_ripple }
-            Button.Properties.BgStyle.BG_ROUND_RECT_BOTTOM -> { backgroundResource = R.drawable.btn_bg_round_bottom_ripple }
-            Button.Properties.BgStyle.BG_ROUND_RECT_TOP -> { backgroundResource = R.drawable.btn_bg_round_top_ripple }
-            Button.Properties.BgStyle.BG_INVISIBLE -> { backgroundResource = 0 }
-            Button.Properties.BgStyle.BG_CUSTOM_IMAGE -> {
+            Button.Companion.BgStyle.BG_CIRCLE -> { backgroundResource = R.drawable.btn_bg_circle_ripple }
+            Button.Companion.BgStyle.BG_ROUND_RECT -> { backgroundResource = R.drawable.btn_bg_round_rect_ripple }
+            Button.Companion.BgStyle.BG_ROUND_RECT_BOTTOM -> { backgroundResource = R.drawable.btn_bg_round_bottom_ripple }
+            Button.Companion.BgStyle.BG_ROUND_RECT_TOP -> { backgroundResource = R.drawable.btn_bg_round_top_ripple }
+            Button.Companion.BgStyle.BG_INVISIBLE -> { backgroundResource = 0 }
+            Button.Companion.BgStyle.BG_CUSTOM_IMAGE -> {
                 //TODO Test
                 //TODO add ripple effect
                 if (properties.bgUrl.validUrl()) {
@@ -149,33 +150,33 @@ class RemoteButtonView(context: Context, attrs: AttributeSet) : FrameLayout(cont
                     width = MATCH_PARENT
                     height = MATCH_PARENT
                     gravity = Gravity.CENTER
-                    when (properties.bgStyle) {
-                        Button.Properties.BgStyle.BG_CIRCLE ->  {
+                    when (bgStyle) {
+                        Button.Companion.BgStyle.BG_CIRCLE ->  {
                             val margin = Utils.dpToPx(context,
                                 BG_CIRCLE_MARGIN
                             )
                             setMargins(margin, margin, margin, margin)
                         }
-                        Button.Properties.BgStyle.BG_ROUND_RECT -> {
+                        Button.Companion.BgStyle.BG_ROUND_RECT -> {
                             val margin = Utils.dpToPx(context,
                                 BG_ROUND_RECT_MARGIN
                             )
                             setMargins(margin, margin, margin, margin)
                         }
-                        Button.Properties.BgStyle.BG_ROUND_RECT_TOP -> {
+                        Button.Companion.BgStyle.BG_ROUND_RECT_TOP -> {
                             val margin = Utils.dpToPx(context,
                                 BG_ROUND_RECT_TOP_MARGIN
                             )
                             setMargins(margin, margin, margin, margin)
                         }
-                        Button.Properties.BgStyle.BG_ROUND_RECT_BOTTOM -> {
+                        Button.Companion.BgStyle.BG_ROUND_RECT_BOTTOM -> {
                             val margin = Utils.dpToPx(context,
                                 BG_ROUND_RECT_BOTTOM_MARGIN
                             )
                             setMargins(margin, margin, margin, margin)
                         }
-                        Button.Properties.BgStyle.BG_CUSTOM_IMAGE -> { /*TODO*/ }
-                        Button.Properties.BgStyle.BG_INVISIBLE -> { /*TODO*/ }
+                        Button.Companion.BgStyle.BG_CUSTOM_IMAGE -> { /*TODO*/ }
+                        Button.Companion.BgStyle.BG_INVISIBLE -> { /*TODO*/ }
                     }
                 }
         } catch (e: Exception) {
@@ -200,22 +201,22 @@ class RemoteButtonView(context: Context, attrs: AttributeSet) : FrameLayout(cont
     class ButtonOutlineProvider(private var buttonProperties: Button.Properties): ViewOutlineProvider() {
         override fun getOutline(view: View?, outline: Outline?) {
             when (buttonProperties.bgStyle) {
-                Button.Properties.BgStyle.BG_CIRCLE -> {
+                Button.Companion.BgStyle.BG_CIRCLE -> {
                     outline?.setOval(0, 0, view?.width ?: 0, view?.height ?: 0)
                 }
-                Button.Properties.BgStyle.BG_ROUND_RECT -> {
+                Button.Companion.BgStyle.BG_ROUND_RECT -> {
                     outline?.setRoundRect(0, 0, view?.width ?: 0, view?.height ?: 0, (view?.height ?: 0 / 2).toFloat())
                 }
-                Button.Properties.BgStyle.BG_ROUND_RECT_BOTTOM -> {
+                Button.Companion.BgStyle.BG_ROUND_RECT_BOTTOM -> {
                     outline?.setRoundRect(0, 0, view?.width ?: 0, view?.height ?: 0, (view?.height ?: 0 / 2).toFloat())
                 }
-                Button.Properties.BgStyle.BG_ROUND_RECT_TOP -> {
+                Button.Companion.BgStyle.BG_ROUND_RECT_TOP -> {
                     outline?.setRoundRect(0, 0, view?.width ?: 0, view?.height ?: 0, (view?.height ?: 0 / 2).toFloat())
                 }
-                Button.Properties.BgStyle.BG_CUSTOM_IMAGE -> {
+                Button.Companion.BgStyle.BG_CUSTOM_IMAGE -> {
                     //todo find outline?
                 }
-                Button.Properties.BgStyle.BG_INVISIBLE -> {
+                Button.Companion.BgStyle.BG_INVISIBLE -> {
 
                 }
             }

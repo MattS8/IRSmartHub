@@ -81,7 +81,7 @@
                     android:layout_marginBottom="16dp"
                     app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintVertical_bias="0.0"
                     app:layout_constraintHorizontal_bias="0.0"
-                    tools:text="send to: Test IRSmartHub"
+                    tools:text="target: Test IRSmartHub"
                     android:textColor="@color/colorControlNormalWhite"
                     app:layout_constraintTop_toBottomOf="@+id/tvActionTitle" android:layout_marginTop="8dp"
                     app:layout_constraintStart_toStartOf="@+id/tvActionTitle"/>

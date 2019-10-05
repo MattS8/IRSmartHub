@@ -162,29 +162,30 @@ object FirestoreActions {
         try {
             newProfile = RemoteProfile().apply {
                 (snapshot["buttons"] as List<Map<String, Any?>>).forEach { buttonMap ->
-                    buttons.add(Button().apply {
-                        name = buttonMap["name"] as String
-                        style = Button.buttonStyleFromInt((buttonMap["style"] as Number).toInt()) ?: run {
-                            Log.e("FirestoreActions", "parseRemoteProfile - Unknown style found (${(buttonMap["style"] as Number).toInt()})")
+                    buttons.add(
+                        Button(Button.buttonStyleFromInt((buttonMap["type"] as Number).toInt()) ?: run {
+                            Log.e("FirestoreActions", "parseRemoteProfile - Unknown type found (${(buttonMap["type"] as Number).toInt()})")
                             Button.Companion.ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND
-                        }
-                        rowSpan = (buttonMap["rowSpan"] as Number).toInt()
-                        columnSpan = (buttonMap["columnSpan"] as Number).toInt()
-                        commands = ArrayList()
-                        (buttonMap["commands"] as List<List<Map<String, Any?>>>).forEach { cmd ->
-                            commands.add(RemoteProfile.Command().apply {
-                                cmd.forEach { actionMap ->
-                                    actions.add(RemoteProfile.Command.Action().apply {
-                                        delay = (actionMap["delay"] as Number).toInt()
-                                        hubUID = actionMap["hubUID"] as String
-                                        irSignal = actionMap["irSignal"] as String
-                                        if (!AppState.userData.irSignals.containsKey(irSignal))
-                                            missingIrSignals.add(irSignal)
+                        })
+                            .apply {
+                                name = buttonMap["name"] as String
+                                rowSpan = (buttonMap["rowSpan"] as Number).toInt()
+                                columnSpan = (buttonMap["columnSpan"] as Number).toInt()
+                                commands = ArrayList()
+                                (buttonMap["commands"] as List<List<Map<String, Any?>>>).forEach { cmd ->
+                                    commands.add(RemoteProfile.Command().apply {
+                                        cmd.forEach { actionMap ->
+                                            actions.add(RemoteProfile.Command.Action().apply {
+                                                delay = (actionMap["delay"] as Number).toInt()
+                                                hubUID = actionMap["hubUID"] as String
+                                                irSignal = actionMap["irSignal"] as String
+                                                if (!AppState.userData.irSignals.containsKey(irSignal))
+                                                    missingIrSignals.add(irSignal)
+                                            })
+                                        }
                                     })
                                 }
-                            })
-                        }
-                    })
+                        })
                 }
                 name = snapshot["name"] as String
                 uid = snapshot.id

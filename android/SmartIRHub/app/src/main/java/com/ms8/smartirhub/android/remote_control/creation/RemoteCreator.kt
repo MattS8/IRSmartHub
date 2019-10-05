@@ -15,7 +15,7 @@ import com.ms8.smartirhub.android.databinding.VItemExistingRemoteBinding
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import org.jetbrains.anko.layoutInflater
 
-class RemoteCreator() {
+class RemoteCreator {
     // Listeners
     var onCreateDialogDismiss: () -> Unit = {}
     var onCreateBlankRemote: () -> Unit = {}
@@ -71,8 +71,10 @@ class RemoteCreator() {
         val createRemoteFromBinding = DataBindingUtil.bind<VCreateRemoteFromBinding>(createRemoteView)
         createRemoteDialog?.setContentView(createRemoteView)
         createRemoteDialog?.setOnDismissListener {
-            if (!isTransitioning)
+            if (!isTransitioning) {
+                dialogState = RemoteDialogState.CREATE_FROM
                 onCreateDialogDismiss()
+            }
         }
 
         // set up onClick listeners (device template, existing remote, blank layout)
@@ -97,8 +99,10 @@ class RemoteCreator() {
         val existingBinding = DataBindingUtil.bind<VCreateFromExistingRemoteBinding>(existingDeviceView)
         createRemoteDialog?.setContentView(existingDeviceView)
         createRemoteDialog?.setOnDismissListener {
-            if (!isTransitioning)
+            if (!isTransitioning) {
+                dialogState = RemoteDialogState.CREATE_FROM
                 onCreateDialogDismiss()
+            }
         }
 
         // set up list of existing remotes

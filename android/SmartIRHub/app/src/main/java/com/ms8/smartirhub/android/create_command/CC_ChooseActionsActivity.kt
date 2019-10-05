@@ -92,15 +92,15 @@ class CC_ChooseActionsActivity : AppCompatActivity() {
             REQ_NEW_ACTION -> {
                 if (resultCode == Activity.RESULT_OK) {
                     val newIrSignalUID = data?.getStringExtra(LSWalkThroughActivity.NEW_IR_SIGNAL_UID) ?: return
-                    AppState.tempData.tempButton?.commands?.get(0)?.actions?.add(Command.Action().apply { irSignal =  newIrSignalUID})
+                    AppState.tempData.tempButton.get()?.commands?.get(0)?.actions?.add(Command.Action().apply { irSignal =  newIrSignalUID})
                 }
             }
             REQ_EDIT_ACTION -> {
                 if (resultCode == Activity.RESULT_OK) {
                     if (editingPosition != -1) {
                         val newIrSignalUID = data?.getStringExtra(LSWalkThroughActivity.NEW_IR_SIGNAL_UID) ?: return
-                        AppState.tempData.tempButton?.commands?.get(0)?.actions?.removeAt(editingPosition)
-                        AppState.tempData.tempButton?.commands?.get(0)?.actions?.add(editingPosition, Command.Action().apply { irSignal = newIrSignalUID })
+                        AppState.tempData.tempButton.get()?.commands?.get(0)?.actions?.removeAt(editingPosition)
+                        AppState.tempData.tempButton.get()?.commands?.get(0)?.actions?.add(editingPosition, Command.Action().apply { irSignal = newIrSignalUID })
                     } else {
                         Log.e("ChooseActions", "Returned successfully from REQ_EDIT_ACTION, but editingPosition was -1")
                     }
@@ -111,24 +111,24 @@ class CC_ChooseActionsActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        AppState.tempData.tempButton?.commands?.get(0)?.actions?.removeOnListChangedCallback(commandListener)
+        AppState.tempData.tempButton.get()?.commands?.get(0)?.actions?.removeOnListChangedCallback(commandListener)
     }
 
     override fun onResume() {
         super.onResume()
-        AppState.tempData.tempButton?.commands?.get(0)?.actions?.addOnListChangedCallback(commandListener)
+        AppState.tempData.tempButton.get()?.commands?.get(0)?.actions?.addOnListChangedCallback(commandListener)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (AppState.tempData.tempButton?.commands == null)
-            AppState.tempData.tempButton?.commands = Button.newCommandList()
+        if (AppState.tempData.tempButton.get()?.commands == null)
+            AppState.tempData.tempButton.get()?.commands = Button.newCommandList()
 
         binding = DataBindingUtil.setContentView(this, R.layout.a_cc_choose_action)
         binding.actionsList.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
         binding.actionsList.adapter = adapter
-        binding.btnSaveCommand.isEnabled = AppState.tempData.tempButton?.commands?.get(0)?.actions?.size ?: 0 > 0
+        binding.btnSaveCommand.isEnabled = AppState.tempData.tempButton.get()?.commands?.get(0)?.actions?.size ?: 0 > 0
         binding.btnSaveCommand.setOnClickListener {
             setResult(Activity.RESULT_OK)
             finish()

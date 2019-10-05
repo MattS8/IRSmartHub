@@ -152,7 +152,7 @@
                 <!--android:textColor="@color/colorControlNormalWhite"-->
                 <!--app:hintTextColor="@color/colorControlNormalWhite"-->
                 <!--android:textColorHint="@color/colorControlNormalWhite"-->
-                <!--app:hintTextAppearance="@style/TextAppearance.App.TextInputLayout"-->
+                <!--app:hintTextAppearance="@type/TextAppearance.App.TextInputLayout"-->
                 <!--app:layout_constraintVertical_bias="1.0"-->
                 <!--app:layout_constraintBottom_toTopOf="@+id/btnPickName"-->
                 <!--android:inputType="textNoSuggestions"-->

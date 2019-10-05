@@ -109,7 +109,7 @@
 ////        }
 ////    }
 //
-////    override fun getTheme() = R.style.BottomSheetDialogTheme
+////    override fun getTheme() = R.type.BottomSheetDialogTheme
 //
 //    override fun onSaveInstanceState(outState: Bundle) {
 //        super.onSaveInstanceState(outState)

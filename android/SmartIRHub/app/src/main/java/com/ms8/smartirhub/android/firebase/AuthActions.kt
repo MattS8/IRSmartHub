@@ -15,6 +15,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.utils.MySharedPreferences
+import com.ms8.smartirhub.android.utils.extensions.RES_SIGN_IN
 import java.lang.Exception
 
 object AuthActions {
@@ -72,7 +73,7 @@ object AuthActions {
             .requestEmail()
             .requestProfile()
             .build()
-        activity.startActivityForResult(GoogleSignIn.getClient(activity, gso).signInIntent, RC_SIGN_IN)
+        activity.startActivityForResult(GoogleSignIn.getClient(activity, gso).signInIntent, RES_SIGN_IN)
     }
 
     /**
@@ -131,5 +132,4 @@ object AuthActions {
     /* ---------------- Constants ---------------- */
 
     const val TAG = "FirebaseAuthActions"
-    const val RC_SIGN_IN = 4
 }

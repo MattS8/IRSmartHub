@@ -266,4 +266,18 @@
     <string name="button_radial_w_center_title">Radial with Center Button</string>
     <string name="button_radial_title">Radial</string>
     <string name="button_types_title">Button Types</string>
+    <string name="title_activity_setup_button">Setup Button</string>
+    <string name="added_space_button">Added button spacer to remote</string>
+    <string name="added_button">Added button to remote</string>
+    <string name="create">Create</string>
+    <string name="button_setup_not_complete">One or more buttons haven\'t been given an action. Are you sure you want to create it anyway? You can also edit the button later.</string>
+    <string name="cancel">cancel</string>
+    <string name="button_setup_title">Tap Each Button to Setup</string>
+    <string name="commands_from">Commands from</string>
+    <string name="from_user_remotes">From User Remotes</string>
+    <string name="remote_owner">Remote owner:</string>
+    <string name="you">you</string>
+    <string name="choose_button_command_from">Choose Button Command From</string>
+    <string name="create_new_command">New Command</string>
+    <string name="new_command">New Command</string>
 </resources>
