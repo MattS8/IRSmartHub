@@ -32,6 +32,8 @@ class RemoteLayoutView(context: Context, attrs: AttributeSet): AsymmetricRecycle
 
     var topPadding = Utils.dpToPx(context, 56f)
 
+    var onCreateNewButton : () -> Unit = {}
+
     private var isListening : Boolean = false
     private val buttonListener = object : ObservableList.OnListChangedCallback<ObservableList<Button>>() {
         override fun onChanged(sender: ObservableList<Button>?) {
@@ -181,9 +183,9 @@ class RemoteLayoutView(context: Context, attrs: AttributeSet): AsymmetricRecycle
         private fun bindCreateNewButton() {
             val createButtonView = itemView.findViewById<TextView>(R.id.btnRmtCreateNew)
             createButtonView.setOnClickListener {
-                if (AppState.tempData.tempButton.get() == null){
-                    AppState.tempData.tempButton.set(Button(Button.Companion.ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND))
-                }
+                Log.d("t#", "create new button clicked!")
+                AppState.tempData.isCreatingNewButton.set(true)
+                AppState.tempData.isCreatingNewButton.notifyChange()
             }
         }
 

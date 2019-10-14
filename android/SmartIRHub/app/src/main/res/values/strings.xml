@@ -95,7 +95,7 @@
     <string name="pick_a_button_name">Pick a Button Name</string>
     <string name="choose_a_button_action">Choose a button action</string>
     <string name="pick_a_button_style">Pick a button style</string>
-    <string name="button_name_hint">Button Name:</string>
+    <string name="button_name_hint">Name:</string>
     <string name="how_to_add_button">Add Button:</string>
     <string name="learn_ir_title">Learn IR Signal:</string>
     <string name="select_ir_hub">Select Hub</string>
@@ -277,7 +277,11 @@
     <string name="from_user_remotes">From User Remotes</string>
     <string name="remote_owner">Remote owner:</string>
     <string name="you">you</string>
-    <string name="choose_button_command_from">Choose Button Command From</string>
+    <string name="choose_button_command_from">Choose a Command</string>
     <string name="create_new_command">New Command</string>
     <string name="new_command">New Command</string>
+    <string name="pairing_instructions_title">Pairing Instructions</string>
+    <string name="pairing_instructions_message">After tapping Pair below, point your remote towards the Smart Hub. Then press the desired button on your remote. It is recommended to keep the remote approximately two inches from the Smart Hub during the pairing process.</string>
+    <string name="smart_hub">smart_hub</string>
+    <string name="target_smart_hub">Target Smart Hub</string>
 </resources>

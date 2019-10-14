@@ -54,6 +54,29 @@ class RemoteCreator {
 
     }
 
+    fun onBackPressed(context: Context) {
+        when (dialogState) {
+            RemoteDialogState.CREATE_FROM ->
+            {
+                dismissBottomDialog()
+            }
+            RemoteDialogState.TEMPLATES ->
+            {
+                isTransitioning = true
+                dismissBottomDialog()
+                showCreateRemoteDialog(context)
+                isTransitioning = false
+            }
+            RemoteDialogState.EXISTING_REMOTE ->
+            {
+                isTransitioning = true
+                dismissBottomDialog()
+                showCreateRemoteDialog(context)
+                isTransitioning = false
+            }
+        }
+    }
+
 
 /*
 ----------------------------------------------
@@ -107,7 +130,6 @@ class RemoteCreator {
 
         // set up list of existing remotes
         existingBinding?.remotesList?.adapter = ExistingRemotesAdapter(ArrayList(AppState.userData.remotes.values))
-
     }
 
     private fun showCreateFromDeviceTemplateDialog(context: Context) {

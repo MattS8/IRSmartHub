@@ -704,6 +704,10 @@ object FirestoreActions {
 
                         // Denote success by setting editMode to false
                         AppState.tempData.tempRemoteProfile.inEditMode.set(false)
+
+                        // Clear tempData no longer relevant to the saved remote
+                        AppState.tempData.tempButton.set(null)
+                        AppState.tempData.isCreatingNewButton.set(false)
                     }
                     .addOnFailureListener {e ->
                         Log.e("addRemote", "$e")

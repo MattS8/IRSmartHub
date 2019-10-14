@@ -76,17 +76,9 @@ dependencies {
     //Material Components
     implementation 'com.google.android.material:material:1.1.0-alpha09'
 
-    //Bottom Sheet Dialog
-//    implementation 'com.github.andrefrsousa:SuperBottomSheet:1.3.0'
-
-    //Potential Remote Buttons
-    implementation 'com.github.armcha:ElasticView:0.2.0'
 
     //Bottom Nav View
     implementation 'it.sephiroth.android.library.bottomnavigation:bottom-navigation:3.0.0'
-
-    //Potential panel viewpager view
-    implementation 'com.gauravk.bubblenavigation:bubblenavigation:1.0.7'
 
     //Image loader
     implementation 'com.github.bumptech.glide:glide:4.9.0'

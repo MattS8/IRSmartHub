@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
         android:color="@color/colorAccent">
+
     <item android:id="@android:id/mask">
         <shape android:shape="rectangle">
-            <solid android:color="#000000" />
             <corners
-                    android:topLeftRadius="@dimen/btn_corner_radius"
-                    android:topRightRadius="@dimen/btn_corner_radius"
-            />
+                android:radius="2dp"
+                />
         </shape>
     </item>
-    <item android:drawable="@drawable/btn_bg_round_top" />
+
+    <item android:drawable="@drawable/bg_outline_white"/>
+
 </ripple>

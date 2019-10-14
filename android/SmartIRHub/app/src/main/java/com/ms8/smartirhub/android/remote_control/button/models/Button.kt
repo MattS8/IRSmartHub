@@ -9,49 +9,64 @@ import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 
 @Suppress("UNCHECKED_CAST")
 class Button(typeTemp : ButtonStyle) {
-    var properties      : ArrayList<Properties>                 = ArrayList<Properties>().apply { add(
-        Properties()
-    ) }
-    var commands        : ArrayList<RemoteProfile.Command>      = ArrayList<RemoteProfile.Command>().apply { add(
-        RemoteProfile.Command()
-    ) }
+    var properties      : ArrayList<Properties>                 = ArrayList()
+    var commands        : ArrayList<RemoteProfile.Command>      = ArrayList()
     var name            : String                                = ""
     var columnSpan      : Int                                   = 1
     var rowSpan         : Int                                   = 1
     var type            : ButtonStyle                           = typeTemp
-    set(value) {
+        set(value) {
         field = value
 
+       setupPropertiesAndCommands()
+    }
+
+    init {
+        setupPropertiesAndCommands()
+    }
+
+    private fun setupPropertiesAndCommands() {
         // different button types require different number of properties/commands
         // this ensures whenever the type is changed, there are enough property/command variables to support the selected type
-        when (field) {
-        // no property/command needed
+        when (type) {
+            // no property/command needed
             ButtonStyle.STYLE_SPACE,
             ButtonStyle.STYLE_CREATE_BUTTON ->
             {
                 properties.clear()
                 commands.clear()
             }
-        // 1 property/command needed
+            // 1 property/command needed
             ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND,
             ButtonStyle.STYLE_BTN_NO_MARGIN ->
             {
                 properties.clear().also { properties.add(Properties()) }
                 commands.clear().also { commands.add(RemoteProfile.Command()) }
             }
-        // 2 properties/commands needed
+            // 2 properties/commands needed
             ButtonStyle.STYLE_BTN_INCREMENTER_VERTICAL ->
             {
-                properties.clear().also { properties.addAll(listOf(Properties(), Properties())) }
+                properties.clear().also { properties.addAll(
+                    listOf(
+                        Properties()
+                            .apply {
+                                bgStyle = BgStyle.BG_ROUND_RECT_TOP
+                                image = IMG_ADD
+                            },
+                        Properties()
+                            .apply {
+                                bgStyle = BgStyle.BG_ROUND_RECT_BOTTOM
+                                image = IMG_SUBTRACT
+                            })) }
                 commands.clear().also { commands.addAll(listOf(RemoteProfile.Command(), RemoteProfile.Command())) }
             }
-        // 4 properties/commands needed
+            // 4 properties/commands needed
             ButtonStyle.STYLE_BTN_RADIAL ->
             {
                 properties.clear().also { properties.addAll(listOf(Properties(), Properties(), Properties(), Properties())) }
                 commands.clear().also { commands.addAll(listOf(RemoteProfile.Command(), RemoteProfile.Command(), RemoteProfile.Command(), RemoteProfile.Command())) }
             }
-        // 5 properties/commands needed
+            // 5 properties/commands needed
             ButtonStyle.STYLE_BTN_RADIAL_W_CENTER ->
             {
                 properties.clear().also { properties.addAll(listOf(Properties(), Properties(), Properties(), Properties(), Properties())) }

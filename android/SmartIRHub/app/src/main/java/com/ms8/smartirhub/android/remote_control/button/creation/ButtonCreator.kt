@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
+import android.os.Parcel
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -30,7 +31,7 @@ class ButtonCreator {
     Public Listeners
 ----------------------------------------------
 */
-    var onCreateDialogDismiss: () -> Unit = {}
+    var onCreateDialogDismiss: (fromBackPressed: Boolean) -> Unit = {}
     var onCreateDialogShow: () -> Unit = {}
     var onCreationComplete: (completedButton: Button) -> Unit = {}
     var onRequestCommandFromRemote: (remote: RemoteProfile) -> Unit = {}
@@ -46,13 +47,19 @@ class ButtonCreator {
 */
 
     private var onDismiss = {
+        Log.d("t#", "buttonCreator - onDismiss (isTransitioning = $isTransitioning)")
         if (!isTransitioning) {
-            dialogState = ButtonDialogState.CHOOSE_TYPE
-            onCreateDialogDismiss()
-
-            // todo check if screen rotation causes onDismiss to be called. If so, this will remove tempData when we don't want to
-            AppState.tempData.tempButton.set(null)
+            onCreateDialogDismiss(isBackPressed)
+            if (isBackPressed)
+                isBackPressed = false
         }
+        else
+            isTransitioning = false
+    }
+
+    private var onCommandDialogDismissed: (fromBackPressed: Boolean) -> Unit = {fromBackPressed ->
+        if (fromBackPressed) this@ButtonCreator.onBackPressed()
+        else onCreateDialogDismiss(fromBackPressed)
     }
 
 /*
@@ -61,25 +68,29 @@ class ButtonCreator {
 ----------------------------------------------
 */
 
-    enum class ButtonDialogState(var value: Int) {CHOOSE_TYPE(1), SETUP_BUTTON(2),  COMMAND_FROM(3), NEW_COMMAND(4)}
-    var dialogState : ButtonDialogState  = ButtonDialogState.CHOOSE_TYPE
-    set(value) {
-        field = value
+    class State(val buttonDialogState: ButtonDialogState, val commandState: CommandCreator.State, val arrayPosition: Int)
 
-        // we want to keep the internal CommandCreator object in sync with what this ButtonCreator is doing
-        if (field == ButtonDialogState.COMMAND_FROM) {
-            commandCreator.dialogState = CommandCreator.CommandDialogState.COMMAND_FROM
-        } else if (field == ButtonDialogState.NEW_COMMAND) {
-            commandCreator.dialogState = CommandCreator.CommandDialogState.NEW_COMMAND
+    enum class ButtonDialogState(var value: Int) {CHOOSE_TYPE(1), SETUP_BUTTON(2),  SETUP_COMMAND(3)}
+     var dialogState : ButtonDialogState  = ButtonDialogState.CHOOSE_TYPE
+
+    private var commandCreator : CommandCreator = CommandCreator()
+        .apply {
+            onDialogDismiss = onCommandDialogDismissed
         }
-    }
+    private var arrayPosition  : Int = 0
 
-    var commandCreator : CommandCreator = CommandCreator()
-    var arrayPosition  : Int            = 0
-
-    var createButtonDialog : BottomSheetDialog? = null
+    private var createButtonDialog : BottomSheetDialog? = null
 
     private var isTransitioning : Boolean = false
+
+    // not a true 'state' variable, but allows for onDismiss to denote when dismissing via onBackPressed or via swipe
+    private var isBackPressed : Boolean = false
+
+    var context : Context? = null
+    set(value) {
+        field = value
+        commandCreator.context = field
+    }
 
 /*
 ----------------------------------------------
@@ -87,21 +98,35 @@ class ButtonCreator {
 ----------------------------------------------
 */
 
-    fun showBottomDialog(context: Context) {
-        when (dialogState) {
-            ButtonDialogState.CHOOSE_TYPE -> { showChooseButtonTypeDialog(context) }
-            ButtonDialogState.SETUP_BUTTON -> { showButtonSetupDialog(context) }
-            ButtonDialogState.COMMAND_FROM,
-            ButtonDialogState.NEW_COMMAND -> { showCommandFromDialog(context, 1) } //todo set position from saved variable
+    fun setState(state: State) {
+        dialogState = state.buttonDialogState
+        commandCreator.setState(state.commandState)
+        arrayPosition = state.arrayPosition
+    }
+
+    fun getState() : State {
+        return State(dialogState, commandCreator.getState(), arrayPosition)
+    }
+
+    @SuppressLint("LogNotTimber")
+    fun showBottomDialog() {
+        when (context) {
+            null -> Log.e("ButtonCreator", "showBottomDialog - Context was not set")
+            else ->
+            {
+                when (dialogState) {
+                    ButtonDialogState.CHOOSE_TYPE -> { showChooseButtonTypeDialog(context!!) }
+                    ButtonDialogState.SETUP_BUTTON -> { showButtonSetupDialog(context!!) }
+                    ButtonDialogState.SETUP_COMMAND -> { commandCreator.showBottomDialog(arrayPosition) }
+                }
+                onCreateDialogShow()
+            }
         }
-        onCreateDialogShow()
     }
 
     fun dismissBottomDialog() {
         createButtonDialog?.dismiss()
         createButtonDialog = null
-
-        // note: onCreateDialogDismiss() callback is called via the setOnDismissListener
     }
 
 /*
@@ -115,8 +140,13 @@ class ButtonCreator {
         dialogState = ButtonDialogState.CHOOSE_TYPE
 
     // set up bottom sheet dialog
+        // using a custom onBackPressed to handle navigating the different stages of creation process
         val buttonTypesView = context.layoutInflater.inflate(R.layout.v_button_types, null)
-        createButtonDialog = BottomSheetDialog(context)
+        createButtonDialog = object : BottomSheetDialog(context) {
+            override fun onBackPressed() {
+                this@ButtonCreator.onBackPressed()
+            }
+        }
         val buttonTypeBinding = DataBindingUtil.bind<VButtonTypesBinding>(buttonTypesView)
         createButtonDialog?.setContentView(buttonTypesView)
         createButtonDialog?.setOnDismissListener { onDismiss() }
@@ -140,40 +170,32 @@ class ButtonCreator {
             Button.Companion.ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND,
             Button.Companion.ButtonStyle.STYLE_BTN_NO_MARGIN ->
             {
-                isTransitioning = true
-                dismissBottomDialog()
-                dialogState = ButtonDialogState.COMMAND_FROM
-                showCommandFromDialog(context, 0)
-                isTransitioning = false
+                transitionToCommandDialog(0)
             }
         // Button Types requiring 2-action setup:
             Button.Companion.ButtonStyle.STYLE_BTN_INCREMENTER_VERTICAL ->
             {
+                Log.d("#T", "Setting up Incrementer Vertical Setup...")
             // create bottom sheet
                 val bottomSheetView = context.layoutInflater.inflate(R.layout.v_create_sheet, null)
                 val bottomSheetBinding : VCreateSheetBinding? = DataBindingUtil.bind(bottomSheetView)
 
             // button setup view
-                val setupButtonView = context.layoutInflater.inflate(R.layout.v_button_setup, bottomSheetBinding?.createSheetContent)
-                val buttonContainerBinding : VButtonSetupBinding? = DataBindingUtil.bind(setupButtonView)
+                //val setupButtonView = context.layoutInflater.inflate(R.layout.v_button_setup, bottomSheetBinding?.createSheetContent)
+                val buttonContainerBinding : VButtonSetupBinding? = DataBindingUtil.inflate(context.layoutInflater, R.layout.v_button_setup, bottomSheetBinding?.createSheetContent, true)
 
             // incrementer button setup (goes inside setup button container)
-                val incrementerButtonView = context.layoutInflater.inflate(R.layout.v_rmt_btn_inc_vert_setup, buttonContainerBinding?.buttonContainer)
-                val incrementerBinding : VRmtBtnIncVertSetupBinding? = DataBindingUtil.bind(incrementerButtonView)
-
-            // add views to their respective containers
-            // the generic bottom 'create' sheet contains the 'setupButtonView' which contains the 'incrementerButtonView'
-                buttonContainerBinding?.buttonContainer?.addView(incrementerButtonView)
-                bottomSheetBinding?.createSheetContent?.addView(setupButtonView)
+                //val incrementerButtonView = context.layoutInflater.inflate(R.layout.v_rmt_btn_inc_vert_setup, buttonContainerBinding?.buttonContainer)
+                val incrementerBinding : VRmtBtnIncVertSetupBinding? = DataBindingUtil.inflate(context.layoutInflater, R.layout.v_rmt_btn_inc_vert_setup, buttonContainerBinding?.buttonContainer, true)
 
             // setup inner-most view
                 incrementerBinding?.txtButtonName?.hint = context.getString(R.string.button_name_hint)
 
                 incrementerBinding?.btnTop?.setupProperties(button.properties[0])
-                incrementerBinding?.btnTop?.setOnClickListener { transitionToCommandFromDialog(it.context, 0) }
+                incrementerBinding?.btnTop?.setOnClickListener { transitionToCommandDialog(0) }
 
                 incrementerBinding?.btnBottom?.setupProperties(button.properties[1])
-                incrementerBinding?.btnBottom?.setOnClickListener { transitionToCommandFromDialog(it.context, 1) }
+                incrementerBinding?.btnBottom?.setOnClickListener { transitionToCommandDialog(1) }
 
             // setup middle view
                 buttonContainerBinding?.btnCreate?.setOnClickListener {
@@ -196,7 +218,12 @@ class ButtonCreator {
                 bottomSheetBinding?.tvTitle?.text = context.getString(R.string.button_setup_title)
 
             // set content view and show dialog
-                createButtonDialog = BottomSheetDialog(context)
+                // using a custom onBackPressed to handle navigating the different stages of creation process
+                createButtonDialog = object : BottomSheetDialog(context) {
+                    override fun onBackPressed() {
+                        this@ButtonCreator.onBackPressed()
+                    }
+                }
                 createButtonDialog?.setContentView(bottomSheetView)
                 createButtonDialog?.setOnDismissListener { onDismiss() }
                 createButtonDialog?.show()
@@ -209,33 +236,27 @@ class ButtonCreator {
                 val bottomSheetBinding : VCreateSheetBinding? = DataBindingUtil.bind(bottomSheetView)
 
             // button setup view
-                val setupButtonView = context.layoutInflater.inflate(R.layout.v_button_setup, bottomSheetBinding?.createSheetContent)
-                val buttonContainerBinding : VButtonSetupBinding? = DataBindingUtil.bind(setupButtonView)
+                val buttonContainerBinding : VButtonSetupBinding? = DataBindingUtil.inflate(context.layoutInflater, R.layout.v_button_setup, bottomSheetBinding?.createSheetContent, true)
+
 
             // button setup (goes inside setup button container)
-                val radialButtonView = context.layoutInflater.inflate(R.layout.v_rmt_btn_radial_setup, buttonContainerBinding?.buttonContainer)
-                val radialBinding : VRmtBtnRadialSetupBinding? = DataBindingUtil.bind(radialButtonView)
-
-            // add views to their respective containers
-            // The generic bottom 'create' sheet contains the 'setupButtonView' which contains the 'incrementerButtonView'
-                buttonContainerBinding?.buttonContainer?.addView(radialButtonView)
-                bottomSheetBinding?.createSheetContent?.addView(setupButtonView)
+                val radialBinding : VRmtBtnRadialSetupBinding? = DataBindingUtil.inflate(context.layoutInflater, R.layout.v_rmt_btn_radial_setup, buttonContainerBinding?.buttonContainer, true)
 
             // remove center button
                 radialBinding?.btnCenter?.visibility = View.GONE
 
             // setup inner-most view
                 radialBinding?.btnTop?.setupProperties(button.properties[0])
-                radialBinding?.btnTop?.setOnClickListener { transitionToCommandFromDialog(it.context, 0) }
+                radialBinding?.btnTop?.setOnClickListener { transitionToCommandDialog(0) }
 
                 radialBinding?.btnEnd?.setupProperties(button.properties[1])
-                radialBinding?.btnEnd?.setOnClickListener { transitionToCommandFromDialog(it.context, 1) }
+                radialBinding?.btnEnd?.setOnClickListener { transitionToCommandDialog(1) }
 
                 radialBinding?.btnBottom?.setupProperties(button.properties[2])
-                radialBinding?.btnBottom?.setOnClickListener { transitionToCommandFromDialog(it.context, 2) }
+                radialBinding?.btnBottom?.setOnClickListener { transitionToCommandDialog(2) }
 
                 radialBinding?.btnStart?.setupProperties(button.properties[3])
-                radialBinding?.btnStart?.setOnClickListener { transitionToCommandFromDialog(it.context, 3) }
+                radialBinding?.btnStart?.setOnClickListener { transitionToCommandDialog(3) }
 
             // setup middle view
                 buttonContainerBinding?.btnCreate?.setOnClickListener {
@@ -261,10 +282,17 @@ class ButtonCreator {
                 bottomSheetBinding?.tvTitle?.text = context.getString(R.string.button_setup_title)
 
             // set content view and show dialog
-                createButtonDialog = BottomSheetDialog(context)
+                // using a custom onBackPressed to handle navigating the different stages of creation process
+                createButtonDialog = object : BottomSheetDialog(context) {
+                    override fun onBackPressed() {
+                        this@ButtonCreator.onBackPressed()
+                    }
+                }
                 createButtonDialog?.setContentView(bottomSheetView)
                 createButtonDialog?.setOnDismissListener { onDismiss() }
                 createButtonDialog?.show()
+
+                Log.d("#T", "Now showing Incrementer Vertical Setup...")
             }
         // Button Types requiring 5-action setup:
             Button.Companion.ButtonStyle.STYLE_BTN_RADIAL_W_CENTER ->
@@ -274,33 +302,26 @@ class ButtonCreator {
                 val bottomSheetBinding : VCreateSheetBinding? = DataBindingUtil.bind(bottomSheetView)
 
             // button setup view
-                val setupButtonView = context.layoutInflater.inflate(R.layout.v_button_setup, bottomSheetBinding?.createSheetContent)
-                val buttonContainerBinding : VButtonSetupBinding? = DataBindingUtil.bind(setupButtonView)
+                val buttonContainerBinding : VButtonSetupBinding? = DataBindingUtil.inflate(context.layoutInflater, R.layout.v_button_setup, bottomSheetBinding?.createSheetContent, true)
 
             // button setup (goes inside setup button container)
-                val radialButtonView = context.layoutInflater.inflate(R.layout.v_rmt_btn_radial_setup, buttonContainerBinding?.buttonContainer)
-                val radialBinding : VRmtBtnRadialSetupBinding? = DataBindingUtil.bind(radialButtonView)
-
-            // add views to their respective containers
-            // The generic bottom 'create' sheet contains the 'setupButtonView' which contains the 'incrementerButtonView'
-                buttonContainerBinding?.buttonContainer?.addView(radialButtonView)
-                bottomSheetBinding?.createSheetContent?.addView(setupButtonView)
+                val radialBinding : VRmtBtnRadialSetupBinding? = DataBindingUtil.inflate(context.layoutInflater, R.layout.v_rmt_btn_radial_setup, buttonContainerBinding?.buttonContainer, true)
 
             // setup inner-most view
                 radialBinding?.btnTop?.setupProperties(button.properties[0])
-                radialBinding?.btnTop?.setOnClickListener { transitionToCommandFromDialog(it.context, 0) }
+                radialBinding?.btnTop?.setOnClickListener { transitionToCommandDialog(0) }
 
                 radialBinding?.btnEnd?.setupProperties(button.properties[1])
-                radialBinding?.btnEnd?.setOnClickListener { transitionToCommandFromDialog(it.context, 1) }
+                radialBinding?.btnEnd?.setOnClickListener { transitionToCommandDialog(1) }
 
                 radialBinding?.btnBottom?.setupProperties(button.properties[2])
-                radialBinding?.btnBottom?.setOnClickListener { transitionToCommandFromDialog(it.context, 2) }
+                radialBinding?.btnBottom?.setOnClickListener { transitionToCommandDialog(2) }
 
                 radialBinding?.btnStart?.setupProperties(button.properties[3])
-                radialBinding?.btnStart?.setOnClickListener { transitionToCommandFromDialog(it.context, 3) }
+                radialBinding?.btnStart?.setOnClickListener { transitionToCommandDialog(3) }
 
                 radialBinding?.btnCenter?.setupProperties(button.properties[4])
-                radialBinding?.btnCenter?.setOnClickListener { transitionToCommandFromDialog(it.context, 4) }
+                radialBinding?.btnCenter?.setOnClickListener { transitionToCommandDialog(4) }
 
             // setup middle view
                 buttonContainerBinding?.btnCreate?.setOnClickListener {
@@ -327,7 +348,12 @@ class ButtonCreator {
                 bottomSheetBinding?.tvTitle?.text = context.getString(R.string.button_setup_title)
 
             // set content view and show dialog
-                createButtonDialog = BottomSheetDialog(context)
+                // using a custom onBackPressed to handle navigating the different stages of creation process
+                createButtonDialog = object : BottomSheetDialog(context) {
+                    override fun onBackPressed() {
+                        this@ButtonCreator.onBackPressed()
+                    }
+                }
                 createButtonDialog?.setContentView(bottomSheetView)
                 createButtonDialog?.setOnDismissListener { onDismiss() }
                 createButtonDialog?.show()
@@ -342,28 +368,14 @@ class ButtonCreator {
         }
     }
 
-    private fun showCommandFromDialog(context: Context, position: Int) {
-    //change state
-        dialogState = ButtonDialogState.COMMAND_FROM
-
-    // show command creator
-        commandCreator.showBottomDialog(context, position)
-    }
-
     // -------- Helper functions --------
 
-    private fun getOwnerString(context: Context, name: String): CharSequence? {
-        return if (name == AppState.userData.user.username.get())
-            "${context.getString(R.string.remote_owner)} ${context.getString(R.string.you)}"
-        else
-            "${context.getString(R.string.remote_owner)} $name"
-    }
-
-    private fun transitionToCommandFromDialog(context: Context, position: Int) {
+    private fun transitionToCommandDialog(position: Int) {
         isTransitioning = true
         dismissBottomDialog()
-        showCommandFromDialog(context, position)
-        isTransitioning = false
+        dialogState = ButtonDialogState.SETUP_COMMAND
+        arrayPosition = position
+        commandCreator.showBottomDialog(arrayPosition)
     }
 
 
@@ -374,12 +386,50 @@ class ButtonCreator {
         // call the onCreationComplete listener now
         onCreationComplete(button)
 
-        // dismissing the creation window will automatically reset tempButton
+        // reset tempButton and change isCreatingNewButton to false
+        AppState.tempData.tempButton.set(null)
+        AppState.tempData.isCreatingNewButton.set(false)
+
         dismissBottomDialog()
     }
 
+    private fun onBackPressed() {
+        Log.d("t#", "buttonCreator - onBackPressed! context = $context")
+        when (dialogState) {
+            ButtonDialogState.CHOOSE_TYPE ->
+            {
+                isBackPressed = true
+                dismissBottomDialog()
+            }
+            ButtonDialogState.SETUP_BUTTON ->
+            {
+                isTransitioning = true
+                dismissBottomDialog()
+                context?.let { showChooseButtonTypeDialog(it) }
+            }
+            ButtonDialogState.SETUP_COMMAND ->
+            {
+                context?.let { showButtonSetupDialog(it) }
+            }
+        }
+    }
+
     companion object {
-        fun stateFromIntVal(intVal : Int) = ButtonDialogState.values().associateBy(ButtonDialogState::value)[intVal]
+        private fun dialogStateFromInt(intVal : Int) = ButtonDialogState.values().associateBy(ButtonDialogState::value)[intVal]
+
+        fun readStateFromParcel(parcel: Parcel) : State {
+            return State(
+                dialogStateFromInt(parcel.readInt()) ?: ButtonDialogState.CHOOSE_TYPE,
+                CommandCreator.readStateFromParcel(parcel),
+                parcel.readInt()
+            )
+        }
+
+        fun writeToParcel(parcel: Parcel, state: State) {
+            parcel.writeInt(state.buttonDialogState.value)
+            CommandCreator.writeToParcel(parcel, state.commandState)
+            parcel.writeInt(state.arrayPosition)
+        }
     }
 
 /*
@@ -405,13 +455,12 @@ class ButtonCreator {
             buttonTitle.text = Button.nameFromStyle(holder.itemView.context, buttonType)
             Glide.with(buttonImage).load(Button.imageResourceFromStyle(buttonType)).into(buttonImage)
             holder.itemView.setOnClickListener {
-                AppState.tempData.tempButton.get()?.type = buttonType
+                AppState.tempData.tempButton.set(Button(buttonType))
 
                 // transition to 'setup button dialog'
                 isTransitioning = true
                 dismissBottomDialog()
                 showButtonSetupDialog(it.context)
-                isTransitioning = false
             }
         }
 

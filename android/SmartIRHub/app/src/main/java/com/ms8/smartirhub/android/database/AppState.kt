@@ -2,6 +2,7 @@ package com.ms8.smartirhub.android.database
 
 import androidx.databinding.Observable
 import androidx.databinding.ObservableArrayMap
+import androidx.databinding.ObservableBoolean
 import androidx.databinding.ObservableField
 import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.models.firestore.IrSignal
@@ -47,7 +48,9 @@ object AppState {
     data class TempData (
         val tempRemoteProfile   : RemoteProfile             = RemoteProfile(),
         var tempButton          : ObservableField<Button>   = ObservableField(),
-        var tempSignal          : IrSignal?                 = null
+        var tempCommand         : RemoteProfile.Command?    = null,
+        var tempSignal          : IrSignal?                 = null,
+        var isCreatingNewButton : ObservableBoolean         = ObservableBoolean(false)
     )
 
     data class ErrorData (

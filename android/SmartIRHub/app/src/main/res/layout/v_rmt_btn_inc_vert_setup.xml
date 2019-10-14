@@ -3,7 +3,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools">
     <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:clipToPadding="false"
             android:clipChildren="false"
@@ -17,7 +17,8 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
+                android:minWidth="80dp"
                 android:layout_height="0dp"
                 android:elevation="6dp"
                 android:stateListAnimator="@animator/selector_button_elevation"
@@ -35,14 +36,18 @@
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintBottom_toTopOf="@+id/btnBottom"
                 android:id="@+id/txtButtonName"
-                android:textColor="@color/black"
-                android:background="@color/colorButtonBG"
+                android:textColor="@color/white"
+                app:hintTextColor="@color/material_drawer_dark_hint_text"
+                android:textColorHint="@color/material_drawer_dark_hint_text"
+                app:boxBackgroundMode="outline"
+                app:boxBackgroundColor="#00000000"
                 app:autoSizeTextType="uniform"
                 >
 
             <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:gravity="center"
                     tools:hint="TEST" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -52,7 +57,8 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/txtButtonName"
                 app:layout_constraintBottom_toBottomOf="parent"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
+                android:minWidth="80dp"
                 android:layout_height="0dp"
                 android:elevation="6dp"
                 android:stateListAnimator="@animator/selector_button_elevation"
