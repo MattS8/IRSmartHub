@@ -54,14 +54,14 @@ class LearnSignalSheet(context: Context) : BottomSheetDialog(context) {
             RealtimeDatabaseFunctions.getHubRef(hubUID).removeEventListener(this)
 
             val rawData = RealtimeDatabaseFunctions.parseRawData(dataSnapshot.value) ?: return
-            val numChunks = RealtimeDatabaseFunctions.calculateNumChunks(AppState.tempData.tempSignal?.rawLength ?: 0)
+            val numChunks = RealtimeDatabaseFunctions.calculateNumChunks(AppState.tempData.tempSignal.get()?.rawLength ?: 0)
 
             if (rawData.size == numChunks) {
                 // Stop listening for rawData changes
                 RealtimeDatabaseFunctions.getRawData(hubUID).removeEventListener(this)
 
                 // Set data array for tempSignal
-                AppState.tempData.tempSignal?.rawData = rawData
+                AppState.tempData.tempSignal.get()?.rawData = rawData
 
                 // Stop loading button and clean up listener data
                 binding?.btnStartListening?.revertAnimation()
@@ -118,13 +118,13 @@ class LearnSignalSheet(context: Context) : BottomSheetDialog(context) {
                 // Received an IR Signal
                 FirebaseConstants.IR_RES_RECEIVED_SIG -> {
                     Log.d("LSListenActivity", "Received signal")
-                    AppState.tempData.tempSignal = IrSignal()
+                    AppState.tempData.tempSignal.set(IrSignal()
                         .apply {
                             rawLength = hubResult.rawLen
                             encodingType = hubResult.encoding
                             code = hubResult.code
                             repeat = false //TODO determine if this is needed at all
-                        }
+                        })
                     RealtimeDatabaseFunctions.getHubResults(hubUID).removeEventListener(this)
 
                     isListeningForResult = false
@@ -151,7 +151,7 @@ class LearnSignalSheet(context: Context) : BottomSheetDialog(context) {
     }
 
     fun setup() {
-        val len = AppState.tempData.tempSignal?.rawData?.size ?: -1
+        val len = AppState.tempData.tempSignal.get()?.rawData?.size ?: -1
         if (len > 0) {
             Log.d("TEST", "Showing learned layout")
             showLearnedLayout(false)
@@ -223,7 +223,7 @@ class LearnSignalSheet(context: Context) : BottomSheetDialog(context) {
     private fun showLearnedLayout(animate: Boolean) {
         Log.d("TEST", "Showing learned layout")
         binding?.let {
-            AppState.tempData.tempSignal?.let { irSignal ->
+            AppState.tempData.tempSignal.get()?.let { irSignal ->
                 it.tvSigType.text = irSignal.encodingType.toString()
                 it.tvSigCode.text = irSignal.code
             }
@@ -400,7 +400,7 @@ class LearnSignalSheet(context: Context) : BottomSheetDialog(context) {
 */
 
     private fun retry() {
-        AppState.tempData.tempSignal?.resetData()
+        AppState.tempData.tempSignal.get()?.resetData()
 
         beginListeningProcess()
     }
@@ -433,7 +433,7 @@ class LearnSignalSheet(context: Context) : BottomSheetDialog(context) {
     }
 
     private fun testSignal() {
-        AppState.tempData.tempSignal?.let { irSignal ->
+        AppState.tempData.tempSignal.get()?.let { irSignal ->
             isListeningForTestSignal = true
             binding?.btnTestSignal?.startAnimation()
             RealtimeDatabaseFunctions.sendNoneAction(hubUID)
