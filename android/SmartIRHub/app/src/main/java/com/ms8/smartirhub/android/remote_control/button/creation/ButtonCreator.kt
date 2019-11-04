@@ -39,6 +39,11 @@ class ButtonCreator {
             field = value
             commandCreator.onRequestCommandFromRemote = field
         }
+    var onRequestActionsFromRemote: (remote: RemoteProfile) -> Unit = {}
+        set(value) {
+            field = value
+            commandCreator.onRequestActionsFromRemote = field
+        }
 
 /*
 ----------------------------------------------
@@ -62,6 +67,24 @@ class ButtonCreator {
         else onCreateDialogDismiss(fromBackPressed)
     }
 
+    private var onCommandCreated: () -> Unit = {
+        context?.let { c ->
+            // set new command to current editing button
+            AppState.tempData.tempButton.get()?.let {tempButton ->
+                AppState.tempData.tempCommand?.let { tempCommand ->
+                    tempButton.commands[arrayPosition] = tempCommand
+                    AppState.tempData.tempCommand = null
+                }
+            }
+
+            createButtonDialog?.let {
+                isTransitioning = true
+                dismissBottomDialog()
+            }
+            showButtonSetupDialog(c)
+        }
+    }
+
 /*
 ----------------------------------------------
     State Variables
@@ -76,6 +99,7 @@ class ButtonCreator {
     private var commandCreator : CommandCreator = CommandCreator()
         .apply {
             onDialogDismiss = onCommandDialogDismissed
+            onCommandCreated = this@ButtonCreator.onCommandCreated
         }
     private var arrayPosition  : Int = 0
 
@@ -412,6 +436,14 @@ class ButtonCreator {
                 context?.let { showButtonSetupDialog(it) }
             }
         }
+    }
+
+    fun onCommandFromRemote() {
+        commandCreator.notifyCommandSelectedFromRemote()
+    }
+
+    fun onActionsFromRemote() {
+        commandCreator.notifyActionsSelectedFromRemote()
     }
 
     companion object {

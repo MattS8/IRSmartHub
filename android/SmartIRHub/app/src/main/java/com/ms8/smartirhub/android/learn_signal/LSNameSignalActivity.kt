@@ -66,7 +66,7 @@ class LSNameSignalActivity : AppCompatActivity() {
             }
             .check()
         if (isValidName) {
-            AppState.tempData.tempSignal!!.name = binding.txtSignalName.editText!!.text.toString()
+            AppState.tempData.tempSignal.get()?.name = binding.txtSignalName.editText!!.text.toString()
         }
     }
 
@@ -90,8 +90,8 @@ class LSNameSignalActivity : AppCompatActivity() {
                 errorSaveSheet.show()
             }
             .addOnSuccessListener {
-                setResult(Activity.RESULT_OK, Intent().putExtra(NEW_IR_SIGNAL_UID, AppState.tempData.tempSignal?.uid))
-                AppState.tempData.tempSignal = null
+                setResult(Activity.RESULT_OK, Intent().putExtra(NEW_IR_SIGNAL_UID, AppState.tempData.tempSignal.get()?.uid))
+                AppState.tempData.tempSignal.set(null)
                 finish()
             }
     }

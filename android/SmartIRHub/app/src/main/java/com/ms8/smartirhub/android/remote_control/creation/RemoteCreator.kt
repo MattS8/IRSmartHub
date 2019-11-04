@@ -245,5 +245,21 @@ class RemoteCreator {
         }
     }
 
+/*
+----------------------------------------------
+    Extension Functions
+----------------------------------------------
+*/
+
+    private fun RemoteProfile.copyFrom(remoteProfile: RemoteProfile?) {
+        remoteProfile?.let {
+            uid = it.uid
+            name = it.name
+            owner = it.owner
+            ownerUsername = it.ownerUsername
+            buttons.clear()
+            buttons.addAll(it.buttons)
+        }
+    }
 
 }

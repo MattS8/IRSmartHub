@@ -284,4 +284,6 @@
     <string name="pairing_instructions_message">After tapping Pair below, point your remote towards the Smart Hub. Then press the desired button on your remote. It is recommended to keep the remote approximately two inches from the Smart Hub during the pairing process.</string>
     <string name="smart_hub">smart_hub</string>
     <string name="target_smart_hub">Target Smart Hub</string>
+    <string name="new_command_title">New Command</string>
+    <string name="action_from_title">Add Action From</string>
 </resources>

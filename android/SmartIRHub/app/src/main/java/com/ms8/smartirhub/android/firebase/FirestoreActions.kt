@@ -639,10 +639,18 @@ object FirestoreActions {
 */
 
     fun addIrSignal(): Task<DocumentReference> {
-        val irSignal = AppState.tempData.tempSignal!!
+        val irSignal = AppState.tempData.tempSignal.get()!!
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
-        return FirebaseFirestore.getInstance().collection("irSignals")
+        return FirebaseFirestore.getInstance().collection("signals")
             .add(irSignal.toFirebaseObject(uid))
+            .addOnSuccessListener {
+                val savedIrSignal = IrSignal.copyFrom(AppState.tempData.tempSignal.get())
+                savedIrSignal.uid = it.id
+                AppState.tempData.tempSignal.set(savedIrSignal)
+            }
+            .addOnFailureListener {
+                AppState.errorData.saveSignalError.set(it)
+            }
     }
 
     fun addUser(username: String) {
@@ -816,6 +824,28 @@ object FirestoreActions {
         }
     }
 
+/*
+    -----------------------------------------------
+        Extensions
+    -----------------------------------------------
+*/
+
+    /* RemoteProfile Extensions */
+
+    private fun RemoteProfile.toFirebaseObject() : Map<String, Any?> {
+        return HashMap<String, Any?>()
+            .apply {
+                put("buttons", ArrayList<Map<String, Any?>>()
+                    .apply {
+                        buttons.forEach { b ->
+                            add(b.toFirebaseObject())
+                        }
+                    })
+                put("name", name)
+                put("owner", owner)
+                put("ownerUsername", ownerUsername)
+            }
+    }
 
 
     const val TEST_REMOTE_PROFILE_TEMPLATE = "_TEST_TEMPLATE"

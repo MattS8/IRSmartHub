@@ -1,5 +1,7 @@
 package com.ms8.smartirhub.android.main_view
 
+import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -35,12 +37,13 @@ import com.ms8.smartirhub.android.main_view.fragments.*
 import com.ms8.smartirhub.android.remote_control.button.creation.ButtonCreator
 import com.ms8.smartirhub.android.remote_control.button.models.Button
 import com.ms8.smartirhub.android.remote_control.command.creation.CommandCreator
-import com.ms8.smartirhub.android.remote_control.command.creation.CommandFromRemoteActivity
+import com.ms8.smartirhub.android.remote_control.command.creation.GetFromRemoteActivity
 import com.ms8.smartirhub.android.remote_control.creation.RemoteCreator
 import com.ms8.smartirhub.android.remote_control.models.showUnknownRemoteSaveError
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
 import com.ms8.smartirhub.android.utils.RequestCodes
 import com.ms8.smartirhub.android.utils.extensions.*
+import com.ms8.smartirhub.android.remote_control.command.creation.GetFromRemoteActivity.Companion.ResultType
 
 class MainViewActivity : AppCompatActivity() {
 
@@ -200,9 +203,16 @@ class MainViewActivity : AppCompatActivity() {
                 }
             }
             onRequestCommandFromRemote = { remote ->
-                val intent = Intent(this@MainViewActivity, CommandFromRemoteActivity::class.java)
-                intent.putExtra(CommandFromRemoteActivity.EXTRA_REMOTE_UID, remote.uid)
-                startActivityForResult(intent, RequestCodes.BUTTON_SETUP)
+                val intent = Intent(this@MainViewActivity, GetFromRemoteActivity::class.java)
+                intent.putExtra(GetFromRemoteActivity.EXTRA_REMOTE_UID, remote.uid)
+                intent.putExtra(GetFromRemoteActivity.EXTRA_TYPE, ResultType.COMMAND)
+                startActivityForResult(intent, RequestCodes.GET_COMMAND_FROM_REMOTE)
+            }
+            onRequestActionsFromRemote = { remote ->
+                val intent = Intent(this@MainViewActivity, GetFromRemoteActivity::class.java)
+                intent.putExtra(GetFromRemoteActivity.EXTRA_REMOTE_UID, remote.uid)
+                intent.putExtra(GetFromRemoteActivity.EXTRA_TYPE, ResultType.ACTIONS)
+                startActivityForResult(intent, RequestCodes.GET_ACTIONS_FROM_REMOTE)
             }
         }
 
@@ -327,6 +337,25 @@ class MainViewActivity : AppCompatActivity() {
             !exitWarningSheet.isShowing -> exitWarningSheet.show()
         // proceed with normal onBackPressed
             else ->  super.onBackPressed()
+        }
+    }
+
+    @SuppressLint("LogNotTimber")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+            RequestCodes.GET_COMMAND_FROM_REMOTE ->
+            {
+                if (resultCode == Activity.RESULT_OK) {
+                    buttonCreator.onCommandFromRemote()
+                }
+            }
+            RequestCodes.GET_ACTIONS_FROM_REMOTE ->
+            {
+                if (resultCode == Activity.RESULT_OK) {
+                    buttonCreator.onActionsFromRemote()
+                }
+            }
         }
     }
 
@@ -642,7 +671,15 @@ class MainViewActivity : AppCompatActivity() {
             private set
         var savedCreateRemoteDialogState         : RemoteCreator.RemoteDialogState = RemoteCreator.RemoteDialogState.CREATE_FROM
             private set
-        var savedCreateButtonState               : ButtonCreator.State = ButtonCreator.State(ButtonCreator.ButtonDialogState.CHOOSE_TYPE, CommandCreator.State(CommandCreator.CommandDialogState.COMMAND_FROM, 0, null),0)
+        var savedCreateButtonState               : ButtonCreator.State = ButtonCreator.State(
+                                                    ButtonCreator.ButtonDialogState.CHOOSE_TYPE,
+                                                    CommandCreator.State(
+                                                        CommandCreator.CommandDialogState.COMMAND_FROM,
+                                                        0,
+                                                        null,
+                                                        false,
+                                                        false),
+                                        0)
             private set
 
         constructor(layoutState: LayoutState,
@@ -704,6 +741,12 @@ class MainViewActivity : AppCompatActivity() {
         }
 
     }
+
+/*
+----------------------------------------------
+    Extension Functions
+----------------------------------------------
+*/
 
 //    private lateinit var binding : ActivityMainViewBinding
 //    private lateinit var drawer : Drawer

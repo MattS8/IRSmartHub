@@ -2,18 +2,24 @@ package com.ms8.smartirhub.android.remote_control.command.creation
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.os.Parcel
 import android.util.Log
 import android.view.View
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
+import androidx.databinding.Observable
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.database.AppState
-import com.ms8.smartirhub.android.databinding.VCreateSheetBinding
-import com.ms8.smartirhub.android.databinding.VFromRemoteListBinding
-import com.ms8.smartirhub.android.databinding.VPairInstructionsBinding
+import com.ms8.smartirhub.android.databinding.*
+import com.ms8.smartirhub.android.firebase.FirestoreActions
+import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
+import com.ms8.smartirhub.android.learn_signal.AdvancedSignalInfoActivity
 import com.ms8.smartirhub.android.models.firestore.Hub
+import com.ms8.smartirhub.android.models.firestore.Hub.Companion.DEFAULT_HUB
+import com.ms8.smartirhub.android.models.firestore.IrSignal
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import org.jetbrains.anko.layoutInflater
 
@@ -25,9 +31,11 @@ class CommandCreator {
 ----------------------------------------------
 */
     var onRequestCommandFromRemote: (remote: RemoteProfile) -> Unit = {}
+    var onRequestActionsFromRemote: (remote: RemoteProfile) -> Unit = {}
     var onDialogDismiss : (fromBackPress: Boolean) -> Unit = {}
     var onNewCommandSelected : () -> Unit = {}
     var onCommandFromSelected : () -> Unit = {}
+    var onCommandCreated : () -> Unit = {}
 
 /*
 ----------------------------------------------
@@ -51,18 +59,24 @@ class CommandCreator {
     State Variables
 ----------------------------------------------
 */
-    class State(val commandDialogState: CommandDialogState, val arrayPosition: Int, val selectedHubUID: String?)
+    class State(val commandDialogState: CommandDialogState, val arrayPosition: Int, val selectedHubUID: String?, val isPairing: Boolean, val isSavingIrSignal: Boolean)
 
-    enum class CommandDialogState(var value: Int) { COMMAND_FROM(0), NEW_COMMAND(1), PAIR_SIGNAL(2) }
+    enum class CommandDialogState(var value: Int) { COMMAND_FROM(0), NEW_COMMAND(1), PAIR_SIGNAL(2), ACTION_FROM(3) }
     private var dialogState = CommandDialogState.COMMAND_FROM
     private var arrayPosition = 0
     private var selectedHub : Hub? = null
 
     private var createCommandDialog : BottomSheetDialog? = null
     private var isTransitioning = false
+    private var isPairing = false
+    private var isSavingIrSignal = false
 
     // not a true 'state' variable, but allows for onDismiss to denote when dismissing via onBackPressed or via swipe
     private var isBackPressed = false
+
+    // global bindings - these need to be declared here so that listeners can enact updates to the UI
+    var pairingBinding : VPairSignalSheetBinding? = null
+    var pairSignalInfoBinding : VPairSignalInfoBinding? = null
 
 /*
 ----------------------------------------------
@@ -70,16 +84,67 @@ class CommandCreator {
 ----------------------------------------------
 */
 
+    @SuppressLint("LogNotTimber")
+    fun notifyActionsSelectedFromRemote() {
+        if (dialogState != CommandDialogState.ACTION_FROM) {
+            Log.e("CommandCreator", "notifyActionsSelectedFromRemote - notified of actions selection, but state is currently $dialogState")
+            return
+        }
+
+        // transition back to 'newCommand dialog'
+        createCommandDialog?.let {
+            isTransitioning = true
+            it.dismiss()
+        }
+
+        context?.let { showNewCommandDialog(it) }
+    }
+
+    @SuppressLint("LogNotTimber")
+    fun notifyCommandSelectedFromRemote() {
+        if (dialogState != CommandDialogState.COMMAND_FROM) {
+            Log.e("CommandCreator", "notifyCommandSelectedFromRemote - notified of command selection, but state is currently $dialogState")
+            return
+        }
+
+        // dismiss dialog in anticipation for something else to continue the process
+        createCommandDialog?.let {
+            isTransitioning = true
+            it.dismiss()
+        }
+
+        // reset dialogState to beginning
+        dialogState = CommandDialogState.COMMAND_FROM
+
+        // notify that command creation process is complete
+        onCommandCreated()
+    }
+
     var context : Context? = null
+    set(value) {
+        field = value
+        when {
+            field == null -> {
+                removePairingCallbacks()
+                removeSignalSavingCallbacks()
+                pairingBinding = null
+                pairSignalInfoBinding = null
+            }
+            isPairing -> { addPairingCallbacks() }
+            isSavingIrSignal -> { addSignalSavingCallbacks() }
+        }
+    }
 
     fun setState(state: State) {
         dialogState = state.commandDialogState
         arrayPosition = state.arrayPosition
         selectedHub = AppState.userData.hubs[state.selectedHubUID]
+        isPairing = state.isPairing
+        isSavingIrSignal = state.isSavingIrSignal
     }
 
     fun getState() : State {
-        return State(dialogState, arrayPosition, selectedHub?.uid)
+        return State(dialogState, arrayPosition, selectedHub?.uid ?: AppState.userData.user.defaultHub, isPairing, isSavingIrSignal)
     }
 
     @SuppressLint("LogNotTimber")
@@ -93,52 +158,67 @@ class CommandCreator {
                 when (dialogState) {
                     CommandDialogState.COMMAND_FROM -> showCommandFromDialog(context!!)
                     CommandDialogState.NEW_COMMAND -> showNewCommandDialog(context!!)
-                    CommandDialogState.PAIR_SIGNAL -> showPairSignalDialog(context!!)
+                    CommandDialogState.PAIR_SIGNAL -> showPairSignalDialog()
+                    CommandDialogState.ACTION_FROM -> showActionsFromDialog()
                 }
             }
         }
     }
 
+    private fun showActionsFromDialog() {
+        // change state
+        dialogState = CommandDialogState.ACTION_FROM
+
+        context?.let { c ->
+            // create bottom sheet
+            val bottomSheetView = c.layoutInflater.inflate(R.layout.v_create_sheet, null)
+            val bottomSheetBinding : VCreateSheetBinding? = DataBindingUtil.bind(bottomSheetView)
+
+            // setup bottom sheet
+            bottomSheetBinding?.tvTitle?.setText(R.string.action_from_title)
+
+            // create actions from list
+            val actionsFromListBinding = VFromRemoteListBinding.inflate(c.layoutInflater, bottomSheetBinding?.createSheetContent, true)
+
+            // first we create a group of all user remotes
+            val fromUserRemotesItem = actionsFromListBinding.expandingList.createNewItem(R.layout.v_from_remote_expanding_item)
+            //  - set user icon and color
+            fromUserRemotesItem.setIndicatorIconRes(R.drawable.ic_my_remotes_icon)
+            fromUserRemotesItem.setIndicatorColorRes(R.color.colorPrimary)
+            // - set title
+            fromUserRemotesItem.findViewById<TextView>(R.id.headerTitle).setText(R.string.from_user_remotes)
+            // - create one sub item for each remote the user has access to
+            fromUserRemotesItem.createSubItems(AppState.userData.remotes.size)
+            AppState.userData.remotes.values.forEachIndexed { index, remote ->
+                val subItemView = fromUserRemotesItem.getSubItemView(index)
+                subItemView.findViewById<TextView>(R.id.tvTitle).text = remote.name
+                subItemView.findViewById<TextView>(R.id.tvSubtitle).text = getOwnerString(subItemView.context, remote.name)
+                // callback is used to start activity for result (need to show a remote view where user can click on a button to get that command)
+                subItemView.setOnClickListener { onRequestActionsFromRemote(remote) }
+            }
+
+            // todo - then we list template remotes, allowing a user to pick a generic actions from generic remotes
+
+            // finally we allow the user to pair a new IR signal
+            val pairIrSignal = actionsFromListBinding.expandingList.createNewItem(R.layout.v_from_remote_expanding_item)
+            // - set new command icon
+            pairIrSignal.setIndicatorIconRes(R.drawable.ic_add_white_24dp)
+            // - set title
+            pairIrSignal.findViewById<TextView>(R.id.headerTitle).setText(R.string.pair_signal)
+            // - set listeners for entire view and inner view
+            pairIrSignal.findViewById<TextView>(R.id.headerTitle).setOnClickListener { transitionToPairDialog() }
+            pairIrSignal.setOnClickListener { transitionToPairDialog() }
+        }
+    }
+
+
+
     fun onBackPressed() {
-        Log.d("t#", "commandCreator - onBackPressed (context = $context)")
         when (dialogState) {
-            CommandDialogState.COMMAND_FROM ->
-            {
-                Log.d("t#", "command from")
-                createCommandDialog?.let {
-                    isBackPressed = true
-                    it.dismiss()
-                }
-            }
-            CommandDialogState.NEW_COMMAND ->
-            {
-                Log.d("t#", "new command")
-                createCommandDialog?.let {
-                    isTransitioning = true
-                    it.dismiss()
-                }
-
-                // discard any temp command in the making
-                AppState.tempData.tempCommand = null
-
-                showCommandFromDialog(context!!)
-            }
-            CommandDialogState.PAIR_SIGNAL ->
-            {
-                if (AppState.tempData.tempCommand?.actions?.size ?: 0 > 0) {
-                    createCommandDialog?.let {
-                        isTransitioning = true
-                        it.dismiss()
-                    }
-                    showCommandFromDialog(context!!)
-                } else {
-                    createCommandDialog?.let {
-                        isTransitioning = true
-                        it.dismiss()
-                    }
-                    showNewCommandDialog(context!!)
-                }
-            }
+            CommandDialogState.COMMAND_FROM -> commandFromOnBackPressed()
+            CommandDialogState.NEW_COMMAND -> newCommandOnBackPressed()
+            CommandDialogState.PAIR_SIGNAL -> pairSignalOnBackPressed()
+            CommandDialogState.ACTION_FROM -> actionsFromOnBackPressed()
         }
     }
 
@@ -181,7 +261,7 @@ class CommandCreator {
             subItemView.setOnClickListener { onRequestCommandFromRemote(remote) }
         }
 
-        // then we list template remotes, allowing a user to pick a generic command from generic remotes - todo
+        // todo - then we list template remotes, allowing a user to pick a generic command from generic remotes
 
         // finally we allow the user to create a brand new command
         val newCommand = commandFromListBinding.expandingList.createNewItem(R.layout.v_from_remote_expanding_item)
@@ -210,8 +290,10 @@ class CommandCreator {
 
     private fun showNewCommandDialog(context: Context) {
         // check if we need to show initial "pair" dialog instead
-        if (AppState.tempData.tempCommand?.actions?.size ?: 0 > 0) {
-            showPairSignalDialog(context)
+        if (AppState.tempData.tempCommand?.actions?.size ?: 0 == 0) {
+            if (AppState.tempData.tempCommand == null)
+                AppState.tempData.tempCommand = RemoteProfile.Command()
+            showPairSignalDialog()
             return
         }
 
@@ -223,9 +305,20 @@ class CommandCreator {
         val bottomSheetBinding : VCreateSheetBinding? = DataBindingUtil.bind(bottomSheetView)
 
         // setup bottom sheet
-        bottomSheetBinding?.tvTitle?.text = context.getString(R.string.pairing_instructions_title)
+        bottomSheetBinding?.tvTitle?.text = context.getString(R.string.new_command_title)
 
-        // create action sequence view - todo
+        val adapter = ActionSequenceAdapter(object :  ActionSequenceAdapter.ActionSequenceAdapterCallbacks {
+            override fun addNewAction() {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun startEditAction(action: RemoteProfile.Command.Action, position: Int) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+        })
+            .apply {
+                actionList = AppState.tempData.tempCommand?.actions ?: ArrayList()
+            }
 
 
         // create dialog
@@ -243,62 +336,408 @@ class CommandCreator {
         onNewCommandSelected()
     }
 
-    private fun showPairSignalDialog(context: Context) {
+
+
+    @SuppressLint("LogNotTimber")
+    private fun showPairSignalDialog() {
         if (AppState.userData.hubs.size == 0) {
-            // show 'no hubs' alert dialog and then direct user to set up a new hub - todo
+            // todo - show 'no hubs' alert dialog and then direct user to set up a new hub
+            Log.w("CommandCreator", "showPairSignalDialog - user has not associated with a hub yet!")
             // return
         }
 
         // change state
         dialogState = CommandDialogState.PAIR_SIGNAL
 
-        // create bottom sheet
-        val bottomSheetView = context.layoutInflater.inflate(R.layout.v_create_sheet, null)
-        val bottomSheetBinding : VCreateSheetBinding? = DataBindingUtil.bind(bottomSheetView)
+        context?.let { context ->
+            // create bottom sheet
+            val bottomSheetView = context.layoutInflater.inflate(R.layout.v_create_sheet, null)
+            val bottomSheetBinding : VCreateSheetBinding? = DataBindingUtil.bind(bottomSheetView)
 
-        // setup bottom sheet
-        bottomSheetBinding?.tvTitle?.text = context.getString(R.string.pairing_instructions_title)
+            // setup bottom sheet
+            bottomSheetBinding?.tvTitle?.text = context.getString(R.string.pairing_instructions_title)
 
-        // create pairing dialog
-        val pairingBinding : VPairInstructionsBinding = VPairInstructionsBinding.inflate(context.layoutInflater, bottomSheetBinding?.createSheetContent, true)
+            // create pairing dialog
+            pairingBinding = VPairSignalSheetBinding.inflate(context.layoutInflater, bottomSheetBinding?.createSheetContent, true)
+
+            // check for an error caught while creator view was hidden
+            if (AppState.errorData.pairSignalError.get() != null) {
+                showPairingErrorDialog()
+
+                // no longer pairing
+                isPairing = false
+
+                // remove any listeners from pairing process
+                removePairingCallbacks()
+
+                // stop showing pairing animation
+                pairingBinding!!.btnPos.revertAnimation()
+
+                // clear error data to show that we've seen the error
+                AppState.errorData.pairSignalError.set(null)
+
+                // also clean up any tempData that is no longer valid based on seeing an error
+                AppState.tempData.tempSignal.set(null)
+            }
+
+            // determine what views to show based if currently pairing/pairing complete/pairing failed
+            if (AppState.tempData.tempSignal.get()?.containsAllRawData() == true) {
+                // no longer pairing
+                isPairing = false
+
+                // pairing process was completed previously
+                inflateSignalInfoView(pairingBinding!!)
+
+                // stop showing pairing animation
+                pairingBinding!!.btnPos.revertAnimation()
+            } else {
+                // pairing process hasn't begun or is ongoing
+                inflateSignalInstructionsView(pairingBinding!!)
+                if (isPairing) {
+                    pairingBinding!!.btnPos.animate()
+                }
+            }
+
+            // create dialog
+            // using a custom onBackPressed to handle navigating the different stages of creation process
+            createCommandDialog = object : BottomSheetDialog(context) {
+                override fun onBackPressed() {
+                    this@CommandCreator.onBackPressed()
+                }
+            }
+            createCommandDialog?.setContentView(bottomSheetView)
+            createCommandDialog?.setOnDismissListener { onDismiss() }
+            createCommandDialog?.show()
+        }
+    }
+
+    @SuppressLint("LogNotTimber")
+    private fun inflateSignalInfoView(pairingBinding: VPairSignalSheetBinding) {
+        pairSignalInfoBinding = VPairSignalInfoBinding.inflate(
+            context!!.layoutInflater,
+            pairingBinding.pairingContent,
+            true
+        )
+        // populate signal info
+        AppState.tempData.tempSignal.get()?.let { irSignal ->
+            pairSignalInfoBinding?.let { binding ->
+                binding.tvSigType.text = irSignal.encodingType.toString()
+                binding.tvSigCode.text = irSignal.code
+                binding.btnShowAdvancedInfo.setOnClickListener {
+                    it.context.startActivity(Intent(context, AdvancedSignalInfoActivity::class.java))
+                }
+            }
+        }
+
+        // show cancel button
+        pairingBinding.let { binding ->
+            binding.btnNeg.setText(R.string.cancel)
+            binding.btnNeg.visibility = View.VISIBLE
+            binding.btnNeg.setOnClickListener {
+                when {
+                    isSavingIrSignal -> { stopSaveSignalProcess() }
+                    else -> { onPairedSignalDiscarded() }
+                }
+            }
+        }
+
+        // set btnPos to 'save' function
+        pairingBinding.let { binding ->
+            binding.btnPos.text = context!!.getString(R.string.save)
+            binding.btnPos.setOnClickListener { beginSignalSavingProcess(pairingBinding) }
+        }
+    }
+
+    private fun inflateSignalInstructionsView(pairingBinding: VPairSignalSheetBinding) {
+        pairingBinding.btnNeg.visibility = View.GONE
+
+        val instructionsBinding : VPairSignalInstructionsBinding = VPairSignalInstructionsBinding.inflate(
+            context!!.layoutInflater,
+            pairingBinding.pairingContent,
+            true)
         if (AppState.userData.hubs.size <= 1) {
             // Since there's only 1 hub associated with the user, there's no reason to show hub spinner
-            pairingBinding.hubsSpinner.visibility = View.GONE
-            pairingBinding.tvHubsSpinner.visibility = View.GONE
+            instructionsBinding.hubsSpinner.visibility = View.GONE
+            instructionsBinding.tvHubsSpinner.visibility = View.GONE
         } else {
             // More than one associated hub means we need to allow the user to select which hub to target
-            pairingBinding.hubsSpinner.visibility = View.VISIBLE
-            pairingBinding.tvHubsSpinner.visibility = View.VISIBLE
+            instructionsBinding.hubsSpinner.visibility = View.VISIBLE
+            instructionsBinding.tvHubsSpinner.visibility = View.VISIBLE
 
-            // List of hubs isn't ordered. Assumption is that the list ordering won't change
-            val hubNames = ArrayList<String>()
-                .apply {
-                    AppState.userData.hubs.values.forEach { hub ->
-                        add(hub.name)
-                    }
+            setupHubsSpinner(instructionsBinding.hubsSpinner)
+        }
+
+        // set btnPos to 'pair' function
+        pairingBinding.btnPos.setOnClickListener { beginPairingProcess() }
+    }
+
+    @SuppressLint("LogNotTimber")
+    private fun showPairingErrorDialog() {
+        context?.let { c ->
+            if (AppState.errorData.pairSignalError.get() == null)
+                Log.e("CommandCreator", "showPairingErrorDialog - pairSignalError was null!")
+
+            AlertDialog.Builder(c)
+                .setIcon(android.R.drawable.stat_notify_error)
+                .setTitle(AppState.errorData.pairSignalError.get()?.titleID ?: R.string.err_title)
+                .setPositiveButton(android.R.string.ok) { p0, _ -> p0?.dismiss() }
+                .setMessage(AppState.errorData.pairSignalError.get()?.messageID ?: R.string.err_unknown_desc)
+                .show()
+        }
+    }
+
+    @SuppressLint("LogNotTimber")
+    private fun showSavingSignalErrorDialog() {
+        context?.let { c ->
+            if (AppState.errorData.saveSignalError.get() == null)
+                Log.e("CommandCreator", "showSavingSignalErrorDialog - saveSignalError was null!")
+
+            AlertDialog.Builder(c)
+                .setIcon(android.R.drawable.stat_notify_error)
+                .setTitle(R.string.err_title)
+                .setPositiveButton(android.R.string.ok) {p0, _ -> p0?.dismiss()}
+                .setMessage(R.string.err_unknown_desc)
+                .show()
+        }
+    }
+/*
+----------------------------------------------
+  Helper Functions
+----------------------------------------------
+*/
+
+    /* Signal Pairing Helper Functions  */
+
+    private fun addPairingCallbacks() {
+        AppState.tempData.tempSignal.addOnPropertyChangedCallback(pairSignalListener)
+        AppState.errorData.pairSignalError.addOnPropertyChangedCallback(pairSignalErrorListener)
+    }
+
+    private fun removePairingCallbacks() {
+        AppState.tempData.tempSignal.removeOnPropertyChangedCallback(pairSignalListener)
+        AppState.errorData.pairSignalError.removeOnPropertyChangedCallback(pairSignalErrorListener)
+    }
+
+    private val pairSignalListener = object : Observable.OnPropertyChangedCallback() {
+        @SuppressLint("LogNotTimber")
+        override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+            if (AppState.tempData.tempSignal.get() == null) {
+                Log.d("CommandCreator", "pairSignalListener - tempSignal set to null")
+            } else if (AppState.tempData.tempSignal.get()?.containsAllRawData() == true) {
+                if (isPairing) {
+                    isPairing = false
+                    pairingBinding?.let { inflateSignalInfoView(it) }
+                    removePairingCallbacks()
                 }
-            pairingBinding.hubsSpinner.adapter = ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, hubNames)
-            pairingBinding.hubsSpinner.setOnItemClickListener { _, _, position, _ ->
-                selectedHub = AppState.userData.hubs.values.elementAt(position)
-            }
-
-            // Sets the spinner selection to the currently selected hub (this is only relevant if this dialog is being recreated from saved state)
-            pairingBinding.hubsSpinner.setSelection(getSelectedHubPosition())
-        }
-        pairingBinding.btnPair.setOnClickListener {
-            // start the pairing listening process - todo
-        }
-
-        // create dialog
-        // using a custom onBackPressed to handle navigating the different stages of creation process
-        createCommandDialog = object : BottomSheetDialog(context) {
-            override fun onBackPressed() {
-                this@CommandCreator.onBackPressed()
+            } else {
+                Log.d("CommandCreator", "pairSignalListener - initial signal info received... waiting on raw data")
             }
         }
-        createCommandDialog?.setContentView(bottomSheetView)
-        createCommandDialog?.setOnDismissListener { onDismiss() }
-        createCommandDialog?.show()
+    }
+
+    private val pairSignalErrorListener  = object : Observable.OnPropertyChangedCallback() {
+        override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+            if (AppState.errorData.pairSignalError.get() != null) {
+                isPairing = false
+                removePairingCallbacks()
+                showPairingErrorDialog()
+            }
+        }
+    }
+
+    private fun beginPairingProcess() {
+        if (isPairing)
+            return
+
+        isPairing = true
+        RealtimeDatabaseFunctions.sendListenAction2(selectedHub?.uid ?: AppState.userData.user.defaultHub)
+
+        pairingBinding?.btnPos?.animate()
+
+        // show the cancel button to allow users to manually stop pairing process
+        pairingBinding?.btnNeg?.visibility = View.VISIBLE
+        pairingBinding?.btnNeg?.let { btn ->
+            btn.visibility = View.VISIBLE
+            btn.setOnClickListener {
+                stopPairingProcess()
+            }
+        }
+
+        addPairingCallbacks()
+    }
+
+    private fun stopPairingProcess() {
+        isPairing = false
+        pairingBinding?.btnPos?.revertAnimation()
+        pairingBinding?.btnNeg?.visibility = View.GONE
+        removePairingCallbacks()
+    }
+
+    private fun onPairedSignalDiscarded() {
+        AppState.tempData.tempSignal.set(null)
+        pairingBinding?.let { binding ->
+            binding.pairingContent.removeAllViewsInLayout()
+            inflateSignalInstructionsView(binding)
+        }
+    }
+
+    /* Signal Saving Helper Functions  */
+
+    private fun addSignalSavingCallbacks() {
+        AppState.tempData.tempSignal.addOnPropertyChangedCallback(saveSignalListener)
+        AppState.errorData.saveSignalError.addOnPropertyChangedCallback(saveSignalErrorListener)
+    }
+
+    private fun removeSignalSavingCallbacks() {
+        AppState.tempData.tempSignal.removeOnPropertyChangedCallback(saveSignalListener)
+        AppState.errorData.saveSignalError.removeOnPropertyChangedCallback(saveSignalErrorListener)
+    }
+
+    private val saveSignalListener = object : Observable.OnPropertyChangedCallback() {
+        @SuppressLint("LogNotTimber")
+        override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+            when {
+                AppState.tempData.tempSignal.get() == null -> Log.d("CommandCreator", "saveSignalListener - tempSignal set to null")
+                AppState.tempData.tempSignal.get()?.uid != "" -> { onSignalSaved(AppState.tempData.tempSignal.get()!!) }
+                else -> Log.w("CommandCreator", "saveSignalListener - tempSignal was changed with invalid uid")
+            }
+        }
+    }
+
+    private val saveSignalErrorListener = object : Observable.OnPropertyChangedCallback() {
+        override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+            if (AppState.errorData.saveSignalError.get() != null) {
+                // saving process is done, clean up!
+                isSavingIrSignal = false
+                removeSignalSavingCallbacks()
+                showSavingSignalErrorDialog()
+            }
+        }
+    }
+
+    private fun onSignalSaved(irSignal: IrSignal) {
+        // saving process is complete
+        isSavingIrSignal = false
+
+        // add new signal to app state local database
+        AppState.userData.irSignals[irSignal.uid] = irSignal
+
+        // add to the new command as well
+        AppState.tempData.tempCommand?.actions?.add(
+            RemoteProfile.Command.Action(
+                selectedHub?.uid ?: DEFAULT_HUB,
+                irSignal.uid
+            )
+        )
+
+        // pairing new signal process is complete! back to 'new command' overview
+        dialogState = CommandDialogState.NEW_COMMAND
+        createCommandDialog?.let { it ->
+            isTransitioning = true
+            it.dismiss()
+        }
+        context?.let { showNewCommandDialog(it) }
+    }
+
+    private fun beginSignalSavingProcess(pairingBinding: VPairSignalSheetBinding) {
+        // ensure that saving process hasn't already been kicked off
+        if (isSavingIrSignal)
+            return
+
+        // saving process has begun
+        isSavingIrSignal = true
+        FirestoreActions.addIrSignal()
+
+        // begin animating to show saving is in progress
+        pairingBinding.btnPos.animate()
+
+        // add listeners
+        addSignalSavingCallbacks()
+    }
+
+    private fun stopSaveSignalProcess() {
+        isSavingIrSignal = false
+        removeSignalSavingCallbacks()
+        pairingBinding?.btnPos?.revertAnimation()
+    }
+
+    /* On Back Pressed Helper Functions  */
+
+    private fun actionsFromOnBackPressed() {
+        createCommandDialog?.let {
+            isTransitioning = true
+            it.dismiss()
+        }
+        context?.let { showNewCommandDialog(it) }
+    }
+
+    private fun commandFromOnBackPressed() {
+        createCommandDialog?.let {
+            isBackPressed = true
+            it.dismiss()
+        }
+    }
+
+    private fun pairSignalOnBackPressed() {
+        when {
+        // Pairing in progress
+            isPairing -> { stopPairingProcess() }
+        // Saving signal in progress
+            isSavingIrSignal -> { stopSaveSignalProcess() }
+        // Showing paired signal info
+            AppState.tempData.tempSignal.get() != null -> { onPairedSignalDiscarded() }
+        // Showing pairing instruction
+            else -> {
+                if (AppState.tempData.tempCommand?.actions?.size ?: 0 > 0) {
+                    // go back to "new command" view as this was adding an additional signal to a command
+                    createCommandDialog?.let {
+                        isTransitioning = true
+                        it.dismiss()
+                    }
+                    showNewCommandDialog(context!!)
+                } else {
+                    // go back to "command from" view as this was the first signal for a new command
+                    createCommandDialog?.let {
+                        isTransitioning = true
+                        it.dismiss()
+                    }
+                    // discard tempData for abandoned command
+                    AppState.tempData.tempCommand = null
+                    showCommandFromDialog(context!!)
+                }
+            }
+        }
+    }
+
+    private fun newCommandOnBackPressed() {
+        createCommandDialog?.let {
+            isTransitioning = true
+            it.dismiss()
+        }
+
+        // discard any temp command in the making
+        AppState.tempData.tempCommand = null
+        showCommandFromDialog(context!!)
+    }
+
+    /* Misc Helper Functions  */
+
+    private fun setupHubsSpinner(hubsSpinner: Spinner) {
+        // List of hubs isn't ordered. Assumption is that the list ordering won't change
+        val hubNames = ArrayList<String>()
+            .apply {
+                AppState.userData.hubs.values.forEach { hub ->
+                    add(hub.name)
+                }
+            }
+
+        hubsSpinner.adapter = ArrayAdapter<String>(hubsSpinner.context, android.R.layout.simple_list_item_1, hubNames)
+        hubsSpinner.setOnItemClickListener { _, _, position, _ ->
+            selectedHub = AppState.userData.hubs.values.elementAt(position)
+        }
+
+        // Sets the spinner selection to the currently selected hub (this is only relevant if this dialog is being recreated from saved state)
+        hubsSpinner.setSelection(getSelectedHubPosition())
     }
 
     private fun getSelectedHubPosition(): Int {
@@ -310,12 +749,6 @@ class CommandCreator {
 
         return 0
     }
-
-/*
-----------------------------------------------
-  Helper Functions
-----------------------------------------------
-*/
 
     private fun getOwnerString(context: Context, name: String): CharSequence? {
         return if (name == AppState.userData.user.username.get())
@@ -332,13 +765,23 @@ class CommandCreator {
         showNewCommandDialog(context)
     }
 
+    private fun transitionToPairDialog() {
+        createCommandDialog?.let {
+            isTransitioning = true
+            it.dismiss()
+        }
+        showPairSignalDialog()
+    }
+
     companion object {
         private fun stateFromIntVal(intVal : Int) = CommandDialogState.values().associateBy(CommandDialogState::value)[intVal]
         fun readStateFromParcel(parcel: Parcel): State {
             return State(
                 stateFromIntVal(parcel.readInt()) ?: CommandDialogState.COMMAND_FROM,
                 parcel.readInt(),
-                parcel.readString()
+                parcel.readString(),
+                parcel.readInt() == 1,
+                parcel.readInt() == 1
             )
         }
 
@@ -346,6 +789,8 @@ class CommandCreator {
             parcel.writeInt(state.commandDialogState.value)
             parcel.writeInt(state.arrayPosition)
             parcel.writeString(state.selectedHubUID)
+            parcel.writeInt(if (state.isPairing) 1 else 0)
+            parcel.writeInt(if (state.isSavingIrSignal) 1 else 0)
         }
     }
 

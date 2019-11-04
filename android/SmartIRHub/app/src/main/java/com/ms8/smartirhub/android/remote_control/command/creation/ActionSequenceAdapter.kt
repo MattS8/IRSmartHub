@@ -1,4 +1,4 @@
-package com.ms8.smartirhub.android.create_command
+package com.ms8.smartirhub.android.remote_control.command.creation
 
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Command
 import com.ms8.smartirhub.android.database.AppState
+import com.ms8.smartirhub.android.databinding.VRmtBtnCreateNewBinding
 import com.ms8.smartirhub.android.models.firestore.Hub.Companion.DEFAULT_HUB
 
 class ActionSequenceAdapter(var callback: ActionSequenceAdapterCallbacks?) : RecyclerView.Adapter<ActionSequenceAdapter.ActionViewHolder>() {
@@ -18,10 +19,9 @@ class ActionSequenceAdapter(var callback: ActionSequenceAdapterCallbacks?) : Rec
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ActionViewHolder {
        val v = when (viewType) {
-            VIEW_TYPE_ADD_ACTION -> (LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_create_new, parent, false) as Button)
-                .apply {
-                    text = parent.context.getString(R.string.add_action)
-                }
+            VIEW_TYPE_ADD_ACTION -> VRmtBtnCreateNewBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                .apply { btnRmtCreateNew.setText(R.string.add_action) }
+                .btnCreateNewRoot
            else -> LayoutInflater.from(parent.context).inflate(R.layout.v_action_sequence_item, parent, false)
         }
 
@@ -46,9 +46,9 @@ class ActionSequenceAdapter(var callback: ActionSequenceAdapterCallbacks?) : Rec
                     holder.itemView.findViewById<View>(R.id.view).visibility = View.VISIBLE
                     holder.itemView.findViewById<View>(R.id.view2).visibility = View.VISIBLE
                     holder.itemView.findViewById<TextView>(R.id.tvDelay).visibility = View.VISIBLE
-                    val seekbar = holder.itemView.findViewById<SeekBar>(R.id.seekBar)
-                    seekbar.visibility = View.VISIBLE
-                    seekbar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                    val seekBar = holder.itemView.findViewById<SeekBar>(R.id.seekBar)
+                    seekBar.visibility = View.VISIBLE
+                    seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                         override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
                             actionList[holder.adapterPosition].delay = p1
                             notifyItemChanged(holder.adapterPosition)

@@ -3,6 +3,8 @@ package com.ms8.smartirhub.android.models.firestore
 import android.annotation.SuppressLint
 import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.IgnoreExtraProperties
+import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
+import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions.calculateNumChunks
 
 @SuppressLint("UseSparseArrays")
 @IgnoreExtraProperties
@@ -59,7 +61,28 @@ class IrSignal {
         return firebaseObject
     }
 
+    fun containsAllRawData() : Boolean {
+        return rawData.size == calculateNumChunks(rawLength)
+    }
+
     override fun toString(): String {
         return "Signal: (name = $name, code = $code, encodingType = $encodingType, rawLength = $rawLength, rawdata = ${rawDataToString()}, repeat = $repeat)"
+    }
+
+    companion object {
+        fun copyFrom(oldSignal : IrSignal?) : IrSignal {
+            return IrSignal()
+                .apply {
+                    oldSignal?.let {
+                        rawData = it.rawData
+                        name = it.name
+                        code = it.code
+                        repeat = it.repeat
+                        rawLength = it.rawLength
+                        encodingType = it.encodingType
+                        uid = it.uid
+                    }
+                }
+        }
     }
 }

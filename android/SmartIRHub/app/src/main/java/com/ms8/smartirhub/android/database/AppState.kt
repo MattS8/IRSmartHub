@@ -5,6 +5,7 @@ import androidx.databinding.ObservableArrayMap
 import androidx.databinding.ObservableBoolean
 import androidx.databinding.ObservableField
 import com.ms8.smartirhub.android.firebase.FirestoreActions
+import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
 import com.ms8.smartirhub.android.models.firestore.IrSignal
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import com.ms8.smartirhub.android.models.firestore.Group
@@ -46,16 +47,18 @@ object AppState {
     }
 
     data class TempData (
-        val tempRemoteProfile   : RemoteProfile             = RemoteProfile(),
-        var tempButton          : ObservableField<Button>   = ObservableField(),
-        var tempCommand         : RemoteProfile.Command?    = null,
-        var tempSignal          : IrSignal?                 = null,
-        var isCreatingNewButton : ObservableBoolean         = ObservableBoolean(false)
+        val tempRemoteProfile   : RemoteProfile              = RemoteProfile(),
+        var tempButton          : ObservableField<Button>    = ObservableField(),
+        var tempCommand         : RemoteProfile.Command?     = null,
+        var tempSignal          : ObservableField<IrSignal?> = ObservableField(),
+        var isCreatingNewButton : ObservableBoolean          = ObservableBoolean(false)
     )
 
     data class ErrorData (
         var userSignInError : ObservableField<Exception?> = ObservableField(),
-        var remoteSaveError : ObservableField<Exception?> = ObservableField()
+        var remoteSaveError : ObservableField<Exception?> = ObservableField(),
+        var pairSignalError : ObservableField<RealtimeDatabaseFunctions.HubException?> = ObservableField(),
+        var saveSignalError : ObservableField<Exception?> = ObservableField()
     )
 
     fun resetTempRemote() {

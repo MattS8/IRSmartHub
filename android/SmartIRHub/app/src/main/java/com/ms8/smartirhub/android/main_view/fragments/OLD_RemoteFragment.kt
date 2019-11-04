@@ -126,7 +126,7 @@ class OLD_RemoteFragment : MainFragment() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == RequestCodes.BUTTON_SETUP) {
+        if (requestCode == RequestCodes.GET_COMMAND_FROM_REMOTE) {
             // Only need to worry about enabling "create new button". The tempButton
             //  should already be added at the end of a successful process
             AppState.tempData.tempRemoteProfile.isCreatingNewButton.set(false)

@@ -37,7 +37,7 @@ class LSWalkThroughActivity : AppCompatActivity() {
                 .addErrorCallback { sheetBinding.txtInput.error = getString(R.string.err_invalid_button_name) }
                 .check()
             if (isValidName) {
-                AppState.tempData.tempSignal?.name = sheetBinding.txtInput.editText!!.text.toString()
+                AppState.tempData.tempSignal.get()?.name = sheetBinding.txtInput.editText!!.text.toString()
                 sheetBinding.btnPickName.startAnimation()
                 uploadIrSignal()
             }
@@ -87,7 +87,7 @@ class LSWalkThroughActivity : AppCompatActivity() {
                 determineWalkThroughState()
             }
             binding.prog3.bOnThisStep -> {
-                AppState.tempData.tempSignal = null
+                AppState.tempData.tempSignal.set(null)
                 determineWalkThroughState()
             }
         }
@@ -225,7 +225,7 @@ class LSWalkThroughActivity : AppCompatActivity() {
         super.onDestroy()
         if (isFinishing) {
             Log.d("LSWalkthroughActivity", "Fishing up!")
-            AppState.tempData.tempSignal = null
+            AppState.tempData.tempSignal.set(null)
         }
     }
 
@@ -247,7 +247,7 @@ class LSWalkThroughActivity : AppCompatActivity() {
                 binding.btnNextStep.setOnClickListener { showPickHubSheet() }
                 binding.prog1.setOnClickListener { showPickHubSheet() }
             }
-            AppState.tempData.tempSignal == null || AppState.tempData.tempSignal?.rawData?.size == 0 -> {
+            AppState.tempData.tempSignal == null || AppState.tempData.tempSignal.get()?.rawData?.size == 0 -> {
                 Log.d("###TEST", "Starting on prog 2")
                 binding.prog1.bOnThisStep = false
                 binding.prog2.bOnThisStep = true
@@ -302,7 +302,7 @@ class LSWalkThroughActivity : AppCompatActivity() {
                 Log.d("TEST", "New uid: ${it.id}")
                 setResult(Activity.RESULT_OK, Intent().putExtra(NEW_IR_SIGNAL_UID, it.id))
                 //LocalData.irSignals[it.id] = AppState.tempData.tempSignal
-                AppState.tempData.tempSignal = null
+                AppState.tempData.tempSignal.set(null)
                 finish()
             }
     }

@@ -4,7 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.ms8.smartirhub.android.R
 
-class CommandFromRemoteActivity : AppCompatActivity() {
+class GetFromRemoteActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -12,6 +12,9 @@ class CommandFromRemoteActivity : AppCompatActivity() {
     }
 
     companion object {
+        enum class ResultType {COMMAND, ACTIONS}
+        const val EXTRA_TYPE = "EXTRAS_RESULT_TYPE"
+        const val EXTRA_COMMAND_UID = "EXTRAS_COMMAND_UID"
         const val EXTRA_REMOTE_UID = "EXTRAS_REMOTE_UID"
     }
 }

@@ -14,6 +14,7 @@ import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.models.firestore.Hub.Companion.DEFAULT_HUB
+import com.ms8.smartirhub.android.models.firestore.IrSignal
 import com.ms8.smartirhub.android.remote_control.button.models.Button
 import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.ADD_TO_END
 import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.ID_BUTTONS
@@ -54,6 +55,8 @@ class RemoteProfile: Observable {
         callback?.let { callbacks.add(it) }
     }
 
+    private fun notifyCallbacks(id : Int) { callbacks.forEach { cb -> cb.onPropertyChanged(this, id) } }
+
     fun addButton(button: Button, position: Int = ADD_TO_END) {
         if (position == ADD_TO_END) {
             buttons.add(button)
@@ -66,36 +69,6 @@ class RemoteProfile: Observable {
     fun removeButton(position: Int) {
         buttons.removeAt(position)
         notifyCallbacks(ID_BUTTONS)
-    }
-
-    private fun notifyCallbacks(id : Int) {
-        callbacks.forEach { cb -> cb.onPropertyChanged(this, id) }
-    }
-
-    fun toFirebaseObject() : Map<String, Any?> {
-        return HashMap<String, Any?>()
-            .apply {
-                put("buttons", ArrayList<Map<String, Any?>>()
-                    .apply {
-                        buttons.forEach { b ->
-                            add(b.toFirebaseObject())
-                        }
-                    })
-                put("name", name)
-                put("owner", owner)
-                put("ownerUsername", ownerUsername)
-            }
-    }
-
-    fun copyFrom(remoteProfile: RemoteProfile?) {
-        remoteProfile?.let {
-            uid = it.uid
-            name = it.name
-            owner = it.owner
-            ownerUsername = it.ownerUsername
-            buttons.clear()
-            buttons.addAll(it.buttons)
-        }
     }
 
     /**
@@ -191,10 +164,10 @@ class RemoteProfile: Observable {
             }
         }
 
-        class Action {
-            var hubUID      : String    = DEFAULT_HUB
-            var irSignal    : String    = ""
-            var delay       : Int       = 0
+        class Action(
+            var hubUID : String = DEFAULT_HUB,
+            var irSignal : String = "",
+            var delay : Int = 0) {
 
             fun toFirebaseObject() : Map<String, Any?> {
                 return HashMap<String, Any?>()

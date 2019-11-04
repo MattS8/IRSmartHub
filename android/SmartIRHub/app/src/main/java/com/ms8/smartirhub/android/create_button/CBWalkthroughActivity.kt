@@ -13,7 +13,7 @@
 //import androidx.recyclerview.widget.RecyclerView
 //import com.ms8.smartirhub.android.R
 //import com.ms8.smartirhub.android.create_button._old.CBStyleActivity
-//import com.ms8.smartirhub.android.create_command.ActionSequenceAdapter
+//import com.ms8.smartirhub.android.remote_control.command.creation.ActionSequenceAdapter
 //import com.ms8.smartirhub.android.create_command.CC_ChooseIrSignalActivity
 //import com.ms8.smartirhub.android.custom_views.bottom_sheets.BottomSheet
 //import com.ms8.smartirhub.android.custom_views.bottom_sheets.SimpleListDescSheet

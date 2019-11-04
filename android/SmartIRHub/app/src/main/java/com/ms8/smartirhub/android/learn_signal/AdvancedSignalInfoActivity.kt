@@ -24,7 +24,7 @@ class AdvancedSignalInfoActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        AppState.tempData.tempSignal?.let { irSignal ->
+        AppState.tempData.tempSignal.get()?.let { irSignal ->
             binding.tvCode.text = irSignal.code
             binding.tvEncoding.text = irSignal.encodingType.toString()
             binding.tvRawData.text = irSignal.rawDataToString()

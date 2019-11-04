@@ -18,6 +18,7 @@ import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.databinding.ACcChooseActionBinding
 import com.ms8.smartirhub.android.learn_signal.LSWalkThroughActivity
 import com.ms8.smartirhub.android.remote_control.button.models.Button
+import com.ms8.smartirhub.android.remote_control.command.creation.ActionSequenceAdapter
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile.Command
 
 class CC_ChooseActionsActivity : AppCompatActivity() {
@@ -71,7 +72,8 @@ class CC_ChooseActionsActivity : AppCompatActivity() {
         }
     }
 
-    val adapter = ActionSequenceAdapter(callback)
+    val adapter =
+        ActionSequenceAdapter(callback)
 
 /*
     ----------------------------------------------
