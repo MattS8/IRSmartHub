@@ -114,6 +114,11 @@ class ButtonCreator {
     set(value) {
         field = value
         commandCreator.context = field
+
+        if (context == null){
+            isTransitioning = true
+            dismissBottomDialog()
+        }
     }
 
 /*
@@ -134,6 +139,9 @@ class ButtonCreator {
 
     @SuppressLint("LogNotTimber")
     fun showBottomDialog() {
+        if (createButtonDialog != null)
+            Log.w("ButtonCreator", "showBottomDialog - called while createButtonDialog is not null!")
+
         when (context) {
             null -> Log.e("ButtonCreator", "showBottomDialog - Context was not set")
             else ->

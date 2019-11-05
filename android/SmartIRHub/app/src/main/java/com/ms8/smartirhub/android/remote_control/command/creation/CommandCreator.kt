@@ -92,10 +92,7 @@ class CommandCreator {
         }
 
         // transition back to 'newCommand dialog'
-        createCommandDialog?.let {
-            isTransitioning = true
-            it.dismiss()
-        }
+        dismissDialog(true)
 
         context?.let { showNewCommandDialog(it) }
     }
@@ -108,10 +105,7 @@ class CommandCreator {
         }
 
         // dismiss dialog in anticipation for something else to continue the process
-        createCommandDialog?.let {
-            isTransitioning = true
-            it.dismiss()
-        }
+        dismissDialog(true)
 
         // reset dialogState to beginning
         dialogState = CommandDialogState.COMMAND_FROM
@@ -124,14 +118,17 @@ class CommandCreator {
     set(value) {
         field = value
         when {
-            field == null -> {
+            field == null ->
+            {
                 removePairingCallbacks()
                 removeSignalSavingCallbacks()
                 pairingBinding = null
                 pairSignalInfoBinding = null
+
+                dismissDialog(true)
             }
-            isPairing -> { addPairingCallbacks() }
-            isSavingIrSignal -> { addSignalSavingCallbacks() }
+            isPairing -> addPairingCallbacks()
+            isSavingIrSignal -> addSignalSavingCallbacks()
         }
     }
 
@@ -164,6 +161,21 @@ class CommandCreator {
             }
         }
     }
+
+    fun onBackPressed() {
+        when (dialogState) {
+            CommandDialogState.COMMAND_FROM -> commandFromOnBackPressed()
+            CommandDialogState.NEW_COMMAND -> newCommandOnBackPressed()
+            CommandDialogState.PAIR_SIGNAL -> pairSignalOnBackPressed()
+            CommandDialogState.ACTION_FROM -> actionsFromOnBackPressed()
+        }
+    }
+
+/*
+----------------------------------------------
+    Display Functions
+----------------------------------------------
+*/
 
     private fun showActionsFromDialog() {
         // change state
@@ -210,23 +222,6 @@ class CommandCreator {
             pairIrSignal.setOnClickListener { transitionToPairDialog() }
         }
     }
-
-
-
-    fun onBackPressed() {
-        when (dialogState) {
-            CommandDialogState.COMMAND_FROM -> commandFromOnBackPressed()
-            CommandDialogState.NEW_COMMAND -> newCommandOnBackPressed()
-            CommandDialogState.PAIR_SIGNAL -> pairSignalOnBackPressed()
-            CommandDialogState.ACTION_FROM -> actionsFromOnBackPressed()
-        }
-    }
-
-/*
-----------------------------------------------
-    Display Functions
-----------------------------------------------
-*/
 
     private fun showCommandFromDialog(context: Context) {
         // change state
@@ -394,7 +389,7 @@ class CommandCreator {
                 // pairing process hasn't begun or is ongoing
                 inflateSignalInstructionsView(pairingBinding!!)
                 if (isPairing) {
-                    pairingBinding!!.btnPos.animate()
+                    pairingBinding!!.btnPos.startAnimation()
                 }
             }
 
@@ -483,6 +478,11 @@ class CommandCreator {
                 .setPositiveButton(android.R.string.ok) { p0, _ -> p0?.dismiss() }
                 .setMessage(AppState.errorData.pairSignalError.get()?.messageID ?: R.string.err_unknown_desc)
                 .show()
+
+            pairingBinding?.let { binding ->
+                binding.btnPos.revertAnimation()
+                binding.btnNeg.visibility = View.GONE
+            }
         }
     }
 
@@ -498,6 +498,14 @@ class CommandCreator {
                 .setPositiveButton(android.R.string.ok) {p0, _ -> p0?.dismiss()}
                 .setMessage(R.string.err_unknown_desc)
                 .show()
+        }
+    }
+
+    private fun dismissDialog(transitioning : Boolean = false) {
+        createCommandDialog?.let {
+            isTransitioning = transitioning
+            it.dismiss()
+            createCommandDialog = null
         }
     }
 /*
@@ -541,6 +549,7 @@ class CommandCreator {
                 isPairing = false
                 removePairingCallbacks()
                 showPairingErrorDialog()
+                AppState.errorData.pairSignalError.set(null)
             }
         }
     }
@@ -552,7 +561,7 @@ class CommandCreator {
         isPairing = true
         RealtimeDatabaseFunctions.sendListenAction2(selectedHub?.uid ?: AppState.userData.user.defaultHub)
 
-        pairingBinding?.btnPos?.animate()
+        pairingBinding?.btnPos?.startAnimation()
 
         // show the cancel button to allow users to manually stop pairing process
         pairingBinding?.btnNeg?.visibility = View.VISIBLE
@@ -632,10 +641,7 @@ class CommandCreator {
 
         // pairing new signal process is complete! back to 'new command' overview
         dialogState = CommandDialogState.NEW_COMMAND
-        createCommandDialog?.let { it ->
-            isTransitioning = true
-            it.dismiss()
-        }
+        dismissDialog(true)
         context?.let { showNewCommandDialog(it) }
     }
 
@@ -649,7 +655,7 @@ class CommandCreator {
         FirestoreActions.addIrSignal()
 
         // begin animating to show saving is in progress
-        pairingBinding.btnPos.animate()
+        pairingBinding.btnPos.startAnimation()
 
         // add listeners
         addSignalSavingCallbacks()
@@ -664,17 +670,14 @@ class CommandCreator {
     /* On Back Pressed Helper Functions  */
 
     private fun actionsFromOnBackPressed() {
-        createCommandDialog?.let {
-            isTransitioning = true
-            it.dismiss()
-        }
+dismissDialog(true)
         context?.let { showNewCommandDialog(it) }
     }
 
     private fun commandFromOnBackPressed() {
         createCommandDialog?.let {
             isBackPressed = true
-            it.dismiss()
+            dismissDialog(false)
         }
     }
 
@@ -690,17 +693,11 @@ class CommandCreator {
             else -> {
                 if (AppState.tempData.tempCommand?.actions?.size ?: 0 > 0) {
                     // go back to "new command" view as this was adding an additional signal to a command
-                    createCommandDialog?.let {
-                        isTransitioning = true
-                        it.dismiss()
-                    }
+            dismissDialog(true)
                     showNewCommandDialog(context!!)
                 } else {
                     // go back to "command from" view as this was the first signal for a new command
-                    createCommandDialog?.let {
-                        isTransitioning = true
-                        it.dismiss()
-                    }
+            dismissDialog(true)
                     // discard tempData for abandoned command
                     AppState.tempData.tempCommand = null
                     showCommandFromDialog(context!!)
@@ -710,10 +707,7 @@ class CommandCreator {
     }
 
     private fun newCommandOnBackPressed() {
-        createCommandDialog?.let {
-            isTransitioning = true
-            it.dismiss()
-        }
+        dismissDialog(true)
 
         // discard any temp command in the making
         AppState.tempData.tempCommand = null
@@ -758,18 +752,12 @@ class CommandCreator {
     }
 
     private fun transitionToShowNewCommandDialog(context: Context) {
-        createCommandDialog?.let {
-            isTransitioning = true
-            it.dismiss()
-        }
+        dismissDialog(true)
         showNewCommandDialog(context)
     }
 
     private fun transitionToPairDialog() {
-        createCommandDialog?.let {
-            isTransitioning = true
-            it.dismiss()
-        }
+        dismissDialog(true)
         showPairSignalDialog()
     }
 

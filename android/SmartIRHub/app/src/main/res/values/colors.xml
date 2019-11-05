@@ -13,4 +13,5 @@
     <color name="colorRemoteBG">#AA9E9E9E</color>
     <color name="colorButtonBG">#EEFFFFFF</color>
     <color name="colorButtonSetupBG">#99FFFFFF</color>
+    <color name="colorSpinningBar">#FFF</color>
 </resources>

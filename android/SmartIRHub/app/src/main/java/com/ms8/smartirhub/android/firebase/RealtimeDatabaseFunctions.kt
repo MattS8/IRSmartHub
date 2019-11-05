@@ -27,91 +27,101 @@ object RealtimeDatabaseFunctions {
     fun sendListenAction2(hubUID: String) {
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
 
-        sendNoneAction(hubUID)
-            .addOnFailureListener { e -> AppState.errorData.pairSignalError.set(HubUnknownException(e.message)) }
+        Log.d("RDBF", "sendListenAction2 - Begging listening process on hub $hubUID from user $uid")
+        clearResult(hubUID)
+            .addOnFailureListener {  e -> AppState.errorData.pairSignalError.set(HubUnknownException(e.message)) }
             .addOnSuccessListener {
-                FirebaseDatabase.getInstance().reference.child("devices").child(hubUID).child("action")
-                    .setValue(
-                        HubAction().apply {
-                            type = IR_ACTION_LISTEN
-                            sender = uid
-                            timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Calendar.getInstance().time)
-                        }
-                    )
+                sendNoneAction(hubUID)
                     .addOnFailureListener { e -> AppState.errorData.pairSignalError.set(HubUnknownException(e.message)) }
                     .addOnSuccessListener {
-                        getHubResults(hubUID).addListenerForSingleValueEvent(object : ValueEventListener {
-                            override fun onCancelled(p0: DatabaseError) { AppState.errorData.pairSignalError.set(HubUnknownException(p0.toException().message)) }
-
-
-                            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                                val hubResult = parseHubResult(dataSnapshot)
-
-                                if (hubResult == null) {
-                                    Log.w("RealtimeDatabase", "sendListenAction2 - hubResult was null!")
-                                    return
+                        FirebaseDatabase.getInstance().reference.child("devices").child(hubUID).child("action")
+                            .setValue(
+                                HubAction().apply {
+                                    type = IR_ACTION_LISTEN
+                                    sender = uid
+                                    timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Calendar.getInstance().time)
                                 }
+                            )
+                            .addOnFailureListener { e -> AppState.errorData.pairSignalError.set(HubUnknownException(e.message)) }
+                            .addOnSuccessListener {
+                                getHubResults(hubUID).addValueEventListener(object : ValueEventListener {
+                                    override fun onCancelled(p0: DatabaseError) { AppState.errorData.pairSignalError.set(HubUnknownException(p0.toException().message)) }
 
 
-                                when (hubResult.resultCode) {
-                                    // Overflow Error
-                                    FirebaseConstants.IR_RES_OVERFLOW_ERR -> {
-                                        AppState.errorData.pairSignalError.set(HubOverflowException())
-                                    }
-                                    // Timeout Error
-                                    FirebaseConstants.IR_RES_TIMEOUT_ERR -> {
-                                        AppState.errorData.pairSignalError.set(HubTimeoutException())
-                                    }
-                                    // Unknown Error
-                                    FirebaseConstants.IR_RES_UNKNOWN_ERR -> {
-                                        AppState.errorData.pairSignalError.set(HubUnknownException())
-                                    }
-                                    // Received an IR Signal
-                                    FirebaseConstants.IR_RES_RECEIVED_SIG -> {
-                                        Log.d("RealtimeDatabase", "sendListenAction2 - Received signal")
-                                        AppState.tempData.tempSignal.set(IrSignal()
-                                            .apply {
-                                                rawLength = hubResult.rawLen
-                                                encodingType = hubResult.encoding
-                                                code = hubResult.code
-                                                repeat = false //TODO determine if this is needed at all
-                                            })
+                                    override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                        val hubResult = parseHubResult(dataSnapshot.value)
 
-                                        getRawData(hubUID).addValueEventListener(object : ValueEventListener {
-                                            override fun onCancelled(p0: DatabaseError) { AppState.errorData.pairSignalError.set(HubUnknownException()) }
+                                        if (hubResult == null) {
+                                            Log.w("RealtimeDatabase", "sendListenAction2 - hubResult was null!")
+                                            return
+                                        }
 
-                                            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                                                val rawData = parseRawData(dataSnapshot.value) ?: return
-                                                val numChunks = calculateNumChunks(AppState.tempData.tempSignal.get()?.rawLength ?: 0)
+                                        getHubResults(hubUID).removeEventListener(this)
 
-                                                if (rawData.size == numChunks) {
-                                                    // Stop listening for rawData changes
-                                                    getRawData(hubUID).removeEventListener(this)
-
-                                                    // Set data array for tempSignal
-                                                    val completedTempSignal = IrSignal.copyFrom(AppState.tempData.tempSignal.get())
-                                                    completedTempSignal.rawData = rawData
-                                                    AppState.tempData.tempSignal.set(completedTempSignal)
-
-                                                    // Remove rawData from hub's endpoint
-                                                    getRawData(hubUID).removeValue()
-                                                } else {
-                                                    Log.w("RealtimeDatabase", "sendListenAction2 - Mismatch in chunk list size: " +
-                                                            "expected $numChunks but actually ${rawData.size}")
-                                                }
+                                        when (hubResult.resultCode) {
+                                            // Overflow Error
+                                            FirebaseConstants.IR_RES_OVERFLOW_ERR -> {
+                                                AppState.errorData.pairSignalError.set(HubOverflowException())
                                             }
-                                        })
+                                            // Timeout Error
+                                            FirebaseConstants.IR_RES_TIMEOUT_ERR -> {
+                                                AppState.errorData.pairSignalError.set(HubTimeoutException())
+                                            }
+                                            // Unknown Error
+                                            FirebaseConstants.IR_RES_UNKNOWN_ERR -> {
+                                                AppState.errorData.pairSignalError.set(HubUnknownException())
+                                            }
+                                            // Received an IR Signal
+                                            FirebaseConstants.IR_RES_RECEIVED_SIG -> {
+                                                Log.d("RealtimeDatabase", "sendListenAction2 - Received signal")
+                                                AppState.tempData.tempSignal.set(IrSignal()
+                                                    .apply {
+                                                        rawLength = hubResult.rawLen
+                                                        encodingType = hubResult.encoding
+                                                        code = hubResult.code
+                                                        repeat = false //TODO determine if this is needed at all
+                                                    })
+
+                                                getRawData(hubUID).addValueEventListener(object : ValueEventListener {
+                                                    override fun onCancelled(p0: DatabaseError) { AppState.errorData.pairSignalError.set(HubUnknownException()) }
+
+                                                    override fun onDataChange(dataSnapshot: DataSnapshot) {
+                                                        Log.d("RealtimeDatabase", "getRawData - data changed!")
+                                                        val rawData = parseRawData(dataSnapshot.value) ?: return
+                                                        val numChunks = calculateNumChunks(AppState.tempData.tempSignal.get()?.rawLength ?: 0)
+
+                                                        Log.d("RealtimeDatabase", "getRawData - rawData size = ${rawData.size}")
+
+                                                        if (rawData.size == numChunks) {
+                                                            // Stop listening for rawData changes
+                                                            getRawData(hubUID).removeEventListener(this)
+
+                                                            // Set data array for tempSignal
+                                                            val completedTempSignal = IrSignal.copyFrom(AppState.tempData.tempSignal.get())
+                                                            completedTempSignal.rawData = rawData
+                                                            AppState.tempData.tempSignal.set(completedTempSignal)
+
+                                                            // Remove rawData from hub's endpoint
+                                                            getRawData(hubUID).removeValue()
+                                                        } else {
+                                                            Log.w("RealtimeDatabase", "sendListenAction2 - Mismatch in chunk list size: " +
+                                                                    "expected $numChunks but actually ${rawData.size}")
+                                                        }
+                                                    }
+                                                })
+                                            }
+                                            // Unexpected IR result
+                                            else -> {
+                                                Log.e("RealtimeDatabase", "unexpected result code (${hubResult.resultCode})")
+                                                AppState.errorData.pairSignalError.set(HubUnknownException())
+                                            }
+                                        }
                                     }
-                                    // Unexpected IR result
-                                    else -> {
-                                        Log.e("RealtimeDatabase", "unexpected result code (${hubResult.resultCode})")
-                                        AppState.errorData.pairSignalError.set(HubUnknownException())
-                                    }
-                                }
+                                })
                             }
-                        })
                     }
             }
+
     }
 
     @SuppressLint("SimpleDateFormat")
@@ -284,17 +294,18 @@ object RealtimeDatabaseFunctions {
         try {
             val tempMap = value as HashMap<Any, Any>
             tempMap.remove("numChunks")
+            Log.d("RealtimeDatabase", "parseRawData - tempMap size = ${tempMap.size}  | ${tempMap[0]}")
             return ArrayList<String>()
                 .apply {
                     for (i in 0 until tempMap.size)
                         add(tempMap[i] as String)
                 }
-        } catch (e : Exception) { Log.e("parseRawData", "$e")}
+        } catch (e : Exception) { Log.e("RealtimeDatabase", " parseRawData - $e")}
 
         try {
             return value as ArrayList<String>
         }
-        catch (e : Exception) { Log.e("parseRawData", "$e")}
+        catch (e : Exception) { Log.e("RealtimeDatabase", "parseRawData - $e")}
 
         return null
     }
@@ -318,7 +329,7 @@ object RealtimeDatabaseFunctions {
                 this.rawLen = rawLen.toInt()
                 this.code = code
             }
-        } catch (e : Exception) { Log.e("parseHubResult", "$e")}
+        } catch (e : Exception) { Log.e("RealtimeDatabase", "parseHubResult - $e")}
 
         return null
     }
