@@ -574,12 +574,12 @@ class SplashActivity5 : AppCompatActivity() {
             // show 'setup first hub' or 'hub invitations' activity
             AppState.userData.hubs.size == 0 -> {
                 //todo check for hub invitations
-                startActivity(Intent(this, TestCommandCreatorActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
+                startActivity(Intent(this, MainViewActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
                 finish()
             }
             // show 'main view'
             else -> {
-                startActivity(Intent(this, TestCommandCreatorActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
+                startActivity(Intent(this, MainViewActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
                 finish()
             }
         }
