@@ -25,6 +25,9 @@ object RealtimeDatabaseFunctions {
 
     @SuppressLint("LogNotTimber")
     fun sendListenAction2(hubUID: String) {
+        if (debugMode) { return debug_sendListenAction2() }
+
+
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
 
         Log.d("RDBF", "sendListenAction2 - Begging listening process on hub $hubUID from user $uid")
@@ -361,4 +364,27 @@ object RealtimeDatabaseFunctions {
         com.ms8.smartirhub.android.R.string.err_title,
         com.ms8.smartirhub.android.R.string.err_unknown_desc,
         message)
+
+/*
+----------------------------------------------
+  Debug
+----------------------------------------------
+*/
+    var debugMode = false
+
+    private fun debug_sendListenAction2(delayTime : Long = 3000) {
+        android.os.Handler().postDelayed({
+            AppState.tempData.tempSignal.set(IrSignal()
+                .apply {
+                    rawData = ArrayList<String>()
+                        .apply {
+                            add("0 1 2")
+                        }
+                    code = "0x3"
+                    rawLength = 3
+                    encodingType = 1
+                })
+        }, delayTime)
+    }
+
 }

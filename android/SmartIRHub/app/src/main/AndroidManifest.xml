@@ -11,7 +11,8 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
-        <activity android:name=".remote_control.command.creation.GetFromRemoteActivity"></activity>
+        <activity android:name="._tests.dev_playground.TestCommandCreatorActivity"></activity>
+        <activity android:name=".remote_control.command.creation.GetFromRemoteActivity" />
         <activity android:name=".splash_login.SplashActivity5">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

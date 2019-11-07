@@ -1,109 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
->
-
-    <View
-            android:layout_width="3dp"
-            android:layout_height="30dp"
-            android:id="@+id/view" app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toBottomOf="@+id/sigInfoCard"
-            app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintVertical_bias="0.0"
-            android:background="@color/white" android:layout_marginBottom="8dp"/>
-    <View
-            android:layout_width="3dp"
-            android:layout_height="30dp"
-            android:id="@+id/view2" app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toBottomOf="@+id/seekBar"
-            app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintVertical_bias="0.0"
-            android:background="@color/white" android:layout_marginTop="8dp"/>
-    <SeekBar
-            style="@style/Widget.AppCompat.SeekBar.Discrete"
-            android:layout_width="100dp"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        >
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:max="100"
-            android:progress="1"
-            android:id="@+id/seekBar"
-            app:layout_constraintStart_toStartOf="@+id/view" app:layout_constraintEnd_toEndOf="@+id/view"
-            app:layout_constraintTop_toBottomOf="@+id/view"
-            app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintVertical_bias="0.0"
-            android:layout_marginTop="8dp" android:layout_marginBottom="8dp"/>
-    <TextView
-            android:text="@string/delay"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/tvDelay" app:layout_constraintEnd_toStartOf="@+id/seekBar"
-            android:layout_marginEnd="8dp" app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="8dp"
-            android:layout_marginBottom="8dp" app:layout_constraintBottom_toBottomOf="@+id/seekBar"
-            app:layout_constraintHorizontal_bias="1.0" android:layout_marginTop="8dp"
-            app:layout_constraintTop_toTopOf="@+id/seekBar"/>
+            >
+
+        <View
+                android:layout_width="3dp"
+                android:layout_height="30dp"
+                android:id="@+id/view" app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toBottomOf="@+id/sigInfoCard"
+                app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintVertical_bias="0.0"
+                android:background="@color/white" android:layout_marginBottom="8dp"/>
+        <View
+                android:layout_width="3dp"
+                android:layout_height="30dp"
+                android:id="@+id/view2" app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toBottomOf="@+id/seekBar"
+                app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintVertical_bias="0.0"
+                android:background="@color/white" android:layout_marginTop="8dp"/>
+        <SeekBar
+                style="@style/Widget.AppCompat.SeekBar.Discrete"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:progress="1"
+                android:id="@+id/seekBar"
+                app:layout_constraintStart_toStartOf="@+id/view" app:layout_constraintEnd_toEndOf="@+id/view"
+                app:layout_constraintTop_toBottomOf="@+id/view"
+                app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintVertical_bias="0.0"
+                android:layout_marginTop="8dp" android:layout_marginBottom="8dp"/>
+        <TextView
+                android:text="@string/delay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/tvDelay" app:layout_constraintEnd_toStartOf="@+id/seekBar"
+                android:layout_marginEnd="8dp" app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginStart="8dp"
+                android:layout_marginBottom="8dp" app:layout_constraintBottom_toBottomOf="@+id/seekBar"
+                app:layout_constraintHorizontal_bias="1.0" android:layout_marginTop="8dp"
+                app:layout_constraintTop_toTopOf="@+id/seekBar"/>
 
 
 
-    <androidx.cardview.widget.CardView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/sigInfoCard"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            app:cardBackgroundColor="@color/colorPrimaryDark"
-            app:cardCornerRadius="8dp"
-            android:elevation="24dp"
-    >
+        <androidx.cardview.widget.CardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/sigInfoCard"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                app:cardBackgroundColor="@color/colorPrimaryDark"
+                app:cardCornerRadius="8dp"
+                android:elevation="24dp"
+                >
 
-        <androidx.constraintlayout.widget.ConstraintLayout android:layout_width="match_parent"
-                                                           android:layout_height="wrap_content">
-            <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/tvActionTitle"
-                    android:layout_marginStart="8dp"
-                    app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="16dp" android:layout_marginTop="16dp"
-                    app:layout_constraintTop_toTopOf="parent" android:layout_marginBottom="16dp"
-                    app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintVertical_bias="0.0"
-                    app:layout_constraintHorizontal_bias="0.5"
-                    tools:text="Custom Ir Signal"
-                    android:textColor="@color/white"
-                    android:textAppearance="@style/AppTheme.TextAppearance.SplashHeader" android:textSize="16sp"
-                    app:layout_constraintStart_toEndOf="@+id/btnDeleteAction"/>
-            <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/tvActionDesc"
-                    app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="16dp"
-                    app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintVertical_bias="0.0"
-                    app:layout_constraintHorizontal_bias="0.0"
-                    tools:text="target: Test IRSmartHub"
-                    android:textColor="@color/colorControlNormalWhite"
-                    app:layout_constraintTop_toBottomOf="@+id/tvActionTitle" android:layout_marginTop="8dp"
-                    app:layout_constraintStart_toStartOf="@+id/tvActionTitle"/>
-            <ImageButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" app:srcCompat="@android:drawable/ic_delete"
-                    android:id="@+id/btnDeleteAction"
-                    style="@style/Widget.AppCompat.ImageButton" android:background="@color/transparent"
-                    android:foreground="?android:selectableItemBackground" android:layout_marginStart="16dp"
-                    app:layout_constraintStart_toStartOf="parent" android:layout_marginEnd="8dp"
-                    app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="@+id/tvActionTitle"
-                    android:layout_marginBottom="16dp" app:layout_constraintBottom_toBottomOf="@+id/tvActionDesc"
-                    android:layout_marginTop="16dp" app:layout_constraintHorizontal_bias="0.0"
-                    app:layout_constraintEnd_toStartOf="@+id/tvActionTitle"
-                    app:layout_constraintHorizontal_chainStyle="packed" android:contentDescription="delete action"/>
-
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/tvActionTitle"
+                        android:layout_marginStart="8dp"
+                        app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="16dp" android:layout_marginTop="16dp"
+                        app:layout_constraintTop_toTopOf="parent" android:layout_marginBottom="16dp"
+                        app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintVertical_bias="0.0"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        tools:text="Custom Ir Signal"
+                        android:textColor="@color/white"
+                        android:textAppearance="@style/AppTheme.TextAppearance.SplashHeader" android:textSize="16sp"
+                        app:layout_constraintStart_toEndOf="@+id/btnDeleteAction"/>
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/tvActionDesc"
+                        app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="16dp"
+                        app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintVertical_bias="0.0"
+                        app:layout_constraintHorizontal_bias="0.0"
+                        tools:text="target: Test IRSmartHub"
+                        android:textColor="@color/colorControlNormalWhite"
+                        app:layout_constraintTop_toBottomOf="@+id/tvActionTitle" android:layout_marginTop="8dp"
+                        app:layout_constraintStart_toStartOf="@+id/tvActionTitle"/>
+                <ImageButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" app:srcCompat="@android:drawable/ic_delete"
+                        android:id="@+id/btnDeleteAction"
+                        style="@style/Widget.AppCompat.ImageButton" android:background="@color/transparent"
+                        android:foreground="?android:selectableItemBackground" android:layout_marginStart="16dp"
+                        app:layout_constraintStart_toStartOf="parent" android:layout_marginEnd="8dp"
+                        app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="@+id/tvActionTitle"
+                        android:layout_marginBottom="16dp" app:layout_constraintBottom_toBottomOf="@+id/tvActionDesc"
+                        android:layout_marginTop="16dp" app:layout_constraintHorizontal_bias="0.0"
+                        app:layout_constraintEnd_toStartOf="@+id/tvActionTitle"
+                        app:layout_constraintHorizontal_chainStyle="packed" android:contentDescription="delete action"/>
 
 
-    </androidx.cardview.widget.CardView>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
+
+
 

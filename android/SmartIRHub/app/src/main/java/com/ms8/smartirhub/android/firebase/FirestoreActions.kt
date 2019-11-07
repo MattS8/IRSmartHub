@@ -641,15 +641,25 @@ object FirestoreActions {
     fun addIrSignal(): Task<DocumentReference> {
         val irSignal = AppState.tempData.tempSignal.get()!!
         val uid = FirebaseAuth.getInstance().currentUser!!.uid
+        val username = AppState.userData.user.username.get() ?: throw Exception("No username")
+
         return FirebaseFirestore.getInstance().collection("signals")
             .add(irSignal.toFirebaseObject(uid))
             .addOnSuccessListener {
                 val savedIrSignal = IrSignal.copyFrom(AppState.tempData.tempSignal.get())
                 savedIrSignal.uid = it.id
-                AppState.tempData.tempSignal.set(savedIrSignal)
+                AppState.userData.irSignals[savedIrSignal.uid] = savedIrSignal
+                FirebaseFirestore.getInstance().collection("users")
+                    .document(username)
+                    .update("irSignals", FieldValue.arrayUnion(savedIrSignal.uid))
+                    .addOnSuccessListener {
+                        AppState.tempData.tempSignal.set(savedIrSignal)
+                    }.addOnFailureListener {e ->
+                        AppState.errorData.saveSignalError.set(e)
+                    }
             }
-            .addOnFailureListener {
-                AppState.errorData.saveSignalError.set(it)
+            .addOnFailureListener { e ->
+                AppState.errorData.saveSignalError.set(e)
             }
     }
 

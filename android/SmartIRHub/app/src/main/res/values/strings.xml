@@ -286,4 +286,5 @@
     <string name="target_smart_hub">Target Smart Hub</string>
     <string name="new_command_title">New Command</string>
     <string name="action_from_title">Add Action From</string>
+    <string name="test_command_creator">Test command Creator</string>
 </resources>

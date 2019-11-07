@@ -677,8 +677,10 @@ class MainViewActivity : AppCompatActivity() {
                                                         CommandCreator.CommandDialogState.COMMAND_FROM,
                                                         0,
                                                         null,
-                                                        false,
-                                                        false),
+                                                        isPairing = false,
+                                                        isSavingIrSignal = false,
+                                                        isSavingCommand = false
+                                                    ),
                                         0)
             private set
 

@@ -28,6 +28,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.ms8.smartirhub.android.R
+import com.ms8.smartirhub.android._tests.dev_playground.TestCommandCreatorActivity
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.databinding.ASplashLoginMainBinding
 import com.ms8.smartirhub.android.firebase.AuthActions
@@ -573,12 +574,12 @@ class SplashActivity5 : AppCompatActivity() {
             // show 'setup first hub' or 'hub invitations' activity
             AppState.userData.hubs.size == 0 -> {
                 //todo check for hub invitations
-                startActivity(Intent(this, MainViewActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
+                startActivity(Intent(this, TestCommandCreatorActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
                 finish()
             }
             // show 'main view'
             else -> {
-                startActivity(Intent(this, MainViewActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
+                startActivity(Intent(this, TestCommandCreatorActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
                 finish()
             }
         }

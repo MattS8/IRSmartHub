@@ -37,12 +37,12 @@ class ButtonCreator {
     var onRequestCommandFromRemote: (remote: RemoteProfile) -> Unit = {}
         set(value) {
             field = value
-            commandCreator.onRequestCommandFromRemote = field
+            commandCreator.requestedCommandFromRemoteListener = field
         }
     var onRequestActionsFromRemote: (remote: RemoteProfile) -> Unit = {}
         set(value) {
             field = value
-            commandCreator.onRequestActionsFromRemote = field
+            commandCreator.requestedActionsFromRemoteListener = field
         }
 
 /*
@@ -98,8 +98,8 @@ class ButtonCreator {
 
     private var commandCreator : CommandCreator = CommandCreator()
         .apply {
-            onDialogDismiss = onCommandDialogDismissed
-            onCommandCreated = this@ButtonCreator.onCommandCreated
+            dialogDismissedListener = onCommandDialogDismissed
+            commandCreatedListener = this@ButtonCreator.onCommandCreated
         }
     private var arrayPosition  : Int = 0
 

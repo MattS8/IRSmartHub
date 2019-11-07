@@ -67,4 +67,10 @@ object AppState {
         tempData.tempRemoteProfile.inEditMode.set(false)
         tempData.tempRemoteProfile.buttons.clear()
     }
+
+    fun getHub(hubUID: String): Hub {
+        val hub = userData.hubs[hubUID]
+
+        return hub ?: userData.hubs[userData.user.defaultHub] ?: throw Exception("Default Hub was not found!")
+    }
 }
