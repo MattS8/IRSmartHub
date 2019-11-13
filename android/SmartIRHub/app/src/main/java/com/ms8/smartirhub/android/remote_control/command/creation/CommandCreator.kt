@@ -85,6 +85,7 @@ class CommandCreator {
     // global bindings - these need to be declared here so that listeners can enact updates to the UI
     private var pairingBinding : VPairSignalSheetBinding? = null
     private var pairSignalInfoBinding : VPairSignalInfoBinding? = null
+    private var instructionsBinding : VPairSignalInstructionsBinding? = null
     private var newCommandSheetBinding : VNewCommandBinding? = null
 
 /*
@@ -289,14 +290,7 @@ class CommandCreator {
 
         // create dialog
         // using a custom onBackPressed to handle navigating the different stages of creation process
-        createCommandDialog = object : BottomSheetDialog(context) {
-            override fun onBackPressed() {
-                this@CommandCreator.onBackPressed()
-            }
-        }
-        createCommandDialog?.setContentView(bottomSheetView)
-        createCommandDialog?.setOnDismissListener { onDismiss() }
-        createCommandDialog?.show()
+        createDialogView(context, bottomSheetView)
 
         // run callback
         existingCommandSelectedListener()
@@ -329,13 +323,16 @@ class CommandCreator {
                 adapter = ActionSequenceAdapter(
                     object :  ActionSequenceAdapter.ActionSequenceAdapterCallbacks {
                         override fun addNewAction() {
-                            Log.d("CommandCreator", "addNewAction - triggered!")
                             dismissDialog(true)
                             showActionsFromDialog()
                         }
 
                         override fun startEditAction(action: RemoteProfile.Command.Action, position: Int) {
-                            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                            Log.d("todo", "todo") //todo show edit view
+                        }
+
+                        override fun onNoActionsLeft() {
+                            onBackPressed()
                         }
                     },
                     AppState.tempData.tempCommand?.actions ?: ArrayList())
@@ -355,36 +352,10 @@ class CommandCreator {
 
         // create dialog
         // using a custom onBackPressed to handle navigating the different stages of creation process
-        createCommandDialog = object : BottomSheetDialog(context) {
-            override fun onBackPressed() {
-                this@CommandCreator.onBackPressed()
-            }
-        }
-        createCommandDialog?.setContentView(bottomSheetView)
-        createCommandDialog?.setOnDismissListener { onDismiss() }
-        createCommandDialog?.show()
+        createDialogView(context, bottomSheetView)
 
         // run callback
         newCommandSelectedListener()
-    }
-
-    private fun onNewCommandDiscarded() {
-        AppState.tempData.tempCommand = null
-        dismissDialog(true)
-        context?.let { showCommandFromDialog(it) }
-    }
-
-    @SuppressLint("LogNotTimber")
-    private fun onCreateNewCommand() {
-        when (AppState.tempData.tempButton.get()) {
-            null -> Log.w("CommandCreator", "onCreateNewCommand - new command created without a button to bind it to!")
-            else -> AppState.tempData.tempCommand?.let {
-                AppState.tempData.tempButton.get()?.commands?.add(it)
-                onCommandCreated()
-                AppState.tempData.tempCommand = null
-                AppState.tempData.tempSignal.set(null)
-            }
-        }
     }
 
 
@@ -451,14 +422,50 @@ class CommandCreator {
 
             // create dialog
             // using a custom onBackPressed to handle navigating the different stages of creation process
-            createCommandDialog = object : BottomSheetDialog(context) {
-                override fun onBackPressed() {
-                    this@CommandCreator.onBackPressed()
-                }
+            createDialogView(context, bottomSheetView)
+        }
+    }
+
+    @SuppressLint("LogNotTimber")
+    private fun showPairingErrorDialog() {
+        context?.let { c ->
+            if (AppState.errorData.pairSignalError.get() == null)
+                Log.e("CommandCreator", "showPairingErrorDialog - pairSignalError was null!")
+
+            AlertDialog.Builder(c)
+                .setIcon(android.R.drawable.stat_notify_error)
+                .setTitle(AppState.errorData.pairSignalError.get()?.titleID ?: R.string.err_title)
+                .setPositiveButton(android.R.string.ok) { p0, _ -> p0?.dismiss() }
+                .setMessage(AppState.errorData.pairSignalError.get()?.messageID ?: R.string.err_unknown_desc)
+                .show()
+
+            pairingBinding?.let { binding ->
+                binding.btnPos.revertAnimation()
+                binding.btnNeg.visibility = View.GONE
             }
-            createCommandDialog?.setContentView(bottomSheetView)
-            createCommandDialog?.setOnDismissListener { onDismiss() }
-            createCommandDialog?.show()
+        }
+    }
+
+    @SuppressLint("LogNotTimber")
+    private fun showSavingSignalErrorDialog() {
+        context?.let { c ->
+            if (AppState.errorData.saveSignalError.get() == null)
+                Log.e("CommandCreator", "showSavingSignalErrorDialog - saveSignalError was null!")
+
+            AlertDialog.Builder(c)
+                .setIcon(android.R.drawable.stat_notify_error)
+                .setTitle(R.string.err_title)
+                .setPositiveButton(android.R.string.ok) {p0, _ -> p0?.dismiss()}
+                .setMessage(R.string.err_unknown_desc)
+                .show()
+        }
+    }
+
+    private fun dismissDialog(transitioning : Boolean = false) {
+        createCommandDialog?.let {
+            isTransitioning = transitioning
+            it.dismiss()
+            createCommandDialog = null
         }
     }
 
@@ -504,75 +511,34 @@ class CommandCreator {
 
     private fun inflateSignalInstructionsView() {
         Log.d("CommandCreator", "inflateSignalInstructionsView - inflating...")
-
         pairingBinding?.btnNeg?.visibility = View.GONE
 
-        val instructionsBinding : VPairSignalInstructionsBinding = VPairSignalInstructionsBinding.inflate(
-            context!!.layoutInflater,
-            pairingBinding?.pairingContent,
-            true)
-        if (AppState.userData.hubs.size <= 1) {
-            // Since there's only 1 hub associated with the user, there's no reason to show hub spinner
-            instructionsBinding.hubsSpinner.visibility = View.GONE
-            instructionsBinding.tvHubsSpinner.visibility = View.GONE
-        } else {
-            // More than one associated hub means we need to allow the user to select which hub to target
-            instructionsBinding.hubsSpinner.visibility = View.VISIBLE
-            instructionsBinding.tvHubsSpinner.visibility = View.VISIBLE
-
-            setupHubsSpinner(instructionsBinding.hubsSpinner)
-        }
-
-        // set btnPos to 'pair' function
-
-        pairingBinding?.btnPos
-            ?.apply {
-                btnPos.setText(R.string.pair)
-                revertAnimation { pairingBinding?.btnPos?.setText(R.string.pair) }
-                setOnClickListener { beginPairingProcess() }
-            }
-    }
-
-    @SuppressLint("LogNotTimber")
-    private fun showPairingErrorDialog() {
         context?.let { c ->
-            if (AppState.errorData.pairSignalError.get() == null)
-                Log.e("CommandCreator", "showPairingErrorDialog - pairSignalError was null!")
+            instructionsBinding = VPairSignalInstructionsBinding.inflate(
+                c.layoutInflater,
+                pairingBinding?.pairingContent,
+                true)
+            instructionsBinding?.apply {
+                if (AppState.userData.hubs.size <= 1) {
+                    // Since there's only 1 hub associated with the user, there's no reason to show hub spinner
+                    hubsSpinner.visibility = View.GONE
+                    tvHubsSpinner.visibility = View.GONE
+                } else {
+                    // More than one associated hub means we need to allow the user to select which hub to target
+                    hubsSpinner.visibility = View.VISIBLE
+                    tvHubsSpinner.visibility = View.VISIBLE
 
-            AlertDialog.Builder(c)
-                .setIcon(android.R.drawable.stat_notify_error)
-                .setTitle(AppState.errorData.pairSignalError.get()?.titleID ?: R.string.err_title)
-                .setPositiveButton(android.R.string.ok) { p0, _ -> p0?.dismiss() }
-                .setMessage(AppState.errorData.pairSignalError.get()?.messageID ?: R.string.err_unknown_desc)
-                .show()
-
-            pairingBinding?.let { binding ->
-                binding.btnPos.revertAnimation()
-                binding.btnNeg.visibility = View.GONE
+                    setupHubsSpinner(hubsSpinner)
+                }
             }
-        }
-    }
 
-    @SuppressLint("LogNotTimber")
-    private fun showSavingSignalErrorDialog() {
-        context?.let { c ->
-            if (AppState.errorData.saveSignalError.get() == null)
-                Log.e("CommandCreator", "showSavingSignalErrorDialog - saveSignalError was null!")
-
-            AlertDialog.Builder(c)
-                .setIcon(android.R.drawable.stat_notify_error)
-                .setTitle(R.string.err_title)
-                .setPositiveButton(android.R.string.ok) {p0, _ -> p0?.dismiss()}
-                .setMessage(R.string.err_unknown_desc)
-                .show()
-        }
-    }
-
-    private fun dismissDialog(transitioning : Boolean = false) {
-        createCommandDialog?.let {
-            isTransitioning = transitioning
-            it.dismiss()
-            createCommandDialog = null
+            // set btnPos to 'pair' function
+            pairingBinding?.btnPos
+                ?.apply {
+                    btnPos.setText(R.string.pair)
+                    revertAnimation { pairingBinding?.btnPos?.setText(R.string.pair) }
+                    setOnClickListener { beginPairingProcess() }
+                }
         }
     }
 /*
@@ -658,7 +624,12 @@ class CommandCreator {
         AppState.tempData.tempSignal.set(null)
         pairingBinding?.let { binding ->
             binding.pairingContent.removeAllViews()
+//            context?.let {
+//                val tempView = it.layoutInflater.inflate(R.layout.v_pair_signal_info, null, false)
+//                binding.pairingContent.addView(tempView)
+//            }
             inflateSignalInstructionsView()
+            //todo - figure out why v_pair_signal_instructions causes the bottom dialog to attach to the top of screen
         }
     }
 
@@ -745,7 +716,7 @@ class CommandCreator {
     /* On Back Pressed Helper Functions  */
 
     private fun actionsFromOnBackPressed() {
-dismissDialog(true)
+        dismissDialog(true)
         context?.let { showNewCommandDialog(it) }
     }
 
@@ -790,6 +761,37 @@ dismissDialog(true)
     }
 
     /* Misc Helper Functions  */
+
+    private fun onNewCommandDiscarded() {
+        AppState.tempData.tempCommand = null
+        dismissDialog(true)
+        context?.let { showCommandFromDialog(it) }
+    }
+
+    @SuppressLint("LogNotTimber")
+    private fun onCreateNewCommand() {
+        when (AppState.tempData.tempButton.get()) {
+            null -> Log.w("CommandCreator", "onCreateNewCommand - new command created without a button to bind it to!")
+            else -> AppState.tempData.tempCommand?.let {
+                AppState.tempData.tempButton.get()?.commands?.add(it)
+                onCommandCreated()
+                AppState.tempData.tempCommand = null
+                AppState.tempData.tempSignal.set(null)
+            }
+        }
+    }
+
+    private fun createDialogView(context: Context, bottomSheetView: View) {
+        createCommandDialog = object : BottomSheetDialog(context) {
+            override fun onBackPressed() {
+                this@CommandCreator.onBackPressed()
+            }
+        }
+        createCommandDialog?.setCancelable(false)
+        createCommandDialog?.setContentView(bottomSheetView)
+        createCommandDialog?.setOnDismissListener { onDismiss() }
+        createCommandDialog?.show()
+    }
 
     private fun onCommandCreated() {
         // dismiss dialog in anticipation for something else to continue the process

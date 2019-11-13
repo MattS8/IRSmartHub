@@ -13,6 +13,7 @@ import com.google.firebase.firestore.IgnoreExtraProperties
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.firebase.FirestoreActions
+import com.ms8.smartirhub.android.models.firestore.Hub
 import com.ms8.smartirhub.android.models.firestore.Hub.Companion.DEFAULT_HUB
 import com.ms8.smartirhub.android.models.firestore.IrSignal
 import com.ms8.smartirhub.android.remote_control.button.models.Button
@@ -176,6 +177,14 @@ class RemoteProfile: Observable {
                         put("irSignal", irSignal)
                         put("delay", delay)
                     }
+            }
+
+            fun getCachedIrSignal(): IrSignal {
+                return AppState.userData.irSignals[irSignal] ?: IrSignal()
+            }
+
+            fun getCachedHub(): Hub {
+                return AppState.userData.hubs[hubUID] ?: AppState.userData.hubs[AppState.userData.user.defaultHub] ?: Hub()
             }
 
             companion object {

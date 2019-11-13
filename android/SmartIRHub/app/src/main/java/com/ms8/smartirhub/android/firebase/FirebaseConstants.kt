@@ -10,4 +10,7 @@ object FirebaseConstants {
     const val IR_ACTION_NONE = 0
     const val IR_ACTION_LISTEN = 1
     const val IR_ACTION_SEND = 2
+
+
+    const val ACTION_DELAY_MAX = 3_000
 }
