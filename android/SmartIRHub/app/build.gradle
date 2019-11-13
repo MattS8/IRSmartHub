@@ -89,4 +89,8 @@ dependencies {
 
     // Expandable Items (for Command Creation View)
     implementation 'com.diegodobelo.expandingview:expanding-view:0.9.4'
+
+    // SeekBar for Action Sequence Delay Picker
+    implementation 'com.github.warkiz.widget:indicatorseekbar:2.1.2'
+
 }
