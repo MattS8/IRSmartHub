@@ -1,5 +1,6 @@
 package com.ms8.smartirhub.android.remote_control.command.creation
 
+import android.animation.Animator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -472,7 +473,6 @@ class CommandCreator {
     @SuppressLint("LogNotTimber")
     private fun inflateSignalInfoView() {
         Log.d("CommandCreator", "inflateSignalInfoView - inflating...")
-
         pairSignalInfoBinding = VPairSignalInfoBinding.inflate(
             context!!.layoutInflater,
             pairingBinding?.pairingContent,
@@ -494,6 +494,7 @@ class CommandCreator {
             btnNeg.apply {
                 setText(android.R.string.cancel)
                 visibility = View.VISIBLE
+                alpha = 1f
                 setOnClickListener {
                     if (isSavingIrSignal) stopSaveSignalProcess()
                     else onPairedSignalDiscarded()
@@ -509,28 +510,41 @@ class CommandCreator {
         }
     }
 
-    private fun inflateSignalInstructionsView() {
+    private fun inflateSignalInstructionsView(animateBtnNeg : Boolean = false) {
         Log.d("CommandCreator", "inflateSignalInstructionsView - inflating...")
-        pairingBinding?.btnNeg?.visibility = View.GONE
+
+        if (animateBtnNeg) {
+            pairingBinding?.btnNeg?.animate()?.alpha(0f)?.setDuration(250)?.setListener(object : Animator.AnimatorListener {
+                override fun onAnimationRepeat(p0: Animator?) {}
+
+                override fun onAnimationEnd(p0: Animator?) {
+                    pairingBinding?.btnNeg?.visibility = View.GONE
+                }
+
+                override fun onAnimationCancel(p0: Animator?) {}
+
+                override fun onAnimationStart(p0: Animator?) {}
+
+            })?.start()
+        } else {
+            pairingBinding?.btnNeg?.visibility = View.GONE
+        }
 
         context?.let { c ->
-            instructionsBinding = VPairSignalInstructionsBinding.inflate(
-                c.layoutInflater,
-                pairingBinding?.pairingContent,
-                true)
-            instructionsBinding?.apply {
-                if (AppState.userData.hubs.size <= 1) {
-                    // Since there's only 1 hub associated with the user, there's no reason to show hub spinner
-                    hubsSpinner.visibility = View.GONE
-                    tvHubsSpinner.visibility = View.GONE
-                } else {
-                    // More than one associated hub means we need to allow the user to select which hub to target
-                    hubsSpinner.visibility = View.VISIBLE
-                    tvHubsSpinner.visibility = View.VISIBLE
+            instructionsBinding = VPairSignalInstructionsBinding.inflate(c.layoutInflater, pairingBinding?.pairingContent, true)
+                ?.apply {
+                    if (AppState.userData.hubs.size <= 1) {
+                        // Since there's only 1 hub associated with the user, there's no reason to show hub spinner
+                        hubsSpinner.visibility = View.GONE
+                        tvHubsSpinner.visibility = View.GONE
+                    } else {
+                        // More than one associated hub means we need to allow the user to select which hub to target
+                        hubsSpinner.visibility = View.VISIBLE
+                        tvHubsSpinner.visibility = View.VISIBLE
 
-                    setupHubsSpinner(hubsSpinner)
+                        setupHubsSpinner(hubsSpinner)
+                    }
                 }
-            }
 
             // set btnPos to 'pair' function
             pairingBinding?.btnPos
@@ -622,15 +636,8 @@ class CommandCreator {
 
     private fun onPairedSignalDiscarded() {
         AppState.tempData.tempSignal.set(null)
-        pairingBinding?.let { binding ->
-            binding.pairingContent.removeAllViews()
-//            context?.let {
-//                val tempView = it.layoutInflater.inflate(R.layout.v_pair_signal_info, null, false)
-//                binding.pairingContent.addView(tempView)
-//            }
-            inflateSignalInstructionsView()
-            //todo - figure out why v_pair_signal_instructions causes the bottom dialog to attach to the top of screen
-        }
+        dismissDialog(true)
+        showPairSignalDialog()
     }
 
     /* Signal Saving Helper Functions  */
@@ -739,11 +746,11 @@ class CommandCreator {
             else -> {
                 if (AppState.tempData.tempCommand?.actions?.size ?: 0 > 0) {
                     // go back to "new command" view as this was adding an additional signal to a command
-            dismissDialog(true)
+                    dismissDialog(true)
                     showNewCommandDialog(context!!)
                 } else {
                     // go back to "command from" view as this was the first signal for a new command
-            dismissDialog(true)
+                    dismissDialog(true)
                     // discard tempData for abandoned command
                     AppState.tempData.tempCommand = null
                     showCommandFromDialog(context!!)

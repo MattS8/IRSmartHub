@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
+import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.core.widget.TextViewCompat
 import androidx.databinding.Observable
@@ -26,42 +27,12 @@ import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
 import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
 import com.ms8.smartirhub.android.remote_control.button.models.Button
 import com.ms8.smartirhub.android.remote_control.button.views.RemoteButtonView
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 
 
 class RemoteLayoutView(context: Context, attrs: AttributeSet): AsymmetricRecyclerView(context, attrs) {
 
     var topPadding = Utils.dpToPx(context, 56f)
-
-    var onCreateNewButton : () -> Unit = {}
-
-    private var isListening : Boolean = false
-    private val buttonListener = object : ObservableList.OnListChangedCallback<ObservableList<Button>>() {
-        override fun onChanged(sender: ObservableList<Button>?) {
-            adapter?.notifyDataSetChanged()
-        }
-
-        override fun onItemRangeRemoved(sender: ObservableList<Button>?, positionStart: Int, itemCount: Int) {
-            adapter?.notifyItemRangeRemoved(positionStart, itemCount)
-        }
-
-        override fun onItemRangeMoved(sender: ObservableList<Button>?, fromPosition: Int, toPosition: Int, itemCount: Int) {
-            adapter?.notifyDataSetChanged()
-        }
-
-        override fun onItemRangeInserted(sender: ObservableList<Button>?, positionStart: Int, itemCount: Int) {
-            adapter?.notifyItemRangeInserted(positionStart, itemCount)
-        }
-
-        override fun onItemRangeChanged(sender: ObservableList<Button>?, positionStart: Int, itemCount: Int) {
-            adapter?.notifyItemRangeChanged(positionStart, itemCount)
-        }
-    }
-    private val editModeListener  =  object : Observable.OnPropertyChangedCallback() {
-        override fun onPropertyChanged(sender: Observable?, propertyId: Int) { remoteLayoutAdapter.notifyDataSetChanged() }
-    }
-    private val remoteLayoutAdapter =
-        RemoteLayoutAdapter()
-
 
     init {
         setRequestedColumnCount(4)
@@ -78,21 +49,8 @@ class RemoteLayoutView(context: Context, attrs: AttributeSet): AsymmetricRecycle
         clipToOutline = true
     }
 
-    fun setupAdapter() {
+    fun setupAdapter(remoteLayoutAdapter : RemoteLayoutAdapter) {
         adapter = AsymmetricRecyclerViewAdapter(context, this, remoteLayoutAdapter)
-    }
-
-    fun startListening() {
-        if (!isListening) {
-            isListening = true
-            AppState.tempData.tempRemoteProfile.buttons.addOnListChangedCallback(buttonListener)
-            AppState.tempData.tempRemoteProfile.inEditMode.addOnPropertyChangedCallback(editModeListener)
-        }
-    }
-
-    fun stopListening() {
-        AppState.tempData.tempRemoteProfile.buttons.removeOnListChangedCallback(buttonListener)
-        AppState.tempData.tempRemoteProfile.inEditMode.removeOnPropertyChangedCallback(editModeListener)
     }
 
     class RemoteLayoutAdapter: AGVRecyclerViewAdapter<ButtonViewHolder>() {
@@ -111,7 +69,7 @@ class RemoteLayoutView(context: Context, attrs: AttributeSet): AsymmetricRecycle
             // get 'Add Button' item
                  else -> {
                      DemoItem(
-                         2,
+                         4,
                          1,
                          position
                      )
@@ -146,8 +104,6 @@ class RemoteLayoutView(context: Context, attrs: AttributeSet): AsymmetricRecycle
         override fun onBindViewHolder(holder: ButtonViewHolder, position: Int) {
             holder.bind(position)
         }
-
-
     }
 
     class ButtonViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder(
@@ -181,11 +137,11 @@ class RemoteLayoutView(context: Context, attrs: AttributeSet): AsymmetricRecycle
         }
 
         private fun bindCreateNewButton() {
-            val createButtonView = itemView.findViewById<TextView>(R.id.btnRmtCreateNew)
-            createButtonView.setOnClickListener {
-                Log.d("t#", "create new button clicked!")
-                AppState.tempData.isCreatingNewButton.set(true)
-                AppState.tempData.isCreatingNewButton.notifyChange()
+            itemView.findViewById<TextView>(R.id.btnRmtCreateNew).apply {
+                setOnClickListener {
+                    AppState.tempData.isCreatingNewButton.set(true)
+                    AppState.tempData.isCreatingNewButton.notifyChange()
+                }
             }
         }
 
@@ -197,6 +153,7 @@ class RemoteLayoutView(context: Context, attrs: AttributeSet): AsymmetricRecycle
             val centerButtonView = itemView.findViewById<RemoteButtonView>(R.id.btnCenter)
 
             // set top button properties
+            Log.d("Test", "Binding top radial button... (${button.properties[0].bgStyle.name}")
             topButtonView.setupProperties(button.properties[0])
             topButtonView.setOnClickListener {
                 RealtimeDatabaseFunctions.sendCommandToHub(button.commands[0])
@@ -229,9 +186,8 @@ class RemoteLayoutView(context: Context, attrs: AttributeSet): AsymmetricRecycle
                 centerButtonView.setupProperties(button.properties[4])
                 centerButtonView.setOnClickListener {
                     RealtimeDatabaseFunctions.sendCommandToHub(button.commands[4])
+                    Log.d("TEST", "CENTER BUTTON CLICKED")
                 }
-                // set center button text
-                centerButtonView.buttonText = button.name
             } else {
                 // make sure button is visible and enabled
                 centerButtonView.visibility = View.INVISIBLE
@@ -246,14 +202,18 @@ class RemoteLayoutView(context: Context, attrs: AttributeSet): AsymmetricRecycle
 
             // set top button properties
             topButtonView.setupProperties(button.properties[0])
-            //todo replace with proper onClick
-            topButtonView.setOnClickListener { Log.d("TEST", "TOP BUTTON CLICKED") }
+            topButtonView.setOnClickListener {
+                RealtimeDatabaseFunctions.sendCommandToHub(button.commands[0])
+                Log.d("TEST", "TOP BUTTON CLICKED")
+            }
             // set bottom button properties
-            bottomButtonView.setupProperties(button.properties[1])
-            //todo replace with proper onClick
-            bottomButtonView.setOnClickListener { Log.d("TEST", "BOTTOM BUTTON CLICKED") }
+            bottomButtonView.setupProperties(button.properties[2])
+            bottomButtonView.setOnClickListener {
+                RealtimeDatabaseFunctions.sendCommandToHub(button.commands[1])
+                Log.d("TEST", "BOTTOM BUTTON CLICKED")
+            }
             // set middle textView text
-            buttonText.text = button.name
+            buttonText.text = button.properties[1].text
             // Backwards compatible autoSizeText
             TextViewCompat.setAutoSizeTextTypeWithDefaults(buttonText, TextViewCompat.AUTO_SIZE_TEXT_TYPE_UNIFORM)
         }
@@ -264,9 +224,10 @@ class RemoteLayoutView(context: Context, attrs: AttributeSet): AsymmetricRecycle
             // set button properties
             buttonView.setupProperties(button.properties[0])
             // set button text
-            buttonView.buttonText = button.name
-            //todo replace with proper onClick
-            buttonView.setOnClickListener { Log.d("TEST", "BUTTON CLICKED") }
+            buttonView.setOnClickListener {
+                RealtimeDatabaseFunctions.sendCommandToHub(button.commands[0])
+                Log.d("TEST", "BUTTON CLICKED")
+            }
         }
     }
 

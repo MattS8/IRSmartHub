@@ -11,7 +11,7 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
-        <activity android:name="._tests.dev_playground.TestCommandCreatorActivity"></activity>
+        <activity android:name="._tests.dev_playground.TestEnvActivity"></activity>
         <activity android:name=".remote_control.command.creation.GetFromRemoteActivity" />
         <activity android:name=".splash_login.SplashActivity5">
             <intent-filter>
@@ -22,7 +22,6 @@
         </activity>
         <activity android:name=".splash_login.SplashActivity4" />
         <activity android:name="._tests.dev_playground.misc.TestBackendActivity" />
-        <activity android:name="._tests.dev_playground.remote_layout.TestRemoteLayout" />
         <activity android:name=".create_command.CC_ChooseIrSignalActivity" />
         <activity android:name=".create_command.CC_ChooseActionsActivity" />
         <activity android:name=".setup_hub.HubSetupMainActivity" />

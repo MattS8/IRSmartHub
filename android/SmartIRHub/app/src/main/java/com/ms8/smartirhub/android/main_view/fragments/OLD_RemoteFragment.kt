@@ -6,6 +6,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
+import android.util.DisplayMetrics
+import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -13,21 +15,22 @@ import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
-import androidx.databinding.*
+import androidx.databinding.Observable
+import androidx.databinding.ObservableArrayMap
+import androidx.databinding.ObservableMap
 import androidx.recyclerview.widget.RecyclerView
-import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.database.AppState
-import com.ms8.smartirhub.android.databinding.FRemoteCurrentBinding
 import com.ms8.smartirhub.android.main_view.MainViewActivity
+import com.ms8.smartirhub.android.main_view.fragments.OLD_RemoteFragment.Companion.LayoutState.SHOW_CREATE_FIRST_REMOTE
+import com.ms8.smartirhub.android.main_view.fragments.OLD_RemoteFragment.Companion.LayoutState.SHOW_FAV_REMOTE
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
-import android.util.DisplayMetrics
-import android.util.Log
-import com.ms8.smartirhub.android.main_view.fragments.OLD_RemoteFragment.Companion.LayoutState.*
+import com.ms8.smartirhub.android.remote_control.views.RemoteLayout
+import com.ms8.smartirhub.android.remote_control.views.RemoteLayoutView
 import com.ms8.smartirhub.android.utils.RequestCodes
 
 
 class OLD_RemoteFragment : MainFragment() {
-    lateinit var binding: FRemoteCurrentBinding
+    lateinit var remoteLayout : RemoteLayout
     var state : State =
         State()
     var screenHeight = 800
@@ -60,17 +63,17 @@ class OLD_RemoteFragment : MainFragment() {
 
             when (state.layoutState) {
                 SHOW_CREATE_FIRST_REMOTE -> {
-                    binding.txtCreateFirstRemoteP1.animate()
+                    remoteLayout.binding.txtCreateFirstRemoteP1.animate()
                         .alpha(1f)
                         .setInterpolator(DecelerateInterpolator())
                         .setDuration(300)
                         .start()
-                    binding.txtCreateFirstRemoteP2.animate()
+                    remoteLayout.binding.txtCreateFirstRemoteP2.animate()
                         .alpha(1f)
                         .setInterpolator(DecelerateInterpolator())
                         .setDuration(300)
                         .start()
-                    binding.remoteLayout.animate()
+                    remoteLayout.binding.remoteLayout.animate()
                         .translationY(screenHeight.toFloat())
                         .setInterpolator(AccelerateInterpolator())
                         .setDuration(300)
@@ -78,17 +81,17 @@ class OLD_RemoteFragment : MainFragment() {
                 }
 
                 SHOW_FAV_REMOTE -> {
-                    binding.txtCreateFirstRemoteP1.animate()
+                    remoteLayout.binding.txtCreateFirstRemoteP1.animate()
                         .alpha(0f)
                         .setInterpolator(DecelerateInterpolator())
                         .setDuration(300)
                         .start()
-                    binding.txtCreateFirstRemoteP2.animate()
+                    remoteLayout.binding.txtCreateFirstRemoteP2.animate()
                         .alpha(0f)
                         .setInterpolator(DecelerateInterpolator())
                         .setDuration(300)
                         .start()
-                    binding.remoteLayout.animate()
+                    remoteLayout.binding.remoteLayout.animate()
                         .translationY(0f)
                         .setInterpolator(AccelerateDecelerateInterpolator())
                         .setDuration(300)
@@ -136,7 +139,7 @@ class OLD_RemoteFragment : MainFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = DataBindingUtil.inflate(inflater, R.layout.f_remote_current, container, false)
+        remoteLayout = RemoteLayout(inflater.context)
 
         // Restore state
         state = savedInstanceState?.getParcelable<State>(
@@ -153,10 +156,10 @@ class OLD_RemoteFragment : MainFragment() {
         // Set top padding to account for toolbar
         val tv = TypedValue()
         if (activity?.theme?.resolveAttribute(android.R.attr.actionBarSize, tv, true) == true)
-            binding.remoteLayout.topPadding = TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics)
+            remoteLayout.setTopPadding(TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics))
 
         // Set scroll listener to notify when to hide UI Elements
-        binding.remoteLayout.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        remoteLayout.binding.remoteLayout.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
@@ -171,8 +174,7 @@ class OLD_RemoteFragment : MainFragment() {
         })
 
         // Set up remote adapter
-        binding.remoteLayout.setupAdapter()
-
+        remoteLayout.setupAdapter()
 
         // Get screen height
         val displayMetrics = DisplayMetrics()
@@ -183,23 +185,23 @@ class OLD_RemoteFragment : MainFragment() {
         // show/hide remote background and 'create remote' text
         when (state.layoutState) {
             SHOW_CREATE_FIRST_REMOTE -> {
-                binding.txtCreateFirstRemoteP1.alpha = 1f
-                binding.txtCreateFirstRemoteP2.alpha = 1f
-                binding.remoteLayout.translationY = screenHeight.toFloat()
+                remoteLayout.binding.txtCreateFirstRemoteP1.alpha = 1f
+                remoteLayout.binding.txtCreateFirstRemoteP2.alpha = 1f
+                remoteLayout.binding.remoteLayout.translationY = screenHeight.toFloat()
             }
             SHOW_FAV_REMOTE -> {
-                binding.txtCreateFirstRemoteP1.alpha = 0f
-                binding.txtCreateFirstRemoteP2.alpha = 0f
-                binding.remoteLayout.translationY = 0f
+                remoteLayout.binding.txtCreateFirstRemoteP1.alpha = 0f
+                remoteLayout.binding.txtCreateFirstRemoteP2.alpha = 0f
+                remoteLayout.binding.remoteLayout.translationY = 0f
             }
         }
 
-        return binding.root
+        return remoteLayout.binding.root
     }
 
     override fun onResume() {
         super.onResume()
-        binding.remoteLayout.startListening()
+        remoteLayout.startListening()
         AppState.userData.remotes.addOnMapChangedCallback(remotesListener)
         AppState.tempData.tempRemoteProfile.inEditMode.addOnPropertyChangedCallback(editModeListener)
         AppState.tempData.tempRemoteProfile.isCreatingNewButton.addOnPropertyChangedCallback(createNewButtonListener)
@@ -207,7 +209,7 @@ class OLD_RemoteFragment : MainFragment() {
 
     override fun onPause() {
         super.onPause()
-        binding.remoteLayout.stopListening()
+        remoteLayout.stopListening()
         AppState.userData.remotes.removeOnMapChangedCallback(remotesListener)
         AppState.tempData.tempRemoteProfile.inEditMode.removeOnPropertyChangedCallback(editModeListener)
         AppState.tempData.tempRemoteProfile.isCreatingNewButton.removeOnPropertyChangedCallback(createNewButtonListener)

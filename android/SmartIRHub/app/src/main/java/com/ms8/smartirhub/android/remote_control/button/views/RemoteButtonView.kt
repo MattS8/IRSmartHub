@@ -2,6 +2,8 @@ package com.ms8.smartirhub.android.remote_control.button.views
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.graphics.Outline
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
@@ -35,47 +37,98 @@ import org.jetbrains.anko.backgroundResource
 class RemoteButtonView(context: Context, attrs: AttributeSet) : FrameLayout(context, attrs) {
     private var buttonTextView  : TextView?     = null
     private var buttonImageView : ImageView?    = null
-
-    var buttonText: CharSequence = ""
-    set(value) {
-        field = value
-
-        if (buttonTextView == null)
-            addTextView()
-
-        buttonTextView?.text = field
-    }
-
     /*
         Set margin
         Set background
         Set visibility
         Set text
      */
-    lateinit var bgStyle: Button.Companion.BgStyle
+    private lateinit var bgStyle: Button.Companion.BgStyle
     fun setupProperties(properties : Button.Properties) {
         // save bgStyle
         bgStyle = properties.bgStyle
 
-        // set layout margins
-        val newLayoutParams = layoutParams as MarginLayoutParams
-        newLayoutParams.setMargins(
-            Utils.dpToPx(context, properties.marginStart.toFloat()),
-            Utils.dpToPx(context, properties.marginTop.toFloat()),
-            Utils.dpToPx(context, properties.marginEnd.toFloat()),
-            Utils.dpToPx(context, properties.marginBottom.toFloat())
-        )
-
-        // set background resource
+        /* set background resource and margins
+           note: certain bg styles are exempt from set margins
+         */
         when (properties.bgStyle) {
-            Button.Companion.BgStyle.BG_CIRCLE -> { backgroundResource = R.drawable.btn_bg_circle_ripple }
-            Button.Companion.BgStyle.BG_ROUND_RECT -> { backgroundResource = R.drawable.btn_bg_round_rect_ripple }
-            Button.Companion.BgStyle.BG_ROUND_RECT_BOTTOM -> { backgroundResource = R.drawable.btn_bg_round_bottom_ripple }
-            Button.Companion.BgStyle.BG_ROUND_RECT_TOP -> { backgroundResource = R.drawable.btn_bg_round_top_ripple }
-            Button.Companion.BgStyle.BG_INVISIBLE -> { backgroundResource = 0 }
+            Button.Companion.BgStyle.BG_CIRCLE ->
+            {
+                backgroundResource = R.drawable.btn_bg_circle_ripple
+                (layoutParams as MarginLayoutParams).setMargins(
+                    Utils.dpToPx(context, properties.marginStart.toFloat()),
+                    Utils.dpToPx(context, properties.marginTop.toFloat()),
+                    Utils.dpToPx(context, properties.marginEnd.toFloat()),
+                    Utils.dpToPx(context, properties.marginBottom.toFloat())
+                )
+            }
+            Button.Companion.BgStyle.BG_ROUND_RECT ->
+            {
+                backgroundResource = R.drawable.btn_bg_round_rect_ripple
+                (layoutParams as MarginLayoutParams).setMargins(
+                    Utils.dpToPx(context, properties.marginStart.toFloat()),
+                    Utils.dpToPx(context, properties.marginTop.toFloat()),
+                    Utils.dpToPx(context, properties.marginEnd.toFloat()),
+                    Utils.dpToPx(context, properties.marginBottom.toFloat())
+                )
+            }
+            Button.Companion.BgStyle.BG_ROUND_RECT_BOTTOM ->
+            {
+                backgroundResource = R.drawable.btn_bg_round_bottom_ripple
+                (layoutParams as MarginLayoutParams).setMargins(
+                    Utils.dpToPx(context, properties.marginStart.toFloat()),
+                    Utils.dpToPx(context, properties.marginTop.toFloat()),
+                    Utils.dpToPx(context, properties.marginEnd.toFloat()),
+                    Utils.dpToPx(context, properties.marginBottom.toFloat())
+                )
+            }
+            Button.Companion.BgStyle.BG_ROUND_RECT_TOP ->
+            {
+                backgroundResource = R.drawable.btn_bg_round_top_ripple
+                (layoutParams as MarginLayoutParams).setMargins(
+                    Utils.dpToPx(context, properties.marginStart.toFloat()),
+                    Utils.dpToPx(context, properties.marginTop.toFloat()),
+                    Utils.dpToPx(context, properties.marginEnd.toFloat()),
+                    Utils.dpToPx(context, properties.marginBottom.toFloat())
+                )
+            }
+            Button.Companion.BgStyle.BG_INVISIBLE ->
+            {
+                backgroundResource = 0
+                (layoutParams as MarginLayoutParams).setMargins(
+                    Utils.dpToPx(context, properties.marginStart.toFloat()),
+                    Utils.dpToPx(context, properties.marginTop.toFloat()),
+                    Utils.dpToPx(context, properties.marginEnd.toFloat()),
+                    Utils.dpToPx(context, properties.marginBottom.toFloat())
+                )
+            }
+            Button.Companion.BgStyle.BG_RADIAL_TOP ->
+            {
+                backgroundResource = R.drawable.btn_bg_radial_top_ripple
+            }
+            Button.Companion.BgStyle.BG_RADIAL_END ->
+            {
+                backgroundResource = R.drawable.btn_bg_radial_end_ripple
+            }
+            Button.Companion.BgStyle.BG_RADIAL_BOTTOM ->
+            {
+                backgroundResource = R.drawable.btn_bg_radial_bottom_ripple
+            }
+            Button.Companion.BgStyle.BG_RADIAL_START ->
+            {
+                backgroundResource = R.drawable.btn_bg_radial_start_ripple
+            }
+            Button.Companion.BgStyle.BG_RADIAL_CENTER ->
+            {
+                backgroundResource = R.drawable.btn_bg_circle_ripple
+            }
+            Button.Companion.BgStyle.BG_NONE ->
+            {
+                backgroundResource = 0
+               // layoutParams = newLayoutParams
+            }
             Button.Companion.BgStyle.BG_CUSTOM_IMAGE -> {
-                //TODO Test
-                //TODO add ripple effect
+                //TODO test and add ripple effect
                 if (properties.bgUrl.validUrl()) {
                     Glide.with(this).load(properties.bgUrl).into(object : CustomTarget<Drawable>() {
                         override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
@@ -88,15 +141,25 @@ class RemoteButtonView(context: Context, attrs: AttributeSet) : FrameLayout(cont
             }
         }
 
+        // set text
+        if (properties.text != "") {
+            if (buttonTextView == null)
+                addTextView()
+
+            buttonTextView?.text = properties.text
+        } else if (buttonTextView != null) {
+            removeView(buttonTextView)
+            buttonImageView = null
+        }
+
         // set image
         if (properties.image != "") {
+            Log.d("Test", "Image is ${properties.image}")
             if (buttonImageView == null)
                 addImageView()
 
             when (properties.image) {
-                IMG_ADD -> {
-                    buttonImageView?.setImageDrawable(context.getDrawable(R.drawable.ic_add_black_24dp))
-                }
+                IMG_ADD -> buttonImageView?.setImageDrawable(context.getDrawable(R.drawable.ic_add_black_24dp))
                 IMG_SUBTRACT -> buttonImageView?.setImageDrawable(context.getDrawable(R.drawable.ic_remove_black_24dp))
                 IMG_RADIAL_LEFT -> buttonImageView?.setImageDrawable(context.getDrawable(R.drawable.ic_keyboard_arrow_left_black_24dp))
                 IMG_RADIAL_RIGHT -> buttonImageView?.setImageDrawable(context.getDrawable(R.drawable.ic_keyboard_arrow_right_black_24dp))
@@ -107,10 +170,19 @@ class RemoteButtonView(context: Context, attrs: AttributeSet) : FrameLayout(cont
                         buttonImageView?.let { Glide.with(it).load(properties.image).into(it) }
                 }
             }
+        } else if (buttonImageView != null) {
+            removeView(buttonImageView)
+            buttonImageView = null
+        }
+
+        // set background tint
+        backgroundTintList = if (properties.bgTint != "") {
+            ColorStateList.valueOf(Color.parseColor(properties.bgTint))
+        } else {
+            ColorStateList.valueOf(ContextCompat.getColor(context, R.color.colorButtonBG))
         }
 
         // apply changes
-        layoutParams = newLayoutParams
         requestLayout()
         invalidate()
     }
@@ -177,6 +249,14 @@ class RemoteButtonView(context: Context, attrs: AttributeSet) : FrameLayout(cont
                         }
                         Button.Companion.BgStyle.BG_CUSTOM_IMAGE -> { /*TODO*/ }
                         Button.Companion.BgStyle.BG_INVISIBLE -> { /*TODO*/ }
+                        Button.Companion.BgStyle.BG_RADIAL_TOP -> { /*TODO*/ }
+                        Button.Companion.BgStyle.BG_RADIAL_END -> { /*TODO*/ }
+                        Button.Companion.BgStyle.BG_RADIAL_BOTTOM -> { /*TODO*/ }
+                        Button.Companion.BgStyle.BG_RADIAL_START -> { /*TODO*/ }
+                        Button.Companion.BgStyle.BG_RADIAL_CENTER -> {
+                            Log.d("Test", "HERE")
+                            /*TODO*/ }
+                        Button.Companion.BgStyle.BG_NONE -> { /*TODO*/ }
                     }
                 }
         } catch (e: Exception) {

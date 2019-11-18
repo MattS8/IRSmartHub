@@ -25,14 +25,24 @@ class Button(typeTemp : ButtonStyle) {
         setupPropertiesAndCommands()
     }
 
+    @SuppressLint("LogNotTimber")
     private fun setupPropertiesAndCommands() {
         // different button types require different number of properties/commands
         // this ensures whenever the type is changed, there are enough property/command variables to support the selected type
         when (type) {
             // no property/command needed
-            ButtonStyle.STYLE_SPACE,
+            ButtonStyle.STYLE_SPACE ->
+            {
+                columnSpan = 1
+                rowSpan = 1
+                properties.clear()
+                commands.clear()
+            }
             ButtonStyle.STYLE_CREATE_BUTTON ->
             {
+                Log.e("Button", "setupPropertiesAndCommands - setting up properties and commands for 'Create Button'... this should not happen!")
+                columnSpan = 1
+                rowSpan = 4
                 properties.clear()
                 commands.clear()
             }
@@ -40,36 +50,99 @@ class Button(typeTemp : ButtonStyle) {
             ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND,
             ButtonStyle.STYLE_BTN_NO_MARGIN ->
             {
+                columnSpan = 1
+                rowSpan = 1
                 properties.clear().also { properties.add(Properties()) }
                 commands.clear().also { commands.add(RemoteProfile.Command()) }
             }
             // 2 properties/commands needed
             ButtonStyle.STYLE_BTN_INCREMENTER_VERTICAL ->
             {
+                rowSpan = 2
+                columnSpan = 1
                 properties.clear().also { properties.addAll(
                     listOf(
                         Properties()
                             .apply {
                                 bgStyle = BgStyle.BG_ROUND_RECT_TOP
                                 image = IMG_ADD
+                                marginBottom = 0
+                            },
+                        Properties()
+                            .apply {
+                                bgStyle = BgStyle.BG_ROUND_RECT
+                                marginStart = 0
+                                marginEnd = 0
+                                marginTop = 4
+                                marginBottom = 4
                             },
                         Properties()
                             .apply {
                                 bgStyle = BgStyle.BG_ROUND_RECT_BOTTOM
                                 image = IMG_SUBTRACT
+                                marginTop = 0
                             })) }
                 commands.clear().also { commands.addAll(listOf(RemoteProfile.Command(), RemoteProfile.Command())) }
             }
             // 4 properties/commands needed
             ButtonStyle.STYLE_BTN_RADIAL ->
             {
-                properties.clear().also { properties.addAll(listOf(Properties(), Properties(), Properties(), Properties())) }
+                rowSpan = 2
+                columnSpan = 2
+                properties.clear().also { properties.addAll(listOf(
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_RADIAL_TOP
+                            image = IMG_RADIAL_UP
+                        },
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_RADIAL_END
+                            image = IMG_RADIAL_RIGHT
+                    },
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_RADIAL_BOTTOM
+                            image = IMG_RADIAL_DOWN
+                        },
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_RADIAL_START
+                            image = IMG_RADIAL_LEFT
+                        })) }
                 commands.clear().also { commands.addAll(listOf(RemoteProfile.Command(), RemoteProfile.Command(), RemoteProfile.Command(), RemoteProfile.Command())) }
             }
             // 5 properties/commands needed
             ButtonStyle.STYLE_BTN_RADIAL_W_CENTER ->
             {
-                properties.clear().also { properties.addAll(listOf(Properties(), Properties(), Properties(), Properties(), Properties())) }
+                rowSpan = 2
+                columnSpan = 2
+                properties.clear().also { properties.addAll(listOf(
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_RADIAL_TOP
+                            image = IMG_RADIAL_UP
+                        },
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_RADIAL_END
+                            image = IMG_RADIAL_RIGHT
+                        },
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_RADIAL_BOTTOM
+                            image = IMG_RADIAL_DOWN
+                        },
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_RADIAL_START
+                            image = IMG_RADIAL_LEFT
+                        },
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_RADIAL_CENTER
+                        }
+                )) }
                 commands.clear().also { commands.addAll(listOf(RemoteProfile.Command(), RemoteProfile.Command(), RemoteProfile.Command(), RemoteProfile.Command(), RemoteProfile.Command())) }
             }
         }
@@ -100,23 +173,26 @@ class Button(typeTemp : ButtonStyle) {
     fun propertiesFromMap(propertiesMap: Map<String, Any?>) : Properties {
         return Properties()
             .apply {
-                if (propertiesMap.containsKey("bgUrl")) {
+                if (propertiesMap.containsKey("bgUrl"))
                     bgUrl = propertiesMap["bgUrl"] as String
-                }
-
-                if (propertiesMap.containsKey("image")) {
+                if (propertiesMap.containsKey("image"))
                     image = propertiesMap["image"] as String
-                }
-
-                marginEnd = (propertiesMap["marginEnd"] as Number).toInt()
-                marginBottom = (propertiesMap["marginBottom"] as Number).toInt()
-                marginTop = (propertiesMap["marginTop"] as Number).toInt()
-                marginStart = (propertiesMap["marginStart"] as Number).toInt()
-
-                bgStyle =
-                    intToBgStyle(
-                        (propertiesMap["bgStyle"] as Number).toInt()
-                    )
+                if (propertiesMap.containsKey("marginEnd"))
+                    marginEnd = (propertiesMap["marginEnd"] as Number).toInt()
+                if (propertiesMap.containsKey("marginBottom"))
+                    marginBottom = (propertiesMap["marginBottom"] as Number).toInt()
+                if (propertiesMap.containsKey("marginTop"))
+                    marginTop = (propertiesMap["marginTop"] as Number).toInt()
+                if (propertiesMap.containsKey("marginStart"))
+                    marginStart = (propertiesMap["marginStart"] as Number).toInt()
+                if (propertiesMap.containsKey("bgStyle"))
+                    bgStyle = intToBgStyle(
+                            (propertiesMap["bgStyle"] as Number).toInt()
+                        )
+                if (propertiesMap.containsKey("text"))
+                    text = propertiesMap["text"] as String
+                if (propertiesMap.containsKey("bgTint"))
+                    bgTint = propertiesMap["bgTint"] as String
             }
     }
 
@@ -169,6 +245,11 @@ class Button(typeTemp : ButtonStyle) {
             BG_ROUND_RECT_TOP,
             BG_ROUND_RECT_BOTTOM,
             BG_CUSTOM_IMAGE,
+            BG_RADIAL_TOP,
+            BG_RADIAL_END,
+            BG_RADIAL_BOTTOM,
+            BG_RADIAL_START,
+            BG_RADIAL_CENTER,
             BG_NONE
         }
 
@@ -207,6 +288,11 @@ class Button(typeTemp : ButtonStyle) {
                 BgStyle.BG_ROUND_RECT_TOP.ordinal -> BgStyle.BG_ROUND_RECT_TOP
                 BgStyle.BG_ROUND_RECT_BOTTOM.ordinal -> BgStyle.BG_ROUND_RECT_BOTTOM
                 BgStyle.BG_CUSTOM_IMAGE.ordinal -> BgStyle.BG_CUSTOM_IMAGE
+                BgStyle.BG_RADIAL_TOP.ordinal -> BgStyle.BG_RADIAL_TOP
+                BgStyle.BG_RADIAL_END.ordinal -> BgStyle.BG_RADIAL_END
+                BgStyle.BG_RADIAL_BOTTOM.ordinal -> BgStyle.BG_RADIAL_BOTTOM
+                BgStyle.BG_RADIAL_START.ordinal -> BgStyle.BG_RADIAL_START
+                BgStyle.BG_RADIAL_CENTER.ordinal -> BgStyle.BG_RADIAL_CENTER
                 BgStyle.BG_NONE.ordinal -> BgStyle.BG_NONE
 
                 else -> {
@@ -237,6 +323,8 @@ class Button(typeTemp : ButtonStyle) {
         var marginTop       : Int       = 16
         var marginStart     : Int       = 16
         var marginEnd       : Int       = 16
+        var text            : String    = ""
+        var bgTint          : String    = ""
 
         fun toFirebaseObject() : Map<String, Any?> {
             return ArrayMap<String, Any?>()
@@ -248,6 +336,8 @@ class Button(typeTemp : ButtonStyle) {
                     put("marginTop", marginTop)
                     put("marginStart", marginStart)
                     put("marginEnd", marginEnd)
+                    put("text", text)
+                    put("bgTint", bgTint)
                 }
         }
     }

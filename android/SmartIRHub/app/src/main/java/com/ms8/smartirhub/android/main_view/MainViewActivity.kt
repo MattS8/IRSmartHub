@@ -465,8 +465,11 @@ class MainViewActivity : AppCompatActivity() {
     }
 
     private fun onMyRemotesClicked(forceUpdate: Boolean = false) {
-        val noActionNeeded = (layoutState == LayoutState.REMOTES_ALL || layoutState == LayoutState.REMOTES_FAV
-                || layoutState == LayoutState.REMOTES_FAV_EDITING)
+        val noActionNeeded =
+            (layoutState == LayoutState.REMOTES_ALL
+                || layoutState == LayoutState.REMOTES_FAV
+                || layoutState == LayoutState.REMOTES_FAV_EDITING
+            )
                 && !forceUpdate
         if (noActionNeeded)
             return

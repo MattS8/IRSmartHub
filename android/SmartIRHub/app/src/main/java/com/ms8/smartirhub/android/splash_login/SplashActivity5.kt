@@ -28,7 +28,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android._tests.dev_playground.TestCommandCreatorActivity
+import com.ms8.smartirhub.android._tests.dev_playground.TestEnvActivity
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.databinding.ASplashLoginMainBinding
 import com.ms8.smartirhub.android.firebase.AuthActions
@@ -42,9 +42,6 @@ import com.ms8.smartirhub.android.utils.extensions.DynamicStrings.getPasswordErr
 import com.ms8.smartirhub.android.utils.extensions.DynamicStrings.getUsernameErrorString
 import com.ms8.smartirhub.android.utils.extensions.RES_SIGN_IN
 import com.ms8.smartirhub.android.utils.extensions.getGenericErrorFlashbar
-import kotlinx.android.synthetic.main.a_splash_login_main.view.*
-import kotlinx.android.synthetic.main.v_splash_login_sign_up.view.*
-import kotlinx.android.synthetic.main.v_splash_login_username.view.*
 
 class SplashActivity5 : AppCompatActivity() {
     lateinit var binding : ASplashLoginMainBinding

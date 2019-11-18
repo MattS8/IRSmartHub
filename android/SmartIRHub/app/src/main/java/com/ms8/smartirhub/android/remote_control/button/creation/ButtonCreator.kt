@@ -94,7 +94,7 @@ class ButtonCreator {
     class State(val buttonDialogState: ButtonDialogState, val commandState: CommandCreator.State, val arrayPosition: Int)
 
     enum class ButtonDialogState(var value: Int) {CHOOSE_TYPE(1), SETUP_BUTTON(2),  SETUP_COMMAND(3)}
-     var dialogState : ButtonDialogState  = ButtonDialogState.CHOOSE_TYPE
+    private var dialogState : ButtonDialogState  = ButtonDialogState.CHOOSE_TYPE
 
     private var commandCreator : CommandCreator = CommandCreator()
         .apply {
