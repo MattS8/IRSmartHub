@@ -42,6 +42,10 @@ import com.ms8.smartirhub.android.utils.extensions.DynamicStrings.getPasswordErr
 import com.ms8.smartirhub.android.utils.extensions.DynamicStrings.getUsernameErrorString
 import com.ms8.smartirhub.android.utils.extensions.RES_SIGN_IN
 import com.ms8.smartirhub.android.utils.extensions.getGenericErrorFlashbar
+import kotlinx.android.synthetic.main.a_splash_login_main.view.*
+import kotlinx.android.synthetic.main.v_splash_login_sign_up.view.*
+import kotlinx.android.synthetic.main.v_splash_login_username.view.*
+
 
 class SplashActivity5 : AppCompatActivity() {
     lateinit var binding : ASplashLoginMainBinding
@@ -567,15 +571,17 @@ class SplashActivity5 : AppCompatActivity() {
     }
 
     private fun nextActivity() {
-        when {
+        when (AppState.userData.hubs.size) {
             // show 'setup first hub' or 'hub invitations' activity
-            AppState.userData.hubs.size == 0 -> {
+            0 ->
+            {
                 //todo check for hub invitations
                 startActivity(Intent(this, MainViewActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
                 finish()
             }
-            // show 'main view'
-            else -> {
+        // show 'main view'
+            else ->
+            {
                 startActivity(Intent(this, MainViewActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP))
                 finish()
             }

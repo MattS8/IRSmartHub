@@ -12,6 +12,8 @@ import com.ms8.smartirhub.android.remote_control.button.models.Button
 
 class RemoteLayout(context: Context) {
     val binding: FRemoteCurrentBinding = FRemoteCurrentBinding.inflate(LayoutInflater.from(context), null, false)
+    var onAddNewButton = {}
+
     private var isListening : Boolean = false
 
     fun getRemoteView(): View = binding.root
@@ -21,6 +23,13 @@ class RemoteLayout(context: Context) {
     }
     private val remoteLayoutAdapter = RemoteLayoutView.RemoteLayoutAdapter()
 
+    private val addButtonListener = object : Observable.OnPropertyChangedCallback() {
+        override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+            if (AppState.tempData.tempRemoteProfile.isCreatingNewButton.get() && AppState.tempData.tempRemoteProfile.inEditMode.get()){
+                onAddNewButton()
+            }
+        }
+    }
 
     private val buttonListener = object : ObservableList.OnListChangedCallback<ObservableList<Button>>() {
         override fun onChanged(sender: ObservableList<Button>?) {
@@ -77,12 +86,15 @@ class RemoteLayout(context: Context) {
     fun startListening() {
         if (!isListening) {
             isListening = true
+            AppState.tempData.tempRemoteProfile.isCreatingNewButton.addOnPropertyChangedCallback(addButtonListener)
             AppState.tempData.tempRemoteProfile.buttons.addOnListChangedCallback(buttonListener)
             AppState.tempData.tempRemoteProfile.inEditMode.addOnPropertyChangedCallback(editModeListener)
         }
     }
 
     fun stopListening() {
+        isListening = false
+        AppState.tempData.tempRemoteProfile.isCreatingNewButton.removeOnPropertyChangedCallback(addButtonListener)
         AppState.tempData.tempRemoteProfile.buttons.removeOnListChangedCallback(buttonListener)
         AppState.tempData.tempRemoteProfile.inEditMode.removeOnPropertyChangedCallback(editModeListener)
     }

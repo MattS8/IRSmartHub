@@ -2,6 +2,7 @@ package com.ms8.smartirhub.android._tests.dev_playground
 
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.view.Gravity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -38,7 +39,7 @@ class TestEnvActivity : AppCompatActivity() {
     private fun setupRemoteLayout() {
         AppState.tempData.tempRemoteProfile.apply {
             name = "Test Remote"
-            inEditMode.set(false)
+            inEditMode.set(true)
 
             buttons.addAll(arrayListOf(
                 Button(Button.Companion.ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND).apply {
@@ -90,11 +91,14 @@ class TestEnvActivity : AppCompatActivity() {
             ))
         }
         remoteLayout = RemoteLayout(this)
-        remoteLayout?.setupAdapter()
+        remoteLayout?.apply {
+            setupAdapter()
+            onAddNewButton = { buttonCreator.showBottomDialog() }
+        }
 
         binding.testRoot.addView(remoteLayout?.getRemoteView())
 
-        Handler().postDelayed({AppState.tempData.tempRemoteProfile.buttons.clear()}, 5000)
+        //Handler().postDelayed({AppState.tempData.tempRemoteProfile.buttons.clear()}, 5000)
     }
 
     private fun setupButtonCreator() {
@@ -126,6 +130,7 @@ class TestEnvActivity : AppCompatActivity() {
         when (testType) {
             TestType.REMOTE_LAYOUT ->
             {
+                Log.d("TEST", "Start Listening")
                 remoteLayout?.startListening()
             }
         }
@@ -139,6 +144,7 @@ class TestEnvActivity : AppCompatActivity() {
         when (testType) {
             TestType.REMOTE_LAYOUT ->
             {
+                Log.d("TEST", "Stop listening...")
                 remoteLayout?.stopListening()
             }
         }

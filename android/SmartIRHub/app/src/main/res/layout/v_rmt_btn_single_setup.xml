@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout         xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipToPadding="false"
+            android:clipChildren="false"
+            android:minWidth="42dp"
+            android:minHeight="42dp"
+            android:clickable="false"
+            >
+
+        <com.ms8.smartirhub.android.remote_control.button.views.RemoteButtonView
+                android:id="@+id/btnRound"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_width="wrap_content"
+                android:minWidth="80dp"
+                android:layout_height="0dp"
+                android:elevation="6dp"
+                android:stateListAnimator="@animator/selector_button_elevation"
+                android:clipToPadding="false"
+                android:clipChildren="false"
+                android:background="@drawable/btn_bg_circle"
+                app:layout_constraintDimensionRatio="W,1:1"
+                app:layout_constraintHorizontal_bias="0.5" />
+
+        <EditText
+                android:id="@+id/etButtonName"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                app:layout_constraintTop_toTopOf="@id/btnRound"
+                app:layout_constraintStart_toStartOf="@id/btnRound"
+                app:layout_constraintBottom_toBottomOf="@id/btnRound"
+                app:layout_constraintEnd_toEndOf="@id/btnRound"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:textColor="@color/black"
+                android:elevation="8dp"
+                android:gravity="center"
+                android:background="#00000000"
+                android:textColorHint="@color/material_drawer_hint_text"
+                tools:hint="TEST HINT"
+                android:maxLines="1"
+                />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
