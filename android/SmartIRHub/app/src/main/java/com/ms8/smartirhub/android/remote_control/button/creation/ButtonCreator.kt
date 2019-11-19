@@ -6,9 +6,11 @@ import android.content.Context
 import android.content.DialogInterface
 import android.os.Parcel
 import android.util.Log
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.databinding.DataBindingUtil
@@ -22,6 +24,7 @@ import com.ms8.smartirhub.android.databinding.*
 import com.ms8.smartirhub.android.remote_control.button.models.Button
 import com.ms8.smartirhub.android.remote_control.command.creation.CommandCreator
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
+import com.ms8.smartirhub.android.utils.extensions.hideKeyboard
 import org.jetbrains.anko.layoutInflater
 import java.lang.Exception
 
@@ -54,16 +57,19 @@ class ButtonCreator {
     private var onDismiss = {
         Log.d("t#", "buttonCreator - onDismiss (isTransitioning = $isTransitioning)")
         if (!isTransitioning) {
+            AppState.tempData.tempRemoteProfile.isCreatingNewButton.set(false)
             onCreateDialogDismiss(isBackPressed)
             if (isBackPressed)
                 isBackPressed = false
+            createButtonDialog = null
+            dialogState = ButtonDialogState.CHOOSE_TYPE
         }
         else
             isTransitioning = false
     }
 
     private var onCommandDialogDismissed: (fromBackPressed: Boolean) -> Unit = {fromBackPressed ->
-        if (fromBackPressed) this@ButtonCreator.onBackPressed()
+        if (fromBackPressed) context?.let { showButtonSetupDialog(it) }
         else onCreateDialogDismiss(fromBackPressed)
     }
 
@@ -77,12 +83,20 @@ class ButtonCreator {
                 }
             }
 
-            createButtonDialog?.let {
-                isTransitioning = true
-                dismissBottomDialog()
-            }
+            dismissBottomDialog(true)
             showButtonSetupDialog(c)
         }
+    }
+
+    private val buttonNameKeyListener = { view : View, keyCode : Int, keyEvent : KeyEvent ->
+        var ret = false
+        Log.d("Test", "buttonNameKeyListener - keyCode = $keyCode | keyEvent = ${keyEvent.action} (ACTION_DOWN = ${KeyEvent.ACTION_DOWN})")
+        if (keyEvent.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
+            AppState.tempData.tempButton.get()?.name =  (view as EditText).text.toString()
+            view.hideKeyboard()
+            ret = true
+        }
+        ret
     }
 
 /*
@@ -116,8 +130,7 @@ class ButtonCreator {
         commandCreator.context = field
 
         if (context == null){
-            isTransitioning = true
-            dismissBottomDialog()
+            dismissBottomDialog(true)
         }
     }
 
@@ -139,8 +152,10 @@ class ButtonCreator {
 
     @SuppressLint("LogNotTimber")
     fun showBottomDialog() {
-        if (createButtonDialog != null)
+        if (createButtonDialog != null) {
             Log.w("ButtonCreator", "showBottomDialog - called while createButtonDialog is not null!")
+            dismissBottomDialog(true)
+        }
 
         when (context) {
             null -> Log.e("ButtonCreator", "showBottomDialog - Context was not set")
@@ -156,16 +171,39 @@ class ButtonCreator {
         }
     }
 
-    fun dismissBottomDialog() {
-        createButtonDialog?.dismiss()
-        createButtonDialog = null
-    }
-
 /*
 ----------------------------------------------
     Display Functions
 ----------------------------------------------
 */
+
+    private fun createDialogView(context: Context, bottomSheetView: View) {
+        // using a custom onBackPressed to handle navigating the different stages of creation process
+        createButtonDialog = object : BottomSheetDialog(context) {
+            override fun onBackPressed() {
+                this@ButtonCreator.onBackPressed()
+            }
+        }
+        createButtonDialog?.setCancelable(false)
+        createButtonDialog?.setContentView(bottomSheetView)
+        createButtonDialog?.setOnDismissListener { onDismiss() }
+        createButtonDialog?.show()
+    }
+
+    private fun createButtonClicked(button : Button, isMissingCommands : () -> Boolean) {
+        if (isMissingCommands()) {
+            context?.let {
+                AlertDialog.Builder(it)
+                    .setTitle(it.getString(R.string.are_you_sure))
+                    .setMessage(it.getString(R.string.button_setup_not_complete))
+                    .setPositiveButton(R.string.create) { _: DialogInterface, _: Int -> createButton(button)}
+                    .setNegativeButton(R.string.cancel) { i: DialogInterface, _: Int -> i.dismiss()}
+                    .show()
+            }
+        } else {
+            createButton(button)
+        }
+    }
 
     private fun showChooseButtonTypeDialog(context: Context) {
     // change state
@@ -174,20 +212,14 @@ class ButtonCreator {
     // set up bottom sheet dialog
         // using a custom onBackPressed to handle navigating the different stages of creation process
         val buttonTypesView = context.layoutInflater.inflate(R.layout.v_button_types, null)
-        createButtonDialog = object : BottomSheetDialog(context) {
-            override fun onBackPressed() {
-                this@ButtonCreator.onBackPressed()
-            }
-        }
         val buttonTypeBinding = DataBindingUtil.bind<VButtonTypesBinding>(buttonTypesView)
-        createButtonDialog?.setContentView(buttonTypesView)
-        createButtonDialog?.setOnDismissListener { onDismiss() }
+
 
     // set up list of button types
         buttonTypeBinding?.list?.adapter = ButtonTypeAdapter()
         buttonTypeBinding?.list?.layoutManager = GridLayoutManager(context, 2)
 
-        createButtonDialog?.show()
+        createDialogView(context, buttonTypesView)
     }
 
     @SuppressLint("LogNotTimber")
@@ -199,10 +231,48 @@ class ButtonCreator {
 
         when (button.type) {
         // Button Types requiring 1-action setup:
-            Button.Companion.ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND,
+            Button.Companion.ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND ->
+            {
+                val bottomSheetBinding = VCreateSheetBinding.inflate(context.layoutInflater, null, false)
+                val buttonContainerBinding = VButtonSetupBinding.inflate(context.layoutInflater, bottomSheetBinding.createSheetContent, true)
+                val roundButtonBinding = VRmtBtnSingleSetupBinding.inflate(context.layoutInflater, buttonContainerBinding?.buttonContainer, true)
+
+                roundButtonBinding.etButtonName.setHint(R.string.button_name_hint)
+                roundButtonBinding.btnRound.setOnClickListener { transitionToCommandDialog(0) }
+
+                // setup outer-most view
+                bottomSheetBinding?.tvTitle?.text = context.getString(R.string.button_setup_title)
+
+                buttonContainerBinding.btnCreate.setOnClickListener {
+                    AppState.tempData.tempButton.get()?.let { b ->
+                        createButtonClicked(b) {b.commands[0].actions.size > 0}
+                    }
+                }
+
+                createDialogView(context, bottomSheetBinding.root)
+            }
             Button.Companion.ButtonStyle.STYLE_BTN_NO_MARGIN ->
             {
-                transitionToCommandDialog(0)
+                val bottomSheetBinding = VCreateSheetBinding.inflate(context.layoutInflater, null, false)
+                val buttonContainerBinding = VButtonSetupBinding.inflate(context.layoutInflater, bottomSheetBinding.createSheetContent, true)
+                val fullButtonBinding = VRmtBtnFullSetupBinding.inflate(context.layoutInflater, buttonContainerBinding?.buttonContainer, true)
+
+                fullButtonBinding.etButtonLabel.apply {
+                    setText(AppState.tempData.tempButton.get()?.name)
+                    setOnKeyListener(buttonNameKeyListener)
+                }
+                fullButtonBinding.btnFull.setOnClickListener { transitionToCommandDialog(0) }
+
+                // setup outer-most view
+                bottomSheetBinding?.tvTitle?.text = context.getString(R.string.button_setup_title)
+
+                buttonContainerBinding.btnCreate.setOnClickListener {
+                    AppState.tempData.tempButton.get()?.let { b ->
+                        createButtonClicked(b) {b.commands[0].actions.size > 0}
+                    }
+                }
+
+                createDialogView(context, bottomSheetBinding.root)
             }
         // Button Types requiring 2-action setup:
             Button.Companion.ButtonStyle.STYLE_BTN_INCREMENTER_VERTICAL ->
@@ -226,23 +296,13 @@ class ButtonCreator {
                 incrementerBinding?.btnTop?.setupProperties(button.properties[0])
                 incrementerBinding?.btnTop?.setOnClickListener { transitionToCommandDialog(0) }
 
-                incrementerBinding?.btnBottom?.setupProperties(button.properties[1])
+                incrementerBinding?.btnBottom?.setupProperties(button.properties[2])
                 incrementerBinding?.btnBottom?.setOnClickListener { transitionToCommandDialog(1) }
 
             // setup middle view
                 buttonContainerBinding?.btnCreate?.setOnClickListener {
                     AppState.tempData.tempButton.get()?.let { b ->
-                        if (b.commands[0].actions.size > 0 && b.commands[1].actions.size > 0) {
-                            createButton(b)
-                        }
-                        else {
-                            AlertDialog.Builder(it.context)
-                                .setTitle(it.context.getString(R.string.are_you_sure))
-                                .setMessage(it.context.getString(R.string.button_setup_not_complete))
-                                .setPositiveButton(R.string.create) { _: DialogInterface, _: Int -> createButton(b)}
-                                .setNegativeButton(R.string.cancel) { i: DialogInterface, _: Int -> i.dismiss()}
-                                .show()
-                        }
+                        createButtonClicked(b) {b.commands[0].actions.size > 0 && b.commands[1].actions.size > 0}
                     }
                 }
 
@@ -250,15 +310,7 @@ class ButtonCreator {
                 bottomSheetBinding?.tvTitle?.text = context.getString(R.string.button_setup_title)
 
             // set content view and show dialog
-                // using a custom onBackPressed to handle navigating the different stages of creation process
-                createButtonDialog = object : BottomSheetDialog(context) {
-                    override fun onBackPressed() {
-                        this@ButtonCreator.onBackPressed()
-                    }
-                }
-                createButtonDialog?.setContentView(bottomSheetView)
-                createButtonDialog?.setOnDismissListener { onDismiss() }
-                createButtonDialog?.show()
+                createDialogView(context, bottomSheetView)
             }
         // Button Types requiring 4-action setup:
             Button.Companion.ButtonStyle.STYLE_BTN_RADIAL ->
@@ -293,37 +345,17 @@ class ButtonCreator {
             // setup middle view
                 buttonContainerBinding?.btnCreate?.setOnClickListener {
                     AppState.tempData.tempButton.get()?.let { b ->
-                        if (b.commands[0].actions.size > 0
-                            && b.commands[1].actions.size > 0
-                            && b.commands[2].actions.size > 0
-                            && b.commands[3].actions.size > 0
-                        ) {
-                            createButton(b)
-                        }
-                        else {
-                            AlertDialog.Builder(it.context)
-                                .setTitle(it.context.getString(R.string.are_you_sure))
-                                .setMessage(it.context.getString(R.string.button_setup_not_complete))
-                                .setPositiveButton(R.string.create) { _: DialogInterface, _: Int -> createButton(b)}
-                                .setNegativeButton(R.string.cancel) { i: DialogInterface, _: Int -> i.dismiss()}
-                                .show()
-                        }
+                        createButtonClicked(b) {b.commands[0].actions.size > 0
+                                && b.commands[1].actions.size > 0
+                                && b.commands[2].actions.size > 0
+                                && b.commands[3].actions.size > 0}
                     }
                 }
             // setup outer-most view
                 bottomSheetBinding?.tvTitle?.text = context.getString(R.string.button_setup_title)
 
             // set content view and show dialog
-                // using a custom onBackPressed to handle navigating the different stages of creation process
-                createButtonDialog = object : BottomSheetDialog(context) {
-                    override fun onBackPressed() {
-                        this@ButtonCreator.onBackPressed()
-                    }
-                }
-                createButtonDialog?.setContentView(bottomSheetView)
-                createButtonDialog?.setOnDismissListener { onDismiss() }
-                createButtonDialog?.show()
-
+                createDialogView(context, bottomSheetView)
                 Log.d("#T", "Now showing Incrementer Vertical Setup...")
             }
         // Button Types requiring 5-action setup:
@@ -358,37 +390,18 @@ class ButtonCreator {
             // setup middle view
                 buttonContainerBinding?.btnCreate?.setOnClickListener {
                     AppState.tempData.tempButton.get()?.let { b ->
-                        if (b.commands[0].actions.size > 0
-                            && b.commands[1].actions.size > 0
-                            && b.commands[2].actions.size > 0
-                            && b.commands[3].actions.size > 0
-                            && b.commands[4].actions.size > 0
-                        ) {
-                            createButton(b)
-                        }
-                        else {
-                            AlertDialog.Builder(it.context)
-                                .setTitle(it.context.getString(R.string.are_you_sure))
-                                .setMessage(it.context.getString(R.string.button_setup_not_complete))
-                                .setPositiveButton(R.string.create) { _: DialogInterface, _: Int -> createButton(b)}
-                                .setNegativeButton(R.string.cancel) { i: DialogInterface, _: Int -> i.dismiss()}
-                                .show()
-                        }
+                        createButtonClicked(b) {b.commands[0].actions.size > 0
+                                && b.commands[1].actions.size > 0
+                                && b.commands[2].actions.size > 0
+                                && b.commands[3].actions.size > 0
+                                && b.commands[4].actions.size > 0}
                     }
                 }
             // setup outer-most view
                 bottomSheetBinding?.tvTitle?.text = context.getString(R.string.button_setup_title)
 
             // set content view and show dialog
-                // using a custom onBackPressed to handle navigating the different stages of creation process
-                createButtonDialog = object : BottomSheetDialog(context) {
-                    override fun onBackPressed() {
-                        this@ButtonCreator.onBackPressed()
-                    }
-                }
-                createButtonDialog?.setContentView(bottomSheetView)
-                createButtonDialog?.setOnDismissListener { onDismiss() }
-                createButtonDialog?.show()
+                createDialogView(context, bottomSheetView)
             }
         // Button Types requiring no setup:
             Button.Companion.ButtonStyle.STYLE_SPACE ->
@@ -402,9 +415,17 @@ class ButtonCreator {
 
     // -------- Helper functions --------
 
+    private fun dismissBottomDialog(transitioning: Boolean = false) {
+        Log.d("Test", "dismiss... ${createButtonDialog == null}")
+        createButtonDialog?.let {
+            isTransitioning = transitioning
+            it.dismiss()
+            createButtonDialog = null
+        }
+    }
+
     private fun transitionToCommandDialog(position: Int) {
-        isTransitioning = true
-        dismissBottomDialog()
+        dismissBottomDialog(true)
         dialogState = ButtonDialogState.SETUP_COMMAND
         arrayPosition = position
         commandCreator.showBottomDialog(arrayPosition)
@@ -420,28 +441,27 @@ class ButtonCreator {
 
         // reset tempButton and change isCreatingNewButton to false
         AppState.tempData.tempButton.set(null)
-        AppState.tempData.isCreatingNewButton.set(false)
+        AppState.tempData.tempRemoteProfile.isCreatingNewButton.set(false)
 
         dismissBottomDialog()
     }
 
     private fun onBackPressed() {
-        Log.d("t#", "buttonCreator - onBackPressed! context = $context")
+        Log.d("t#", "buttonCreator - onBackPressed! dialogState = $dialogState")
         when (dialogState) {
             ButtonDialogState.CHOOSE_TYPE ->
             {
-                isBackPressed = true
                 dismissBottomDialog()
             }
             ButtonDialogState.SETUP_BUTTON ->
             {
-                isTransitioning = true
-                dismissBottomDialog()
+                dismissBottomDialog(true)
                 context?.let { showChooseButtonTypeDialog(it) }
             }
             ButtonDialogState.SETUP_COMMAND ->
             {
-                context?.let { showButtonSetupDialog(it) }
+                dismissBottomDialog(true)
+                context?.let { showChooseButtonTypeDialog(it) }
             }
         }
     }
@@ -498,8 +518,7 @@ class ButtonCreator {
                 AppState.tempData.tempButton.set(Button(buttonType))
 
                 // transition to 'setup button dialog'
-                isTransitioning = true
-                dismissBottomDialog()
+                dismissBottomDialog(true)
                 showButtonSetupDialog(it.context)
             }
         }

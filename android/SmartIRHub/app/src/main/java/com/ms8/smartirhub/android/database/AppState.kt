@@ -50,8 +50,7 @@ object AppState {
         val tempRemoteProfile   : RemoteProfile              = RemoteProfile(),
         var tempButton          : ObservableField<Button>    = ObservableField(),
         var tempCommand         : RemoteProfile.Command?     = null,
-        var tempSignal          : ObservableField<IrSignal?> = ObservableField(),
-        var isCreatingNewButton : ObservableBoolean          = ObservableBoolean(false)
+        var tempSignal          : ObservableField<IrSignal?> = ObservableField()
     )
 
     data class ErrorData (

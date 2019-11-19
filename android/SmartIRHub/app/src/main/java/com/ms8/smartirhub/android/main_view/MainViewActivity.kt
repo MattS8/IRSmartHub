@@ -295,7 +295,7 @@ class MainViewActivity : AppCompatActivity() {
             removeSaveResponseListener()
 
         if (AppState.tempData.tempRemoteProfile.inEditMode.get())
-            AppState.tempData.isCreatingNewButton.removeOnPropertyChangedCallback(newButtonListener)
+            AppState.tempData.tempRemoteProfile.isCreatingNewButton.removeOnPropertyChangedCallback(newButtonListener)
 //        AppState.tempData.tempButton.get()?.type?.removeOnPropertyChangedCallback(buttonStyleSelectedListener)
     }
 
@@ -316,7 +316,7 @@ class MainViewActivity : AppCompatActivity() {
         }
 
         if (AppState.tempData.tempRemoteProfile.inEditMode.get())
-            AppState.tempData.isCreatingNewButton.addOnPropertyChangedCallback(newButtonListener)
+            AppState.tempData.tempRemoteProfile.isCreatingNewButton.addOnPropertyChangedCallback(newButtonListener)
 
         when {
             isShowingCreateRemoteView -> remoteCreator.showBottomDialog(this)
@@ -519,7 +519,7 @@ class MainViewActivity : AppCompatActivity() {
         binding.toolbar.selectTitleText()
 
         // listen for calls to create a new button
-        AppState.tempData.isCreatingNewButton.addOnPropertyChangedCallback(newButtonListener)
+        AppState.tempData.tempRemoteProfile.isCreatingNewButton.addOnPropertyChangedCallback(newButtonListener)
     }
 
     fun editRemote() {
@@ -528,7 +528,7 @@ class MainViewActivity : AppCompatActivity() {
         layoutState = LayoutState.REMOTES_FAV_EDITING
 
         // listen for calls to create a new button
-        AppState.tempData.isCreatingNewButton.addOnPropertyChangedCallback(newButtonListener)
+        AppState.tempData.tempRemoteProfile.isCreatingNewButton.addOnPropertyChangedCallback(newButtonListener)
 
         // Trigger update to fragment
         onMyRemotesClicked(true)
@@ -538,7 +538,7 @@ class MainViewActivity : AppCompatActivity() {
         // Check remote for valid name
         if (AppState.tempData.tempRemoteProfile.saveRemote(this)) {
             // stop listening for calls to create a new button
-            AppState.tempData.isCreatingNewButton.removeOnPropertyChangedCallback(newButtonListener)
+            AppState.tempData.tempRemoteProfile.isCreatingNewButton.removeOnPropertyChangedCallback(newButtonListener)
 
             // set fab to loading animation
             isListeningForSaveRemoteConfirmation = true
@@ -588,8 +588,8 @@ class MainViewActivity : AppCompatActivity() {
 
     private val newButtonListener = object : Observable.OnPropertyChangedCallback() {
         override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
-            Log.d("t#", "newButtonListener triggered! (isCreatingNewButton = ${AppState.tempData.isCreatingNewButton.get()} | isShowingCreateButtonView = $isShowingCreateButtonView)")
-            if (AppState.tempData.isCreatingNewButton.get() && !isShowingCreateButtonView) {
+            Log.d("t#", "newButtonListener triggered! (isCreatingNewButton = ${AppState.tempData.tempRemoteProfile.isCreatingNewButton.get()} | isShowingCreateButtonView = $isShowingCreateButtonView)")
+            if (AppState.tempData.tempRemoteProfile.isCreatingNewButton.get() && !isShowingCreateButtonView) {
                 Log.d("t#", "onTempButtonChanged - showing dialog...")
                 buttonCreator.showBottomDialog()
             }

@@ -139,8 +139,8 @@ class RemoteLayoutView(context: Context, attrs: AttributeSet): AsymmetricRecycle
         private fun bindCreateNewButton() {
             itemView.findViewById<TextView>(R.id.btnRmtCreateNew).apply {
                 setOnClickListener {
-                    AppState.tempData.isCreatingNewButton.set(true)
-                    AppState.tempData.isCreatingNewButton.notifyChange()
+                    AppState.tempData.tempRemoteProfile.isCreatingNewButton.set(true)
+                    AppState.tempData.tempRemoteProfile.isCreatingNewButton.notifyChange()
                 }
             }
         }
@@ -153,7 +153,6 @@ class RemoteLayoutView(context: Context, attrs: AttributeSet): AsymmetricRecycle
             val centerButtonView = itemView.findViewById<RemoteButtonView>(R.id.btnCenter)
 
             // set top button properties
-            Log.d("Test", "Binding top radial button... (${button.properties[0].bgStyle.name}")
             topButtonView.setupProperties(button.properties[0])
             topButtonView.setOnClickListener {
                 RealtimeDatabaseFunctions.sendCommandToHub(button.commands[0])
