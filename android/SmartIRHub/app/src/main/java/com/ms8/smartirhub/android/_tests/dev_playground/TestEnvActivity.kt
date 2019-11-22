@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.database.AppState
+import com.ms8.smartirhub.android.databinding.FRemoteCurrentBinding
 import com.ms8.smartirhub.android.databinding.TestBinding
 import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
 import com.ms8.smartirhub.android.remote_control.command.creation.CommandCreator
@@ -23,7 +24,7 @@ class TestEnvActivity : AppCompatActivity() {
     private val commandCreator = CommandCreator()
     private val buttonCreator = ButtonCreator()
     private lateinit var binding: TestBinding
-    private var remoteLayout : RemoteLayout? = null
+    private var remoteLayout = RemoteLayout()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,13 +91,10 @@ class TestEnvActivity : AppCompatActivity() {
                 }
             ))
         }
-        remoteLayout = RemoteLayout(this)
-        remoteLayout?.apply {
-            setupAdapter()
-            onAddNewButton = { buttonCreator.showBottomDialog() }
-        }
+        remoteLayout.binding = FRemoteCurrentBinding.inflate(layoutInflater, null, false)
 
-        binding.testRoot.addView(remoteLayout?.getRemoteView())
+
+        binding.testRoot.addView(remoteLayout.binding?.root)
 
         //Handler().postDelayed({AppState.tempData.tempRemoteProfile.buttons.clear()}, 5000)
     }

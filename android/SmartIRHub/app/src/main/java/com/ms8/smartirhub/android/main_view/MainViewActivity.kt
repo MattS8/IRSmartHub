@@ -44,6 +44,7 @@ import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
 import com.ms8.smartirhub.android.utils.RequestCodes
 import com.ms8.smartirhub.android.utils.extensions.*
 import com.ms8.smartirhub.android.remote_control.command.creation.GetFromRemoteActivity.Companion.ResultType
+import kotlinx.android.synthetic.main.f_remote_current.*
 
 class MainViewActivity : AppCompatActivity() {
 
@@ -181,40 +182,39 @@ class MainViewActivity : AppCompatActivity() {
     // 'create remote' dialog
     private var remoteCreator : RemoteCreator = RemoteCreator()
         .apply {
-            onCreateDialogDismiss = { isShowingCreateRemoteView = false }
             onCreateBlankRemote = { createBlankRemote() }
             onCreateFromDeviceTemplate = { createFromDeviceTemplate() }
             onCreateFromExistingRemote = { createFromExistingRemote() }
         }
 
     // 'create button' dialog
-    private var buttonCreator : ButtonCreator = ButtonCreator()
-        .apply {
-            onCreateDialogDismiss = {
-                isShowingCreateButtonView = false
-            }
-            onCreateDialogShow = {
-                isShowingCreateButtonView = true
-            }
-            onCreationComplete = { button ->
-                when (button.type) {
-                    Button.Companion.ButtonStyle.STYLE_SPACE -> getGenericNotificationFlashbar(getString(R.string.added_space_button)).build().show()
-                    else -> getGenericNotificationFlashbar(getString(R.string.added_button)).build().show()
-                }
-            }
-            onRequestCommandFromRemote = { remote ->
-                val intent = Intent(this@MainViewActivity, GetFromRemoteActivity::class.java)
-                intent.putExtra(GetFromRemoteActivity.EXTRA_REMOTE_UID, remote.uid)
-                intent.putExtra(GetFromRemoteActivity.EXTRA_TYPE, ResultType.COMMAND)
-                startActivityForResult(intent, RequestCodes.GET_COMMAND_FROM_REMOTE)
-            }
-            onRequestActionsFromRemote = { remote ->
-                val intent = Intent(this@MainViewActivity, GetFromRemoteActivity::class.java)
-                intent.putExtra(GetFromRemoteActivity.EXTRA_REMOTE_UID, remote.uid)
-                intent.putExtra(GetFromRemoteActivity.EXTRA_TYPE, ResultType.ACTIONS)
-                startActivityForResult(intent, RequestCodes.GET_ACTIONS_FROM_REMOTE)
-            }
-        }
+//    private var buttonCreator : ButtonCreator = ButtonCreator()
+//        .apply {
+//            onCreateDialogDismiss = {
+//                isShowingCreateButtonView = false
+//            }
+//            onCreateDialogShow = {
+//                isShowingCreateButtonView = true
+//            }
+//            onCreationComplete = { button ->
+//                when (button.type) {
+//                    Button.Companion.ButtonStyle.STYLE_SPACE -> getGenericNotificationFlashbar(getString(R.string.added_space_button)).build().show()
+//                    else -> getGenericNotificationFlashbar(getString(R.string.added_button)).build().show()
+//                }
+//            }
+//            onRequestCommandFromRemote = { remote ->
+//                val intent = Intent(this@MainViewActivity, GetFromRemoteActivity::class.java)
+//                intent.putExtra(GetFromRemoteActivity.EXTRA_REMOTE_UID, remote.uid)
+//                intent.putExtra(GetFromRemoteActivity.EXTRA_TYPE, ResultType.COMMAND)
+//                startActivityForResult(intent, RequestCodes.GET_COMMAND_FROM_REMOTE)
+//            }
+//            onRequestActionsFromRemote = { remote ->
+//                val intent = Intent(this@MainViewActivity, GetFromRemoteActivity::class.java)
+//                intent.putExtra(GetFromRemoteActivity.EXTRA_REMOTE_UID, remote.uid)
+//                intent.putExtra(GetFromRemoteActivity.EXTRA_TYPE, ResultType.ACTIONS)
+//                startActivityForResult(intent, RequestCodes.GET_ACTIONS_FROM_REMOTE)
+//            }
+//        }
 
 /*
 ----------------------------------------------
@@ -234,20 +234,17 @@ class MainViewActivity : AppCompatActivity() {
         field = value
         binding.fab.isListeningForSaveRemoteConfirmation = field
     }
-    private var isShowingCreateRemoteView: Boolean = false
-    private var isShowingCreateButtonView: Boolean = false
     private fun setupStateVariables() {
         // pager layout state
         layoutState = state.layoutState
 
         // remote creation saved state
-        isShowingCreateRemoteView = state.isShowingCreateRemoteFromView
-        remoteCreator.dialogState = state.savedCreateRemoteDialogState
+        remoteCreator.setState(state.savedCreateRemoteState, this)
+//        isShowingCreateRemoteView = state.isShowingCreateRemoteFromView
         isListeningForSaveRemoteConfirmation = state.isListeningForSaveRemoteConfirmation
 
         // button creation saved state
-        isShowingCreateButtonView = state.isCreatingButton
-        buttonCreator.setState(state.savedCreateButtonState)
+        remoteFragment.remoteLayout.buttonCreator.setState(state.savedCreateButtonState)
 
         // command creation saved state - todo
     }
@@ -278,31 +275,29 @@ class MainViewActivity : AppCompatActivity() {
         state = State(
             layoutState,
             (binding.frameLayout.adapter as MainViewAdapter).getBaseItemId(),
-            isShowingCreateRemoteView,
             isListeningForSaveRemoteConfirmation,
-            isShowingCreateButtonView,
-            remoteCreator.dialogState,
-            buttonCreator.getState())
+            remoteCreator.getState(),
+            remoteFragment.remoteLayout.buttonCreator.getState())
         outState.putParcelable(STATE, state)
     }
 
     override fun onPause() {
         super.onPause()
 
-        buttonCreator.context = null
+        remoteCreator.context = null
 
         if (isListeningForSaveRemoteConfirmation)
             removeSaveResponseListener()
 
-        if (AppState.tempData.tempRemoteProfile.inEditMode.get())
-            AppState.tempData.tempRemoteProfile.isCreatingNewButton.removeOnPropertyChangedCallback(newButtonListener)
+//        if (AppState.tempData.tempRemoteProfile.inEditMode.get())
+//            AppState.tempData.tempRemoteProfile.isCreatingNewButton.removeOnPropertyChangedCallback(newButtonListener)
 //        AppState.tempData.tempButton.get()?.type?.removeOnPropertyChangedCallback(buttonStyleSelectedListener)
     }
 
     override fun onResume() {
         super.onResume()
 
-        buttonCreator.context = this
+        remoteCreator.context = this
 
         if (isListeningForSaveRemoteConfirmation){
             when {
@@ -315,17 +310,16 @@ class MainViewActivity : AppCompatActivity() {
             }
         }
 
-        if (AppState.tempData.tempRemoteProfile.inEditMode.get())
-            AppState.tempData.tempRemoteProfile.isCreatingNewButton.addOnPropertyChangedCallback(newButtonListener)
+//        if (AppState.tempData.tempRemoteProfile.inEditMode.get())
+//            AppState.tempData.tempRemoteProfile.isCreatingNewButton.addOnPropertyChangedCallback(newButtonListener)
 
-        when {
-            isShowingCreateRemoteView -> remoteCreator.showBottomDialog(this)
-            isShowingCreateButtonView -> buttonCreator.showBottomDialog()
-        }
+//        when {
+//            isShowingCreateRemoteView -> remoteFragment.remoteLayout.remoteCreator.showBottomDialog(this)
+//            isShowingCreateButtonView -> remoteFragment.remoteLayout.buttonCreator.showBottomDialog()
+//        }
     }
 
     override fun onBackPressed() {
-        Log.d("t#", "MainViewActivity - onBackPressed (isShowingCreateButtonView = $isShowingCreateButtonView)")
         when {
         // check remoteTemplateSheet state
             //remoteTemplatesSheet.onBackPressed() -> {}
@@ -347,13 +341,13 @@ class MainViewActivity : AppCompatActivity() {
             RequestCodes.GET_COMMAND_FROM_REMOTE ->
             {
                 if (resultCode == Activity.RESULT_OK) {
-                    buttonCreator.onCommandFromRemote()
+                    remoteFragment.remoteLayout.buttonCreator.onCommandFromRemote()
                 }
             }
             RequestCodes.GET_ACTIONS_FROM_REMOTE ->
             {
                 if (resultCode == Activity.RESULT_OK) {
-                    buttonCreator.onActionsFromRemote()
+                    remoteFragment.remoteLayout.buttonCreator.onActionsFromRemote()
                 }
             }
         }
@@ -491,11 +485,14 @@ class MainViewActivity : AppCompatActivity() {
     }
 
     fun createRemote() {
-        if (!state.isShowingCreateRemoteFromView) {
-            isShowingCreateRemoteView = true
-            FirestoreActions.getRemoteTemplates()
-            remoteCreator.showBottomDialog(this)
-        }
+        FirestoreActions.getRemoteTemplates()
+        remoteCreator.showBottomDialog(this)
+
+//        if (!state.isShowingCreateRemoteFromView) {
+//            isShowingCreateRemoteView = true
+//            FirestoreActions.getRemoteTemplates()
+//            remoteCreator.showBottomDialog(this)
+//        }
     }
 
     private fun createFromExistingRemote() {
@@ -519,7 +516,7 @@ class MainViewActivity : AppCompatActivity() {
         binding.toolbar.selectTitleText()
 
         // listen for calls to create a new button
-        AppState.tempData.tempRemoteProfile.isCreatingNewButton.addOnPropertyChangedCallback(newButtonListener)
+//        AppState.tempData.tempRemoteProfile.isCreatingNewButton.addOnPropertyChangedCallback(newButtonListener)
     }
 
     fun editRemote() {
@@ -528,7 +525,7 @@ class MainViewActivity : AppCompatActivity() {
         layoutState = LayoutState.REMOTES_FAV_EDITING
 
         // listen for calls to create a new button
-        AppState.tempData.tempRemoteProfile.isCreatingNewButton.addOnPropertyChangedCallback(newButtonListener)
+//        AppState.tempData.tempRemoteProfile.isCreatingNewButton.addOnPropertyChangedCallback(newButtonListener)
 
         // Trigger update to fragment
         onMyRemotesClicked(true)
@@ -538,7 +535,7 @@ class MainViewActivity : AppCompatActivity() {
         // Check remote for valid name
         if (AppState.tempData.tempRemoteProfile.saveRemote(this)) {
             // stop listening for calls to create a new button
-            AppState.tempData.tempRemoteProfile.isCreatingNewButton.removeOnPropertyChangedCallback(newButtonListener)
+//            AppState.tempData.tempRemoteProfile.isCreatingNewButton.removeOnPropertyChangedCallback(newButtonListener)
 
             // set fab to loading animation
             isListeningForSaveRemoteConfirmation = true
@@ -586,15 +583,15 @@ class MainViewActivity : AppCompatActivity() {
 //        }
 //    }
 
-    private val newButtonListener = object : Observable.OnPropertyChangedCallback() {
-        override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
-            Log.d("t#", "newButtonListener triggered! (isCreatingNewButton = ${AppState.tempData.tempRemoteProfile.isCreatingNewButton.get()} | isShowingCreateButtonView = $isShowingCreateButtonView)")
-            if (AppState.tempData.tempRemoteProfile.isCreatingNewButton.get() && !isShowingCreateButtonView) {
-                Log.d("t#", "onTempButtonChanged - showing dialog...")
-                buttonCreator.showBottomDialog()
-            }
-        }
-    }
+//    private val newButtonListener = object : Observable.OnPropertyChangedCallback() {
+//        override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+//            Log.d("t#", "newButtonListener triggered! (isCreatingNewButton = ${AppState.tempData.tempRemoteProfile.isCreatingNewButton.get()} | isShowingCreateButtonView = $isShowingCreateButtonView)")
+//            if (AppState.tempData.tempRemoteProfile.isCreatingNewButton.get() && !isShowingCreateButtonView) {
+//                Log.d("t#", "onTempButtonChanged - showing dialog...")
+//                remoteFragment.remoteLayout.buttonCreator.showBottomDialog()
+//            }
+//        }
+//    }
 
     private val editModeListener = object : Observable.OnPropertyChangedCallback() {
         override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
@@ -666,13 +663,9 @@ class MainViewActivity : AppCompatActivity() {
             private set
         var adapterBaseID                        : Long         = 0
             private set
-        var isShowingCreateRemoteFromView        : Boolean      = false
-            private set
         var isListeningForSaveRemoteConfirmation : Boolean      = false
             private set
-        var isCreatingButton                     : Boolean      = false
-            private set
-        var savedCreateRemoteDialogState         : RemoteCreator.RemoteDialogState = RemoteCreator.RemoteDialogState.CREATE_FROM
+        var savedCreateRemoteState         : RemoteCreator.State = RemoteCreator.State(RemoteCreator.RemoteDialogState.CREATE_FROM, false)
             private set
         var savedCreateButtonState               : ButtonCreator.State = ButtonCreator.State(
                                                     ButtonCreator.ButtonDialogState.CHOOSE_TYPE,
@@ -689,39 +682,31 @@ class MainViewActivity : AppCompatActivity() {
 
         constructor(layoutState: LayoutState,
                     adapterBaseID: Long,
-                    isShowingCreateRemoteFromView: Boolean,
                     isListeningForSaveRemoteConfirmation: Boolean,
-                    isCreatingButton: Boolean,
-                    savedCreateRemoteDialogState: RemoteCreator.RemoteDialogState,
+                    savedCreateRemoteState: RemoteCreator.State,
                     savedCreateButtonState: ButtonCreator.State)
                 : this()
         {
             this.layoutState = layoutState
             this.adapterBaseID = adapterBaseID
-            this.isShowingCreateRemoteFromView = isShowingCreateRemoteFromView
             this.isListeningForSaveRemoteConfirmation = isListeningForSaveRemoteConfirmation
-            this.isCreatingButton = isCreatingButton
-            this.savedCreateRemoteDialogState = savedCreateRemoteDialogState
+            this.savedCreateRemoteState = savedCreateRemoteState
             this.savedCreateButtonState = savedCreateButtonState
         }
 
         constructor(parcel: Parcel) : this() {
             layoutState = layoutStateFromInt(parcel.readInt()) ?: LayoutState.REMOTES_FAV
             adapterBaseID = parcel.readLong()
-            isShowingCreateRemoteFromView = parcel.readByte() != 0.toByte()
             isListeningForSaveRemoteConfirmation = parcel.readByte() != 0.toByte()
-            isCreatingButton = parcel.readByte() != 0.toByte()
-            savedCreateRemoteDialogState = RemoteCreator.stateFromIntVal(parcel.readInt()) ?: RemoteCreator.RemoteDialogState.CREATE_FROM
+            savedCreateRemoteState = RemoteCreator.readStateFromParcel(parcel)
             savedCreateButtonState = ButtonCreator.readStateFromParcel(parcel)
         }
 
         override fun writeToParcel(parcel: Parcel, flags: Int) {
             parcel.writeInt(layoutState.value)
             parcel.writeLong(adapterBaseID)
-            parcel.writeByte(if (isShowingCreateRemoteFromView) 1 else 0)
             parcel.writeByte(if (isListeningForSaveRemoteConfirmation) 1 else 0)
-            parcel.writeByte(if (isCreatingButton) 1 else 0)
-            parcel.writeInt(savedCreateRemoteDialogState.value)
+            RemoteCreator.writeToParcel(parcel, savedCreateRemoteState)
             ButtonCreator.writeToParcel(parcel, savedCreateButtonState)
         }
 

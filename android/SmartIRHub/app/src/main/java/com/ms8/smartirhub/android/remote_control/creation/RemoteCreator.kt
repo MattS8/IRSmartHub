@@ -1,10 +1,13 @@
 package com.ms8.smartirhub.android.remote_control.creation
 
 import android.content.Context
+import android.os.Parcel
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.ms8.smartirhub.android.R
@@ -24,18 +27,45 @@ class RemoteCreator {
 
 /*
 ----------------------------------------------
-    State Functions
+    State Variables
 ----------------------------------------------
 */
-
-    // Bottom Dialog State
+    class State(val dialogState: RemoteDialogState, val isShowing: Boolean)
     enum class RemoteDialogState(var value: Int) { CREATE_FROM(1), TEMPLATES(2), EXISTING_REMOTE(3) }
-    var dialogState : RemoteDialogState = RemoteDialogState.CREATE_FROM
+
+    fun setState(state: State, context: Context? = null) {
+        dialogState = state.dialogState
+        context?.let {
+            if (state.isShowing)
+                showBottomDialog(it)
+        }
+    }
+
+    fun getState() = State(dialogState, showDialog)
+
+
+    var context: Context? = null
+    set(value) {
+        Log.d("TEST", " ---- Context was set to $value")
+        field = value
+        if (field == null) {
+            dismissDialog(true)
+        } else if (showDialog) {
+            field?.let { showBottomDialog(it) }
+        } else {
+            Log.d("TEST", " ----- Context was set but not supposed to show dialog yet")
+        }
+    }
+
+    private var showDialog = false
+    private var dialogState : RemoteDialogState = RemoteDialogState.CREATE_FROM
     private var createRemoteDialog : BottomSheetDialog? = null
     private var isTransitioning : Boolean = false
 
 
     fun showBottomDialog(context: Context) {
+        showDialog = true
+
         when (dialogState) {
             RemoteDialogState.CREATE_FROM -> { showCreateRemoteDialog(context) }
             RemoteDialogState.TEMPLATES -> { showCreateFromDeviceTemplateDialog(context) }
@@ -43,40 +73,59 @@ class RemoteCreator {
         }
     }
 
-    fun dismissBottomDialog() {
-        // set state if not transitioning
-        if(!isTransitioning)
-            dialogState = RemoteDialogState.CREATE_FROM
+    private fun createDialogView(context: Context, bottomSheetView: View) {
+        if (createRemoteDialog != null) {
+            Log.w("RemoteCreator", "createDialogView - dialog reference was not null when createDialogView was called!")
+            dismissDialog(true)
+        }
 
-        // dismiss dialog if set
-        createRemoteDialog?.dismiss()
-        createRemoteDialog = null
-
+        createRemoteDialog = object : BottomSheetDialog(context) {
+            override fun onBackPressed() {
+                this@RemoteCreator.onBackPressed()
+            }
+        }
+        createRemoteDialog?.setCancelable(false)
+        createRemoteDialog?.setContentView(bottomSheetView)
+        createRemoteDialog?.setOnDismissListener { onDismiss() }
+        createRemoteDialog?.show()
     }
 
-    fun onBackPressed(context: Context) {
-        when (dialogState) {
-            RemoteDialogState.CREATE_FROM ->
-            {
-                dismissBottomDialog()
-            }
-            RemoteDialogState.TEMPLATES ->
-            {
-                isTransitioning = true
-                dismissBottomDialog()
-                showCreateRemoteDialog(context)
-                isTransitioning = false
-            }
-            RemoteDialogState.EXISTING_REMOTE ->
-            {
-                isTransitioning = true
-                dismissBottomDialog()
-                showCreateRemoteDialog(context)
-                isTransitioning = false
-            }
+    private fun onDismiss() {
+        if (!isTransitioning) {
+            dialogState = RemoteDialogState.CREATE_FROM
+            showDialog = false
+        } else
+            isTransitioning = false
+    }
+
+    private fun dismissDialog(transitioning : Boolean = false) {
+        createRemoteDialog?.let {
+            isTransitioning = transitioning
+            it.dismiss()
+            createRemoteDialog = null
         }
     }
 
+    fun onBackPressed() {
+        Log.d("TEST", " ON BACK PRESSED ($dialogState)")
+        when (dialogState) {
+            RemoteDialogState.CREATE_FROM ->
+            {
+                dismissDialog()
+            }
+            RemoteDialogState.TEMPLATES ->
+            {
+                dismissDialog(true)
+                context?.let { showCreateRemoteDialog(it) }
+            }
+            RemoteDialogState.EXISTING_REMOTE ->
+            {
+                Log.d("TEST", "Context is null = ${context == null}")
+                dismissDialog(true)
+                context?.let { showCreateRemoteDialog(it) }
+            }
+        }
+    }
 
 /*
 ----------------------------------------------
@@ -90,15 +139,7 @@ class RemoteCreator {
 
         // set up bottom sheet dialog
         val createRemoteView = context.layoutInflater.inflate(R.layout.v_create_remote_from, null)
-        createRemoteDialog = BottomSheetDialog(context)
         val createRemoteFromBinding = DataBindingUtil.bind<VCreateRemoteFromBinding>(createRemoteView)
-        createRemoteDialog?.setContentView(createRemoteView)
-        createRemoteDialog?.setOnDismissListener {
-            if (!isTransitioning) {
-                dialogState = RemoteDialogState.CREATE_FROM
-                onCreateDialogDismiss()
-            }
-        }
 
         // set up onClick listeners (device template, existing remote, blank layout)
         createRemoteFromBinding?.tvFromScratch?.setOnClickListener { onBlankRemoteClicked() }
@@ -109,7 +150,7 @@ class RemoteCreator {
         if (AppState.userData.remotes.size == 0)
             createRemoteFromBinding?.tvFromExistingRemote?.visibility = View.GONE
 
-        createRemoteDialog?.show()
+        createDialogView(context, createRemoteView)
     }
 
     private fun showCreateFromExistingRemoteDialog(context: Context) {
@@ -118,18 +159,15 @@ class RemoteCreator {
 
         // set up bottom sheet dialog
         val existingDeviceView = context.layoutInflater.inflate(R.layout.v_create_from_existing_remote, null)
-        createRemoteDialog = BottomSheetDialog(context)
         val existingBinding = DataBindingUtil.bind<VCreateFromExistingRemoteBinding>(existingDeviceView)
-        createRemoteDialog?.setContentView(existingDeviceView)
-        createRemoteDialog?.setOnDismissListener {
-            if (!isTransitioning) {
-                dialogState = RemoteDialogState.CREATE_FROM
-                onCreateDialogDismiss()
-            }
-        }
 
         // set up list of existing remotes
-        existingBinding?.remotesList?.adapter = ExistingRemotesAdapter(ArrayList(AppState.userData.remotes.values))
+        existingBinding?.remotesList?.apply {
+            adapter = ExistingRemotesAdapter(ArrayList(AppState.userData.remotes.values))
+            layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        }
+
+        createDialogView(context, existingDeviceView)
     }
 
     private fun showCreateFromDeviceTemplateDialog(context: Context) {
@@ -143,10 +181,8 @@ class RemoteCreator {
 */
 
     private fun onFromExistingRemoteClicked(context: Context) {
-        isTransitioning = true
-        dismissBottomDialog()
+        dismissDialog(true)
         showCreateFromExistingRemoteDialog(context)
-        isTransitioning = false
     }
 
     private fun onFromDeviceTemplateClicked(context: Context) {
@@ -198,7 +234,17 @@ class RemoteCreator {
     }
 
     companion object {
-        fun stateFromIntVal(intVal : Int) = RemoteDialogState.values().associateBy(RemoteDialogState::value)[intVal]
+        private fun stateFromIntVal(intVal : Int) = RemoteDialogState.values().associateBy(RemoteDialogState::value)[intVal]
+        fun readStateFromParcel(parcel: Parcel) = State(
+            stateFromIntVal(parcel.readInt()) ?: RemoteDialogState.CREATE_FROM,
+            parcel.readInt() == 1
+            )
+
+        fun writeToParcel(parcel: Parcel, savedCreateRemoteState: State) {
+            parcel.writeInt(savedCreateRemoteState.dialogState.value)
+            parcel.writeInt(if (savedCreateRemoteState.isShowing) 1 else 0)
+        }
+
     }
 
 /*
@@ -261,5 +307,12 @@ class RemoteCreator {
             buttons.addAll(it.buttons)
         }
     }
+
+/*
+----------------------------------------------
+    State Class
+----------------------------------------------
+*/
+
 
 }

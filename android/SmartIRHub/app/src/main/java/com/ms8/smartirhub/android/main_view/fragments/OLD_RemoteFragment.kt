@@ -2,6 +2,7 @@ package com.ms8.smartirhub.android.main_view.fragments
 
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Parcel
@@ -15,38 +16,63 @@ import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
-import androidx.databinding.Observable
-import androidx.databinding.ObservableArrayMap
-import androidx.databinding.ObservableMap
+import android.view.inputmethod.InputMethodManager
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
+import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.database.AppState
+import com.ms8.smartirhub.android.databinding.FRemoteCurrentBinding
 import com.ms8.smartirhub.android.main_view.MainViewActivity
 import com.ms8.smartirhub.android.main_view.fragments.OLD_RemoteFragment.Companion.LayoutState.SHOW_CREATE_FIRST_REMOTE
 import com.ms8.smartirhub.android.main_view.fragments.OLD_RemoteFragment.Companion.LayoutState.SHOW_FAV_REMOTE
+import com.ms8.smartirhub.android.remote_control.button.models.Button
+import com.ms8.smartirhub.android.remote_control.command.creation.GetFromRemoteActivity
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import com.ms8.smartirhub.android.remote_control.views.RemoteLayout
-import com.ms8.smartirhub.android.remote_control.views.RemoteLayoutView
 import com.ms8.smartirhub.android.utils.RequestCodes
+import com.ms8.smartirhub.android.utils.extensions.getGenericNotificationFlashbar
 
 
 class OLD_RemoteFragment : MainFragment() {
-    lateinit var remoteLayout : RemoteLayout
-    var state : State =
-        State()
-    var screenHeight = 800
+    val remoteLayout  = RemoteLayout()
+    var binding : FRemoteCurrentBinding? = null
+    var state : State = State()
+    private var screenHeight = 800
 
-    val remotesListener = object : ObservableMap.OnMapChangedCallback<ObservableArrayMap<String, RemoteProfile>, String, RemoteProfile>() {
-        override fun onMapChanged(sender: ObservableArrayMap<String, RemoteProfile>?, key: String?) { determineState() }
-    }
-    val editModeListener = object : Observable.OnPropertyChangedCallback() {
-        override fun onPropertyChanged(sender: Observable?, propertyId: Int) { determineState() }
-    }
-    val createNewButtonListener = object : Observable.OnPropertyChangedCallback() {
-        override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
-            if (AppState.tempData.tempRemoteProfile.isCreatingNewButton.get()) {
-                //startActivityForResult(Intent(activity, CBWalkThroughActivity::class.java), REQ_NEW_BUTTON)
+/*
+-----------------------------------------------
+    Listener Hell Below
+-----------------------------------------------
+*/
+
+    // Is called when a remote has been added to AppState
+    private val remoteCreationCompleteListener : (Button) -> Unit = { button : Button ->
+        activity?.let {
+            if (it !is AppCompatActivity)
+                return@let
+            when (button.type) {
+                Button.Companion.ButtonStyle.STYLE_SPACE -> it.getGenericNotificationFlashbar(getString(R.string.added_space_button))
+                    .build().show()
+                else -> it.getGenericNotificationFlashbar(getString(R.string.added_button))
+                    .build().show()
             }
         }
+    }
+
+    // Is called when ButtonCreator requests a command from a particular remote
+    private val requestCommandFromRemoteListener : (RemoteProfile) -> Unit = { remote ->
+        val intent = Intent(context, GetFromRemoteActivity::class.java)
+        intent.putExtra(GetFromRemoteActivity.EXTRA_REMOTE_UID, remote.uid)
+        intent.putExtra(GetFromRemoteActivity.EXTRA_TYPE, GetFromRemoteActivity.Companion.ResultType.COMMAND)
+        startActivityForResult(intent, RequestCodes.GET_COMMAND_FROM_REMOTE)
+    }
+
+    // Is called when ButtonCreator requests an action from a particular remote
+    private val requestActionFromRemoteListener : (RemoteProfile) -> Unit = { remote ->
+        val intent = Intent(context, GetFromRemoteActivity::class.java)
+        intent.putExtra(GetFromRemoteActivity.EXTRA_REMOTE_UID, remote.uid)
+        intent.putExtra(GetFromRemoteActivity.EXTRA_TYPE, GetFromRemoteActivity.Companion.ResultType.ACTIONS)
+        startActivityForResult(intent, RequestCodes.GET_ACTIONS_FROM_REMOTE)
     }
 
     private fun determineState(forceUpdate : Boolean = false) {
@@ -63,39 +89,39 @@ class OLD_RemoteFragment : MainFragment() {
 
             when (state.layoutState) {
                 SHOW_CREATE_FIRST_REMOTE -> {
-                    remoteLayout.binding.txtCreateFirstRemoteP1.animate()
-                        .alpha(1f)
-                        .setInterpolator(DecelerateInterpolator())
-                        .setDuration(300)
-                        .start()
-                    remoteLayout.binding.txtCreateFirstRemoteP2.animate()
-                        .alpha(1f)
-                        .setInterpolator(DecelerateInterpolator())
-                        .setDuration(300)
-                        .start()
-                    remoteLayout.binding.remoteLayout.animate()
-                        .translationY(screenHeight.toFloat())
-                        .setInterpolator(AccelerateInterpolator())
-                        .setDuration(300)
-                        .start()
+                    remoteLayout.binding?.txtCreateFirstRemoteP1?.animate()
+                        ?.alpha(1f)
+                        ?.setInterpolator(DecelerateInterpolator())
+                        ?.setDuration(300)
+                        ?.start()
+                    remoteLayout.binding?.txtCreateFirstRemoteP2?.animate()
+                        ?.alpha(1f)
+                        ?.setInterpolator(DecelerateInterpolator())
+                        ?.setDuration(300)
+                        ?.start()
+                    remoteLayout.binding?.remoteLayout?.animate()
+                        ?.translationY(screenHeight.toFloat())
+                        ?.setInterpolator(AccelerateInterpolator())
+                        ?.setDuration(300)
+                        ?.start()
                 }
 
                 SHOW_FAV_REMOTE -> {
-                    remoteLayout.binding.txtCreateFirstRemoteP1.animate()
-                        .alpha(0f)
-                        .setInterpolator(DecelerateInterpolator())
-                        .setDuration(300)
-                        .start()
-                    remoteLayout.binding.txtCreateFirstRemoteP2.animate()
-                        .alpha(0f)
-                        .setInterpolator(DecelerateInterpolator())
-                        .setDuration(300)
-                        .start()
-                    remoteLayout.binding.remoteLayout.animate()
-                        .translationY(0f)
-                        .setInterpolator(AccelerateDecelerateInterpolator())
-                        .setDuration(300)
-                        .start()
+                    remoteLayout.binding?.txtCreateFirstRemoteP1?.animate()
+                        ?.alpha(0f)
+                        ?.setInterpolator(DecelerateInterpolator())
+                        ?.setDuration(300)
+                        ?.start()
+                    remoteLayout.binding?.txtCreateFirstRemoteP2?.animate()
+                        ?.alpha(0f)
+                        ?.setInterpolator(DecelerateInterpolator())
+                        ?.setDuration(300)
+                        ?.start()
+                    remoteLayout.binding?.remoteLayout?.animate()
+                        ?.translationY(0f)
+                        ?.setInterpolator(AccelerateDecelerateInterpolator())
+                        ?.setDuration(300)
+                        ?.start()
                 }
             }
         }
@@ -103,25 +129,10 @@ class OLD_RemoteFragment : MainFragment() {
 
 /*
     ----------------------------------------------
-        Callbacks
-    ----------------------------------------------
-*/
-//    private val remoteLayoutCallback = object : _OLD_RemoteLayout.RemoteLayoutButtonCallback {
-//        override fun createNewButton() {
-//            if (!waitingForCreateButtonActivity) {
-//                waitingForCreateButtonActivity = true
-//                startActivityForResult(Intent(activity, CBWalkThroughActivity::class.java), REQ_NEW_BUTTON)
-//            }
-//        }
-//    }
-
-/*
-    ----------------------------------------------
         Overridden Functions
     ----------------------------------------------
 */
-    override fun newInstance(): MainFragment { return OLD_RemoteFragment()
-}
+    override fun newInstance(): MainFragment { return OLD_RemoteFragment() }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
@@ -139,10 +150,16 @@ class OLD_RemoteFragment : MainFragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        remoteLayout = RemoteLayout(inflater.context)
+        binding = FRemoteCurrentBinding.inflate(inflater, null, false)
+        remoteLayout.binding = binding
+        remoteLayout.buttonCreator.apply {
+            onCreationComplete = remoteCreationCompleteListener
+            onRequestCommandFromRemote = requestCommandFromRemoteListener
+            onRequestActionsFromRemote = requestActionFromRemoteListener
+        }
 
         // Restore state
-        state = savedInstanceState?.getParcelable<State>(
+        state = savedInstanceState?.getParcelable(
             REMOTE_FRAG_STATE
         ) ?: state
             .apply {
@@ -156,10 +173,10 @@ class OLD_RemoteFragment : MainFragment() {
         // Set top padding to account for toolbar
         val tv = TypedValue()
         if (activity?.theme?.resolveAttribute(android.R.attr.actionBarSize, tv, true) == true)
-            remoteLayout.setTopPadding(TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics))
+            remoteLayout.topPadding = TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics)
 
         // Set scroll listener to notify when to hide UI Elements
-        remoteLayout.binding.remoteLayout.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        remoteLayout.binding?.remoteLayout?.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
@@ -173,46 +190,36 @@ class OLD_RemoteFragment : MainFragment() {
             }
         })
 
-        // Set up remote adapter
-        remoteLayout.setupAdapter()
-
         // Get screen height
         val displayMetrics = DisplayMetrics()
         activity?.windowManager?.defaultDisplay?.getMetrics(displayMetrics)?.let {
             screenHeight = displayMetrics.heightPixels
         }
 
-        // show/hide remote background and 'create remote' text
-        when (state.layoutState) {
-            SHOW_CREATE_FIRST_REMOTE -> {
-                remoteLayout.binding.txtCreateFirstRemoteP1.alpha = 1f
-                remoteLayout.binding.txtCreateFirstRemoteP2.alpha = 1f
-                remoteLayout.binding.remoteLayout.translationY = screenHeight.toFloat()
-            }
-            SHOW_FAV_REMOTE -> {
-                remoteLayout.binding.txtCreateFirstRemoteP1.alpha = 0f
-                remoteLayout.binding.txtCreateFirstRemoteP2.alpha = 0f
-                remoteLayout.binding.remoteLayout.translationY = 0f
-            }
-        }
-
-        return remoteLayout.binding.root
+        return remoteLayout.binding!!.root
     }
 
     override fun onResume() {
+
         super.onResume()
         remoteLayout.startListening()
-        AppState.userData.remotes.addOnMapChangedCallback(remotesListener)
-        AppState.tempData.tempRemoteProfile.inEditMode.addOnPropertyChangedCallback(editModeListener)
-        AppState.tempData.tempRemoteProfile.isCreatingNewButton.addOnPropertyChangedCallback(createNewButtonListener)
+        remoteLayout.binding = binding
+        remoteLayout.buttonCreator.apply {
+            onCreationComplete = remoteCreationCompleteListener
+            onRequestCommandFromRemote = requestCommandFromRemoteListener
+            onRequestActionsFromRemote = requestActionFromRemoteListener
+        }
     }
 
     override fun onPause() {
         super.onPause()
         remoteLayout.stopListening()
-        AppState.userData.remotes.removeOnMapChangedCallback(remotesListener)
-        AppState.tempData.tempRemoteProfile.inEditMode.removeOnPropertyChangedCallback(editModeListener)
-        AppState.tempData.tempRemoteProfile.isCreatingNewButton.removeOnPropertyChangedCallback(createNewButtonListener)
+        remoteLayout.binding = null
+        remoteLayout.buttonCreator.apply {
+            onCreationComplete = {}
+            onRequestCommandFromRemote = {}
+            onRequestActionsFromRemote = {}
+        }
     }
 
     override fun toString() = "Remote Fragment"
@@ -224,18 +231,18 @@ class OLD_RemoteFragment : MainFragment() {
         @SuppressLint("LogNotTimber")
         fun toLayoutState(intVal : Int) : LayoutState {
             return when (intVal) {
-                LayoutState.SHOW_CREATE_FIRST_REMOTE.ordinal -> LayoutState.SHOW_CREATE_FIRST_REMOTE
-                LayoutState.SHOW_FAV_REMOTE.ordinal -> LayoutState.SHOW_FAV_REMOTE
+                SHOW_CREATE_FIRST_REMOTE.ordinal -> SHOW_CREATE_FIRST_REMOTE
+                SHOW_FAV_REMOTE.ordinal -> SHOW_FAV_REMOTE
                 else -> {
                     Log.e("RemoteFragment", "Unknown int val conversion to layout state: $intVal")
-                    LayoutState.SHOW_FAV_REMOTE
+                    SHOW_FAV_REMOTE
                 }
             }
         }
 
         class State() : Parcelable {
             var isShowingTemplateSheet = false
-            var layoutState = LayoutState.SHOW_CREATE_FIRST_REMOTE
+            var layoutState = SHOW_CREATE_FIRST_REMOTE
 
             constructor(parcel: Parcel) : this() {
                 isShowingTemplateSheet = parcel.readByte() != 0.toByte()

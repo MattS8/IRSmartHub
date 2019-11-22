@@ -52,9 +52,20 @@ class CommandCreator {
             dialogDismissedListener(isBackPressed)
             if (isBackPressed)
                 isBackPressed = false
+            reset()
         }
         else
             isTransitioning = false
+    }
+
+    private fun reset() {
+        dialogState = CommandDialogState.COMMAND_FROM
+        arrayPosition = 0
+        selectedHub = null
+        isPairing = false
+        isSavingIrSignal = false
+        isSavingCommand = false
+        isBackPressed = false
     }
 
 /*
@@ -128,6 +139,8 @@ class CommandCreator {
                 removeSignalSavingCallbacks()
                 pairingBinding = null
                 pairSignalInfoBinding = null
+                instructionsBinding = null
+                newCommandSheetBinding = null
 
                 dismissDialog(true)
             }
@@ -233,14 +246,7 @@ class CommandCreator {
 
             // create dialog
             // using a custom onBackPressed to handle navigating the different stages of creation process
-            createCommandDialog = object : BottomSheetDialog(c) {
-                override fun onBackPressed() {
-                    this@CommandCreator.onBackPressed()
-                }
-            }
-            createCommandDialog?.setContentView(bottomSheetView)
-            createCommandDialog?.setOnDismissListener { onDismiss() }
-            createCommandDialog?.show()
+            createDialogView(c, bottomSheetView)
         }
     }
 
