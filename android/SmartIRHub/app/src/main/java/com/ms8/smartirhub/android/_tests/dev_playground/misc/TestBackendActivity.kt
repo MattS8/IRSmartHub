@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.ms8.smartirhub.android.R
-import com.ms8.smartirhub.android.firebase.FirestoreActions.TEST_REMOTE
 import com.ms8.smartirhub.android.models.firestore.Hub.Companion.DEFAULT_HUB
 import com.ms8.smartirhub.android.remote_control.button.models.Button
 import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.IMG_ADD
@@ -74,7 +73,7 @@ class TestBackendActivity : AppCompatActivity() {
                         type = Button.Companion.ButtonStyle.STYLE_BTN_INCREMENTER_VERTICAL
                     })
             }
-        testRemote.uid = TEST_REMOTE
+        //testRemote.uid = TEST_REMOTE
 //        FirestoreActions.updateRemote(testRemote)
 //            .addOnSuccessListener {
 //                Log.w("TEST###", "Added successfully!")

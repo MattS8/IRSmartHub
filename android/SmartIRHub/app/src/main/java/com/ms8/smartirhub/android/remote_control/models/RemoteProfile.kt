@@ -104,6 +104,17 @@ class RemoteProfile: Observable {
         }
     }
 
+    fun copyFrom(remoteProfile: RemoteProfile?) {
+        remoteProfile?.let {
+            uid = it.uid
+            name = it.name
+            owner = it.owner
+            ownerUsername = it.ownerUsername
+            buttons.clear()
+            buttons.addAll(it.buttons)
+        }
+    }
+
     @Suppress("UNCHECKED_CAST")
     companion object {
         /**
@@ -115,7 +126,7 @@ class RemoteProfile: Observable {
                 ?: RemoteProfile()
 
             // set uid
-            newRemote.uid = FirebaseAuth.getInstance().currentUser!!.uid
+            newRemote.uid = snapshot.id
 
             // set buttons
             if (snapshot.contains("buttons")) {
@@ -128,6 +139,33 @@ class RemoteProfile: Observable {
 
             return newRemote
         }
+
+        @SuppressLint("LogNotTimber")
+        fun permissionFromString(string: String) : RemoteProfile.PermissionType {
+            return when (string) {
+                "READ" -> {
+                    PermissionType.READ
+                }
+                "READ_WRITE" -> {
+                    PermissionType.READ_WRITE
+                }
+                "FULL_ACCESS" -> {
+                    PermissionType.FULL_ACCESS
+                }
+                else -> {
+                    Log.w("Remote", "Unknown permission string: $string")
+                    PermissionType.READ
+                }
+            }
+        }
+
+        fun permissionToString(permission: PermissionType) : String {
+            return when (permission) {
+                PermissionType.READ -> "READ"
+                PermissionType.READ_WRITE -> "READ_WRITE"
+                PermissionType.FULL_ACCESS -> "FULL_ACCESS"
+            }
+        }
     }
 
 /*
@@ -135,6 +173,18 @@ class RemoteProfile: Observable {
    Remote Classes
 ----------------------------------------------
 */
+
+    class Permission(val permission: PermissionType, val username: String) {
+        override fun toString(): String {
+            return when (permission) {
+                PermissionType.READ -> "READ"
+                PermissionType.READ_WRITE -> "READ_WRITE"
+                PermissionType.FULL_ACCESS -> "FULL_ACCESS"
+            }
+        }
+    }
+
+    enum class PermissionType {READ, READ_WRITE, FULL_ACCESS}
 
     @Suppress("UNCHECKED_CAST")
     class Command {

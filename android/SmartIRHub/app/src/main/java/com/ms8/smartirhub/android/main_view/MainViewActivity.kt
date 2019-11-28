@@ -21,6 +21,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.Observable
 import androidx.fragment.app.FragmentPagerAdapter
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import com.google.firebase.auth.FirebaseAuth
 import com.mikepenz.materialdrawer.AccountHeaderBuilder
@@ -47,6 +48,23 @@ import com.ms8.smartirhub.android.remote_control.command.creation.GetFromRemoteA
 import kotlinx.android.synthetic.main.f_remote_current.*
 
 class MainViewActivity : AppCompatActivity() {
+
+/*
+----------------------------------------------
+    Public Listeners
+----------------------------------------------
+*/
+    val showHideUIElementsScrollListener = object : RecyclerView.OnScrollListener() {
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            super.onScrolled(recyclerView, dx, dy)
+
+            if (dy > 0) {
+                hideUiElements()
+            } else if (dy < 0) {
+                showUiElements()
+            }
+        }
+    }
 
 /*
 ----------------------------------------------
@@ -186,35 +204,6 @@ class MainViewActivity : AppCompatActivity() {
             onCreateFromDeviceTemplate = { createFromDeviceTemplate() }
             onCreateFromExistingRemote = { createFromExistingRemote() }
         }
-
-    // 'create button' dialog
-//    private var buttonCreator : ButtonCreator = ButtonCreator()
-//        .apply {
-//            onCreateDialogDismiss = {
-//                isShowingCreateButtonView = false
-//            }
-//            onCreateDialogShow = {
-//                isShowingCreateButtonView = true
-//            }
-//            onCreationComplete = { button ->
-//                when (button.type) {
-//                    Button.Companion.ButtonStyle.STYLE_SPACE -> getGenericNotificationFlashbar(getString(R.string.added_space_button)).build().show()
-//                    else -> getGenericNotificationFlashbar(getString(R.string.added_button)).build().show()
-//                }
-//            }
-//            onRequestCommandFromRemote = { remote ->
-//                val intent = Intent(this@MainViewActivity, GetFromRemoteActivity::class.java)
-//                intent.putExtra(GetFromRemoteActivity.EXTRA_REMOTE_UID, remote.uid)
-//                intent.putExtra(GetFromRemoteActivity.EXTRA_TYPE, ResultType.COMMAND)
-//                startActivityForResult(intent, RequestCodes.GET_COMMAND_FROM_REMOTE)
-//            }
-//            onRequestActionsFromRemote = { remote ->
-//                val intent = Intent(this@MainViewActivity, GetFromRemoteActivity::class.java)
-//                intent.putExtra(GetFromRemoteActivity.EXTRA_REMOTE_UID, remote.uid)
-//                intent.putExtra(GetFromRemoteActivity.EXTRA_TYPE, ResultType.ACTIONS)
-//                startActivityForResult(intent, RequestCodes.GET_ACTIONS_FROM_REMOTE)
-//            }
-//        }
 
 /*
 ----------------------------------------------

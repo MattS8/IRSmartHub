@@ -293,4 +293,9 @@
     <string name="initial_delay_indicator">0</string>
     <string name="test_button_creator">Test Button Creator</string>
     <string name="button_label">Button Label</string>
+    <string name="remote_icon">Remote Icon</string>
+    <string name="name">name</string>
+    <string name="edit">Edit</string>
+    <string name="change_name">Change Name</string>
+    <string name="err_invalid_remote_name">Remote names can only contain nonspecial characters, spaces, and underscores.</string>
 </resources>

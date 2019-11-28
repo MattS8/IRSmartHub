@@ -1,8 +1,6 @@
 package com.ms8.smartirhub.android.database
 
-import androidx.databinding.Observable
 import androidx.databinding.ObservableArrayMap
-import androidx.databinding.ObservableBoolean
 import androidx.databinding.ObservableField
 import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
@@ -21,18 +19,20 @@ object AppState {
     val errorData : ErrorData = ErrorData()
 
     data class UserData(
-        val groups           : ObservableArrayMap<String, Group>                 = ObservableArrayMap(),
-        val hubs             : ObservableArrayMap<String, Hub>                   = ObservableArrayMap(),
-        val remotes          : ObservableArrayMap<String, RemoteProfile>         = ObservableArrayMap(),
-        val remoteTemplates  : ObservableArrayMap<String, RemoteProfileTemplate> = ObservableArrayMap(),
-        val irSignals        : ObservableArrayMap<String, IrSignal>              = ObservableArrayMap(),
-        val user             : User                                              = User()
+        val groups           : ObservableArrayMap<String, Group>                    = ObservableArrayMap(),
+        val hubs             : ObservableArrayMap<String, Hub>                      = ObservableArrayMap(),
+        val remotes          : ObservableArrayMap<String, RemoteProfile>            = ObservableArrayMap(),
+        val remotePermissions: ObservableArrayMap<String, RemoteProfile.Permission> = ObservableArrayMap(),
+        val remoteTemplates  : ObservableArrayMap<String, RemoteProfileTemplate>    = ObservableArrayMap(),
+        val irSignals        : ObservableArrayMap<String, IrSignal>                 = ObservableArrayMap(),
+        val user             : User                                                 = User()
     ) {
 
         fun removeData() {
             user.clear()
             groups.clear()
             remotes.clear()
+            remotePermissions.clear()
             hubs.clear()
             irSignals.clear()
 
@@ -43,6 +43,7 @@ object AppState {
             return hubs.size == user.hubs.size
                     && remotes.size == user.remotes.size
                     && irSignals.size == user.irSignals.size
+                    && remotePermissions.size == user.remotes.size
         }
     }
 
@@ -50,7 +51,8 @@ object AppState {
         val tempRemoteProfile   : RemoteProfile              = RemoteProfile(),
         var tempButton          : ObservableField<Button>    = ObservableField(),
         var tempCommand         : RemoteProfile.Command?     = null,
-        var tempSignal          : ObservableField<IrSignal?> = ObservableField()
+        var tempSignal          : ObservableField<IrSignal?> = ObservableField(),
+        var tempRemoteName      : String                     = ""
     )
 
     data class ErrorData (
