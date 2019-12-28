@@ -7,23 +7,25 @@ import android.content.Context
 import android.graphics.Color.TRANSPARENT
 import android.graphics.Rect
 import android.util.Log
+import android.util.TypedValue
 import androidx.appcompat.app.AppCompatActivity
 import com.andrognito.flashbar.Flashbar
 import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.remote_control.button.models.Button
+import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
 
 
-val AppCompatActivity.hasSourceBounds: Boolean get() = intent?.sourceBounds != null
+val Activity.hasSourceBounds: Boolean get() = intent?.sourceBounds != null
 
-fun AppCompatActivity.sourceBounds(boundsAction: (Rect) -> Unit) {
+fun Activity.sourceBounds(boundsAction: (Rect) -> Unit) {
     intent?.sourceBounds?.let(boundsAction)
 }
 
 /**
  * Disables upcoming transition when [hasSourceBounds] is true. Should be called before [AppCompatActivity.onCreate]
  */
-fun AppCompatActivity.preAnimationSetup() {
+fun Activity.preAnimationSetup() {
     if (hasSourceBounds) {
         overridePendingTransition(0, 0)
     }
@@ -32,18 +34,18 @@ fun AppCompatActivity.preAnimationSetup() {
 /**
  * @return [ValueAnimator] that animates status bar color from [TRANSPARENT] to current status bar color
  */
-val AppCompatActivity.statusBarAnimator: Animator
+val Activity.statusBarAnimator: Animator
     get() = ValueAnimator.ofArgb(TRANSPARENT, window.statusBarColor)
         .animatedValue(window::setStatusBarColor)
 
 /**
  * @return [ValueAnimator] that animates navigation bar color from [TRANSPARENT] to current navigation bar color
  */
-val AppCompatActivity.navigationBarAnimator: Animator
+val Activity.navigationBarAnimator: Animator
     get() = ValueAnimator.ofArgb(TRANSPARENT, window.navigationBarColor)
         .animatedValue(window::setNavigationBarColor)
 
-fun AppCompatActivity.findNavBarHeight(): Int {
+fun Activity.findNavBarHeight(): Int {
     val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
     return if (resourceId > 0) {
         resources.getDimensionPixelSize(resourceId)
@@ -64,7 +66,7 @@ fun Context.getNavBarHeight() : Int {
     else 0
 }
 
-fun AppCompatActivity.getGenericErrorFlashbar(showPositiveAction : Boolean = false) = Flashbar.Builder(this)
+fun Activity.getGenericErrorFlashbar(showPositiveAction : Boolean = false) = Flashbar.Builder(this)
     .gravity(Flashbar.Gravity.BOTTOM)
     .showOverlay()
     .backgroundColorRes(R.color.colorCardDark)
@@ -83,7 +85,7 @@ fun AppCompatActivity.getGenericErrorFlashbar(showPositiveAction : Boolean = fal
         }
     }
 
-fun AppCompatActivity.getGenericComingSoonFlashbar() = Flashbar.Builder(this)
+fun Activity.getGenericComingSoonFlashbar() = Flashbar.Builder(this)
     .gravity(Flashbar.Gravity.BOTTOM)
     .showOverlay()
     .message(R.string.coming_soon)
@@ -93,7 +95,7 @@ fun AppCompatActivity.getGenericComingSoonFlashbar() = Flashbar.Builder(this)
     .dismissOnTapOutside()
     .duration(Flashbar.DURATION_LONG)
 
-fun AppCompatActivity.getGenericNotificationFlashbar(message : String) = Flashbar.Builder(this)
+fun Activity.getGenericNotificationFlashbar(message : String) = Flashbar.Builder(this)
     .gravity(Flashbar.Gravity.BOTTOM)
     .showOverlay()
     .message(message)
@@ -102,6 +104,14 @@ fun AppCompatActivity.getGenericNotificationFlashbar(message : String) = Flashba
     .enableSwipeToDismiss()
     .dismissOnTapOutside()
     .duration(Flashbar.DURATION_LONG)
+
+fun Activity.getActionBarSize() : Int {
+    val tv = TypedValue()
+    return if (theme?.resolveAttribute(android.R.attr.actionBarSize, tv, true) == true)
+        TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics)
+    else
+        Utils.dpToPx(this, 56f)
+}
 
 /*
 -----------------------------------------------

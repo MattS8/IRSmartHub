@@ -9,7 +9,7 @@
     <dimen name="fsw_nav_height">24dp</dimen>
 
     <dimen name="btn_corner_radius">4dp</dimen>
-    <dimen name="rmt_corner_radius">32dp</dimen>
+    <dimen name="rmt_corner_radius">52dp</dimen>
     <dimen name="toolbar_horizontal_margin_remote">32dp</dimen>
     <dimen name="toolbar_horizontal_margin">12dp</dimen>
     <dimen name="pairing_image_size">90dp</dimen>

@@ -39,6 +39,10 @@ class CC_ChooseActionsActivity : AppCompatActivity() {
             editingPosition = position
             startActivityForResult(Intent(this@CC_ChooseActionsActivity, CC_ChooseIrSignalActivity::class.java), REQ_EDIT_ACTION)
         }
+
+        override fun onNoActionsLeft() {
+            //todo
+        }
     }
 
     private val commandListener = object : ObservableList.OnListChangedCallback<ObservableArrayList<Command.Action>>() {

@@ -5,8 +5,10 @@ import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import androidx.core.content.ContextCompat
 import androidx.databinding.Observable
 import androidx.databinding.ObservableList
+import com.ms8.smartirhub.android.R
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.databinding.FRemoteCurrentBinding
 import com.ms8.smartirhub.android.remote_control.button.creation.ButtonCreator
@@ -23,6 +25,7 @@ class RemoteLayout {
                 it.topPadding = topPadding
             }
             setupAdapter()
+            applyBackgroundTint()
         } else {
             buttonCreator.context = null
         }
@@ -42,6 +45,16 @@ class RemoteLayout {
         binding?.remoteLayout?.topPadding = topPadding
     }
 
+    fun applyBackgroundTint() {
+        val isInEditMode = AppState.tempData.tempRemoteProfile.inEditMode.get()
+        binding?.remoteLayout?.apply {
+            backgroundTintList = if (isInEditMode)
+                ContextCompat.getColorStateList(context, R.color.colorRemoteBG_Editing)
+            else
+                ContextCompat.getColorStateList(context, R.color.colorRemoteBG)
+        }
+    }
+
 /*
 -----------------------------------------------
     Listener Hell Below
@@ -50,13 +63,17 @@ class RemoteLayout {
 
     // Is triggered whenever the user enters/exits "edit mode" on the remote (i.e. by clicking the center edit button)
     private val editModeListener  =  object : Observable.OnPropertyChangedCallback() {
-        override fun onPropertyChanged(sender: Observable?, propertyId: Int) { remoteLayoutAdapter.notifyDataSetChanged() }
+        override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+            applyBackgroundTint()
+            remoteLayoutAdapter.notifyDataSetChanged()
+        }
     }
 
     // Is triggered whenever tempRemoteProfile change's 'isCreatingNewButton' (i.e. when a user clicks 'add button'
     private val addButtonListener = object : Observable.OnPropertyChangedCallback() {
         override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
             if (AppState.tempData.tempRemoteProfile.isCreatingNewButton.get() && AppState.tempData.tempRemoteProfile.inEditMode.get()){
+                Log.d("TEST", "addButton DETECTED")
                 //onAddNewButton()
                 buttonCreator.showBottomDialog()
             }
@@ -103,12 +120,49 @@ class RemoteLayout {
     }
 
     private fun checkPromptVisibility() {
-        if (AppState.tempData.tempRemoteProfile.buttons.size == 0 && !AppState.tempData.tempRemoteProfile.inEditMode.get()) {
-            binding?.txtCreateFirstRemoteP1?.visibility = View.VISIBLE
-            binding?.txtCreateFirstRemoteP2?.visibility = View.VISIBLE
-        } else {
-            binding?.txtCreateFirstRemoteP1?.visibility = View.GONE
-            binding?.txtCreateFirstRemoteP2?.visibility = View.GONE
+        val isEmptyRemote = AppState.tempData.tempRemoteProfile.buttons.size == 0
+                && !AppState.tempData.tempRemoteProfile.inEditMode.get()
+        val isFirstTimeRemote = isEmptyRemote
+                && AppState.userData.remotes.size == 0
+
+
+        when {
+            isFirstTimeRemote ->
+            {
+                binding?.apply {
+                    txtCreateFirstRemoteP1.apply {
+                        visibility = View.VISIBLE
+                        setText(R.string.new_remote_prompt)
+                        setCompoundDrawablesWithIntrinsicBounds(null, null, ContextCompat.getDrawable(this.context, R.drawable.ic_new_remote_icon), null)
+                    }
+                    txtCreateFirstRemoteP2.apply {
+                        visibility = View.VISIBLE
+                        setText(R.string.icon_period)
+                    }
+                }
+            }
+            isEmptyRemote ->
+            {
+                binding?.apply {
+                    txtCreateFirstRemoteP1.apply {
+                        visibility = View.VISIBLE
+                        setText(R.string.add_buttons_prompt)
+                        setCompoundDrawablesWithIntrinsicBounds(null, null, ContextCompat.getDrawable(this.context, R.drawable.ic_mode_edit_white_24dp), null)
+
+                    }
+                    txtCreateFirstRemoteP2.apply {
+                        visibility = View.VISIBLE
+                        setText(R.string.icon_period)
+                    }
+                }
+            }
+            else ->
+            {
+                binding?.apply {
+                    txtCreateFirstRemoteP1.visibility = View.GONE
+                    txtCreateFirstRemoteP2.visibility = View.GONE
+                }
+            }
         }
     }
 
@@ -128,7 +182,7 @@ class RemoteLayout {
         if (!isListening) {
             isListening = true
             // ButtonCreator Listeners
-            AppState.tempData.tempRemoteProfile.isCreatingNewButton.addOnPropertyChangedCallback(addButtonListener)
+            //AppState.tempData.tempRemoteProfile.isCreatingNewButton.addOnPropertyChangedCallback(addButtonListener)
             AppState.tempData.tempRemoteProfile.buttons.addOnListChangedCallback(buttonListener)
             AppState.tempData.tempRemoteProfile.inEditMode.addOnPropertyChangedCallback(editModeListener)
         }
@@ -137,7 +191,7 @@ class RemoteLayout {
     fun stopListening() {
         isListening = false
         // ButtonCreator listeners
-        AppState.tempData.tempRemoteProfile.isCreatingNewButton.removeOnPropertyChangedCallback(addButtonListener)
+        //AppState.tempData.tempRemoteProfile.isCreatingNewButton.removeOnPropertyChangedCallback(addButtonListener)
         AppState.tempData.tempRemoteProfile.buttons.removeOnListChangedCallback(buttonListener)
         AppState.tempData.tempRemoteProfile.inEditMode.removeOnPropertyChangedCallback(editModeListener)
     }

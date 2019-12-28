@@ -11,16 +11,21 @@ import android.view.ViewGroup
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.databinding.FRemoteCurrentBinding
 import com.ms8.smartirhub.android.main_view.MainViewActivity
+import com.ms8.smartirhub.android.remote_control.button.creation.ButtonTypeCreation
 import com.ms8.smartirhub.android.remote_control.command.creation.GetFromRemoteActivity
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import com.ms8.smartirhub.android.remote_control.views.RemoteLayout
 import com.ms8.smartirhub.android.utils.RequestCodes
+import com.ms8.smartirhub.android.utils.extensions.getActionBarSize
 
 
 class OLD_RemoteFragment : MainFragment() {
     val remoteLayout  = RemoteLayout()
     var binding : FRemoteCurrentBinding? = null
     private var screenHeight = 800
+
+    // ------ Button Creation Variables
+    val buttonTypeCreation = ButtonTypeCreation()
 
 /*
 -----------------------------------------------
@@ -71,12 +76,12 @@ class OLD_RemoteFragment : MainFragment() {
         }
 
         // Set top padding to account for toolbar
-        val tv = TypedValue()
-        if (activity?.theme?.resolveAttribute(android.R.attr.actionBarSize, tv, true) == true)
-            remoteLayout.topPadding = TypedValue.complexToDimensionPixelSize(tv.data, resources.displayMetrics)
+        activity?.getActionBarSize()?.let { remoteLayout.topPadding = it }
 
         // Set scroll listener to notify when to hide UI Elements
-        remoteLayout.binding?.remoteLayout?.addOnScrollListener((activity as MainViewActivity).showHideUIElementsScrollListener)
+        remoteLayout.binding?.remoteLayout?.apply{
+            addOnScrollListener((activity as MainViewActivity).showHideUIElementsScrollListener)
+        }
 
         // Get screen height
         val displayMetrics = DisplayMetrics()
@@ -88,7 +93,6 @@ class OLD_RemoteFragment : MainFragment() {
     }
 
     override fun onResume() {
-
         super.onResume()
         remoteLayout.startListening()
         remoteLayout.binding = binding
@@ -98,6 +102,8 @@ class OLD_RemoteFragment : MainFragment() {
             onRequestActionsFromRemote = requestActionFromRemoteListener
         }
         //AppState.tempData.tempRemoteProfile.buttons.addOnListChangedCallback(updateNameListener)
+
+        buttonTypeCreation.onCanceled = {  }
     }
 
     override fun onPause() {
@@ -109,6 +115,10 @@ class OLD_RemoteFragment : MainFragment() {
             onRequestCommandFromRemote = {}
             onRequestActionsFromRemote = {}
         }
+    }
+
+    companion object {
+        const val recyclerViewTag = "myRemoteRV"
     }
 
     override fun toString() = "Remote Fragment"

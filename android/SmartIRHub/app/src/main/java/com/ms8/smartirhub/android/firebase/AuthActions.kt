@@ -1,5 +1,6 @@
 package com.ms8.smartirhub.android.firebase
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
@@ -63,7 +64,7 @@ object AuthActions {
     /**
      * Starts the process of signing a user in/up with Google.
      */
-    fun signInWithGoogle(activity: AppCompatActivity) {
+    fun signInWithGoogle(activity: Activity) {
         Log.d("TEST###", "Signing in with Google...")
         if (GoogleSignIn.getLastSignedInAccount(activity) == null)
             Log.d("TEST#", "No previous google sign in")

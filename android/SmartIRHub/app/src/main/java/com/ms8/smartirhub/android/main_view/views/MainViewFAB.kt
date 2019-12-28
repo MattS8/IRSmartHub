@@ -43,6 +43,9 @@ class MainViewFAB(context: Context, attrs: AttributeSet) : FloatingActionButton(
                     setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_new_remote_icon))
                     imageTintList = ContextCompat.getColorStateList(context, R.color.black)
 
+                    // set background tint
+                    backgroundTintList = ContextCompat.getColorStateList(context, R.color.white)
+
                     // set click listener to 'create remote'
                     setOnClickListener{(context as MainViewActivity).createRemote() }
 
@@ -50,6 +53,9 @@ class MainViewFAB(context: Context, attrs: AttributeSet) : FloatingActionButton(
                     // show 'edit remote' icon
                     setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_mode_edit_black_24dp))
                     imageTintList = ContextCompat.getColorStateList(context, R.color.black)
+
+                    // set background tint
+                    backgroundTintList = ContextCompat.getColorStateList(context, R.color.colorFAB_Editing)
 
                     // set click listener to 'edit remote'
                     setOnClickListener { (context as MainViewActivity).editRemote() }
@@ -73,7 +79,7 @@ class MainViewFAB(context: Context, attrs: AttributeSet) : FloatingActionButton(
                                         }
                                     if (layoutState == LayoutState.REMOTES_FAV_EDITING && isListeningForSaveRemoteConfirmation) {
                                         setImageDrawable(savingDrawable)
-                                        imageTintList = ContextCompat.getColorStateList(context, R.color.black)
+                                        imageTintList = ContextCompat.getColorStateList(context, R.color.white)
                                         savingDrawable?.start()
                                     }
                                 }
@@ -87,7 +93,10 @@ class MainViewFAB(context: Context, attrs: AttributeSet) : FloatingActionButton(
                 } else {
                     // show 'save edits' icon
                     setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_done_green_24dp))
-                    imageTintList = ContextCompat.getColorStateList(context, R.color.md_green_300)
+                    imageTintList = ContextCompat.getColorStateList(context, R.color.white)
+
+                    // set background tint
+                    backgroundTintList = ContextCompat.getColorStateList(context, R.color.colorFAB_Done)
 
                     // set click listener to 'save remote'
                     setOnClickListener { (context as MainViewActivity).saveRemote() }
@@ -98,6 +107,9 @@ class MainViewFAB(context: Context, attrs: AttributeSet) : FloatingActionButton(
                 // show 'create remote' icon
                 setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_new_remote_icon))
                 imageTintList = ContextCompat.getColorStateList(context, R.color.black)
+
+                // set background tint
+                backgroundTintList = ContextCompat.getColorStateList(context, R.color.white)
 
                 // set click listener to 'create remote' AND page to VP position 0
                 setOnClickListener {
@@ -113,6 +125,9 @@ class MainViewFAB(context: Context, attrs: AttributeSet) : FloatingActionButton(
                 setImageDrawable(ContextCompat.getDrawable(context, R.drawable.nav_new_hub))
                 imageTintList = ContextCompat.getColorStateList(context, R.color.black)
 
+                // set background tint
+                backgroundTintList = ContextCompat.getColorStateList(context, R.color.white)
+
                 //todo set click listener to 'add hub'
                 setOnClickListener {
                     (context as MainViewActivity).getGenericComingSoonFlashbar().build().show()
@@ -123,6 +138,9 @@ class MainViewFAB(context: Context, attrs: AttributeSet) : FloatingActionButton(
                 // show 'add hub' icon
                 setImageDrawable(ContextCompat.getDrawable(context, R.drawable.nav_new_device))
                 imageTintList = ContextCompat.getColorStateList(context, R.color.black)
+
+                // set background tint
+                backgroundTintList = ContextCompat.getColorStateList(context, R.color.white)
 
                 //todo set click listener to 'add hub'
                 setOnClickListener {

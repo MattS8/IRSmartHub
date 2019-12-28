@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
+import android.graphics.Rect
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -25,8 +26,10 @@ import com.ms8.smartirhub.android.databinding.FRemoteAllBinding
 import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.main_view.MainViewActivity
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
+import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
 import com.ms8.smartirhub.android.utils.MyValidators
 import com.ms8.smartirhub.android.utils.NoSpecialCharacterAllowSpaceAndUnderscoreRule
+import com.ms8.smartirhub.android.utils.extensions.getActionBarSize
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validator
 import java.lang.ref.WeakReference
 
@@ -64,8 +67,16 @@ class MyRemotesFragment : MainFragment() {
         binding = DataBindingUtil.inflate(inflater, R.layout.f_remote_all, container, false)
         binding?.apply {
             rvAllRemotes.layoutManager = LinearLayoutManager(inflater.context, LinearLayoutManager.VERTICAL, false)
-            adapter = AllRemotesAdapter()
-            rvAllRemotes.adapter = adapter
+            adapter = AllRemotesAdapter(activity?.getActionBarSize() ?: 0)
+            adapter?.let {
+                rvAllRemotes.adapter = it
+                rvAllRemotes.addItemDecoration(it.BottomSpaceDecoration())
+            }
+
+            if (activity is MainViewActivity){
+                rvAllRemotes.tag = "AllRemotesRV"
+                rvAllRemotes.addOnScrollListener((activity as MainViewActivity).showHideUIElementsScrollListener)
+            }
         }
         remotesListener.addUserRemotesToAdapter()
 
@@ -89,7 +100,7 @@ class MyRemotesFragment : MainFragment() {
     }
 
 
-    inner class AllRemotesAdapter : RecyclerView.Adapter<AllRemotesAdapter.RemoteViewHolder>() {
+    inner class AllRemotesAdapter(var bottomPadding: Int) : RecyclerView.Adapter<AllRemotesAdapter.RemoteViewHolder>() {
         var remoteList : ArrayList<RemoteProfile> = ArrayList()
         set(value) {
             val diffResult = DiffUtil.calculateDiff(RemoteDiffCallback(field, value))
@@ -194,6 +205,22 @@ class MyRemotesFragment : MainFragment() {
                 }
             }
         }
+
+        inner class BottomSpaceDecoration : RecyclerView.ItemDecoration() {
+
+            override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
+                super.getItemOffsets(outRect, view, parent, state)
+
+                if (parent.getChildAdapterPosition(view) == itemCount - 1)
+                    outRect.bottom = bottomPadding
+                else
+                    outRect.bottom = 0
+            }
+        }
+    }
+
+    companion object {
+        const val recyclerViewTag = "AllRemotesRV"
     }
 }
 

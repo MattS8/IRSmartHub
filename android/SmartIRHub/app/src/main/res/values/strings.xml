@@ -241,7 +241,7 @@
     <string name="err_unknown_desc">Something went wrong. Please try again.</string>
     <string name="new_remote">New Remote</string>
     <string name="new_remote_prompt">Create a new remote by tapping the</string>
-    <string name="icon_period">icon.</string>
+    <string name="icon_period">icon below.</string>
     <string name="all_remotes">All Remotes</string>
     <string name="create_from">Create from</string>
     <string name="device_template">Device Template</string>
@@ -298,4 +298,8 @@
     <string name="edit">Edit</string>
     <string name="change_name">Change Name</string>
     <string name="err_invalid_remote_name">Remote names can only contain nonspecial characters, spaces, and underscores.</string>
+    <string name="top_label">Top Label</string>
+    <string name="label">Label</string>
+    <string name="bottom_label">Bottom Label</string>
+    <string name="add_buttons_prompt">Add some buttons by tapping the</string>
 </resources>

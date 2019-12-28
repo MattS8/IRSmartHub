@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.Paint
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
@@ -20,6 +21,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.Observable
+import androidx.databinding.ObservableArrayList
+import androidx.databinding.ObservableList
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
@@ -38,14 +41,11 @@ import com.ms8.smartirhub.android.main_view.fragments.*
 import com.ms8.smartirhub.android.remote_control.button.creation.ButtonCreator
 import com.ms8.smartirhub.android.remote_control.button.models.Button
 import com.ms8.smartirhub.android.remote_control.command.creation.CommandCreator
-import com.ms8.smartirhub.android.remote_control.command.creation.GetFromRemoteActivity
 import com.ms8.smartirhub.android.remote_control.creation.RemoteCreator
 import com.ms8.smartirhub.android.remote_control.models.showUnknownRemoteSaveError
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
 import com.ms8.smartirhub.android.utils.RequestCodes
 import com.ms8.smartirhub.android.utils.extensions.*
-import com.ms8.smartirhub.android.remote_control.command.creation.GetFromRemoteActivity.Companion.ResultType
-import kotlinx.android.synthetic.main.f_remote_current.*
 
 class MainViewActivity : AppCompatActivity() {
 
@@ -57,11 +57,15 @@ class MainViewActivity : AppCompatActivity() {
     val showHideUIElementsScrollListener = object : RecyclerView.OnScrollListener() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             super.onScrolled(recyclerView, dx, dy)
-
+            val elementParts = when(recyclerView.tag) {
+                MyRemotesFragment.recyclerViewTag -> ElementParts.BOTTOM
+                OLD_RemoteFragment.recyclerViewTag -> ElementParts.BOTH
+                else -> ElementParts.BOTH
+            }
             if (dy > 0) {
-                hideUiElements()
+                hideUiElements(elementParts)
             } else if (dy < 0) {
-                showUiElements()
+                showUiElements(elementParts)
             }
         }
     }
@@ -75,10 +79,10 @@ class MainViewActivity : AppCompatActivity() {
     // main binding
     private lateinit var binding : ActivityMainViewBinding
     private fun setupBinding() {
-        binding
-            .apply {
-                frameLayout.adapter = pagerAdapter
-                frameLayout.addOnPageChangeListener(object: ViewPager.OnPageChangeListener {
+        binding.apply {
+            frameLayout.apply {
+                adapter = pagerAdapter
+                addOnPageChangeListener(object: ViewPager.OnPageChangeListener {
                     override fun onPageScrollStateChanged(state: Int) {}
 
                     override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
@@ -108,11 +112,12 @@ class MainViewActivity : AppCompatActivity() {
                                 }
                             }
                         }
-                        showUiElements()
+                        showUiElements(ElementParts.BOTH)
                     }
                 })
-
-                navView.layoutParams = CoordinatorLayout.LayoutParams(navView.layoutParams)
+            }
+            navView.apply {
+                layoutParams = CoordinatorLayout.LayoutParams(navView.layoutParams)
                     .apply {
                         val tv = TypedValue()
                         val navBarHeight = findNavBarHeight()
@@ -121,11 +126,26 @@ class MainViewActivity : AppCompatActivity() {
                         }
                         gravity = Gravity.BOTTOM
                     }
-                navView.setPadding(navView.paddingLeft, navView.paddingTop, navView.paddingRight, findNavBarHeight())
-
-                btnMyRemotes.setOnClickListener { onMyRemotesClicked() }
-                btnMyDevices.setOnClickListener { onMyDevicesClicked() }
+                setPadding(navView.paddingLeft, navView.paddingTop, navView.paddingRight, findNavBarHeight())
             }
+            btnMyRemotes.apply {
+                setOnClickListener { onMyRemotesClicked() }
+                paintFlags = when (layoutState) {
+                    LayoutState.REMOTES_FAV_EDITING,
+                    LayoutState.REMOTES_FAV,
+                    LayoutState.REMOTES_ALL -> paintFlags or Paint.UNDERLINE_TEXT_FLAG
+                    else -> 0
+                }
+            }
+            btnMyDevices.apply {
+                setOnClickListener { onMyDevicesClicked() }
+                paintFlags = when (layoutState) {
+                    LayoutState.DEVICES_HUBS,
+                    LayoutState.DEVICES_ALL -> Paint.UNDERLINE_TEXT_FLAG
+                    else -> 0
+                }
+            }
+        }
     }
 
     // pages
@@ -275,6 +295,8 @@ class MainViewActivity : AppCompatActivity() {
 
         remoteCreator.context = null
 
+        AppState.tempData.tempRemoteProfile.buttons.removeOnListChangedCallback(tempRemoteButtonsListener)
+
         if (isListeningForSaveRemoteConfirmation)
             removeSaveResponseListener()
 
@@ -287,6 +309,8 @@ class MainViewActivity : AppCompatActivity() {
         super.onResume()
 
         remoteCreator.context = this
+
+        AppState.tempData.tempRemoteProfile.buttons.addOnListChangedCallback(tempRemoteButtonsListener)
 
         if (isListeningForSaveRemoteConfirmation){
             when {
@@ -352,7 +376,9 @@ class MainViewActivity : AppCompatActivity() {
         binding.frameLayout.setCurrentItem(position, smoothScroll)
     }
 
-    fun hideUiElements() {
+    enum class ElementParts {TOP, BOTTOM, BOTH}
+
+    fun hideUiElements(hiddenParts : ElementParts) {
         if (!binding.fab.isOrWillBeHidden) {
             val tv = TypedValue()
             val navBarDist = if (theme.resolveAttribute(android.R.attr.actionBarSize, tv, true))
@@ -362,66 +388,78 @@ class MainViewActivity : AppCompatActivity() {
 
 
             val interpolator = AccelerateInterpolator()
-            binding.fab.hide()
-            binding.fab.animate()
-                .translationY(200f)
-                .setDuration(300)
-                .setInterpolator(interpolator)
-                .start()
-            binding.toolbar.animate()
-                .alpha(0f)
-                .translationY(-100f)
-                .setDuration(300)
-                .setInterpolator(interpolator)
-                .start()
-            binding.navView.animate()
-                .translationY(navBarDist.toFloat())
-                .setDuration(300)
-                .setInterpolator(interpolator)
-                .start()
-            binding.btnMyRemotes.animate()
-                .alpha(0f)
-                .setDuration(300)
-                .setInterpolator(interpolator)
-                .start()
-            binding.btnMyDevices.animate()
-                .alpha(0f)
-                .setDuration(300)
-                .setInterpolator(interpolator)
-                .start()
+
+            if (hiddenParts == ElementParts.BOTTOM || hiddenParts == ElementParts.BOTH) {
+                binding.fab.hide()
+                binding.fab.animate()
+                    .translationY(200f)
+                    .setDuration(300)
+                    .setInterpolator(interpolator)
+                    .start()
+                binding.navView.animate()
+                    .translationY(navBarDist.toFloat())
+                    .setDuration(300)
+                    .setInterpolator(interpolator)
+                    .start()
+                binding.btnMyRemotes.animate()
+                    .alpha(0f)
+                    .setDuration(300)
+                    .setInterpolator(interpolator)
+                    .start()
+                binding.btnMyDevices.animate()
+                    .alpha(0f)
+                    .setDuration(300)
+                    .setInterpolator(interpolator)
+                    .start()
+            }
+
+            if (hiddenParts == ElementParts.TOP || hiddenParts == ElementParts.BOTH) {
+                binding.toolbar.animate()
+                    .alpha(0f)
+                    .translationY(-100f)
+                    .setDuration(300)
+                    .setInterpolator(interpolator)
+                    .start()
+            }
         }
     }
 
-    fun showUiElements() {
+    fun showUiElements(shownParts: ElementParts) {
         if (binding.fab.isOrWillBeHidden) {
             val interpolator = DecelerateInterpolator()
-            binding.fab.show()
-            binding.toolbar.animate()
-                .alpha(1f)
-                .translationY(0f)
-                .setDuration(300)
-                .setInterpolator(interpolator)
-                .start()
-            binding.fab.animate()
-                .translationY(0f)
-                .setDuration(300)
-                .setInterpolator(interpolator)
-                .start()
-            binding.navView.animate()
-                .translationY(0f)
-                .setDuration(300)
-                .setInterpolator(interpolator)
-                .start()
-            binding.btnMyRemotes.animate()
-                .alpha(1f)
-                .setDuration(300)
-                .setInterpolator(interpolator)
-                .start()
-            binding.btnMyDevices.animate()
-                .alpha(1f)
-                .setDuration(300)
-                .setInterpolator(interpolator)
-                .start()
+
+            if (shownParts == ElementParts.BOTTOM || shownParts == ElementParts.BOTH) {
+                binding.fab.show()
+                binding.fab.animate()
+                    .translationY(0f)
+                    .setDuration(300)
+                    .setInterpolator(interpolator)
+                    .start()
+                binding.navView.animate()
+                    .translationY(0f)
+                    .setDuration(300)
+                    .setInterpolator(interpolator)
+                    .start()
+                binding.btnMyRemotes.animate()
+                    .alpha(1f)
+                    .setDuration(300)
+                    .setInterpolator(interpolator)
+                    .start()
+                binding.btnMyDevices.animate()
+                    .alpha(1f)
+                    .setDuration(300)
+                    .setInterpolator(interpolator)
+                    .start()
+            }
+
+            if (shownParts == ElementParts.TOP || shownParts == ElementParts.BOTH) {
+                binding.toolbar.animate()
+                    .alpha(1f)
+                    .translationY(0f)
+                    .setDuration(300)
+                    .setInterpolator(interpolator)
+                    .start()
+            }
         }
     }
 
@@ -442,6 +480,10 @@ class MainViewActivity : AppCompatActivity() {
 
         // set inner page to default
         binding.frameLayout.currentItem = 0
+
+        // set underline to show selection
+        binding.btnMyDevices.paintFlags = Paint.UNDERLINE_TEXT_FLAG
+        binding.btnMyRemotes.paintFlags = 0
 
         // tell pager adapter to move to devices page
         pagerAdapter.setNavPosition(FP_MY_DEVICES)
@@ -465,6 +507,10 @@ class MainViewActivity : AppCompatActivity() {
             // not currently editing remote
             LayoutState.REMOTES_FAV
         }
+
+        // set underline to show selection
+        binding.btnMyRemotes.paintFlags = Paint.UNDERLINE_TEXT_FLAG
+        binding.btnMyDevices.paintFlags = 0
 
         // set inner page to default
         binding.frameLayout.currentItem = 0
@@ -581,6 +627,50 @@ class MainViewActivity : AppCompatActivity() {
 //            }
 //        }
 //    }
+
+    private val tempRemoteButtonsListener = object : ObservableList.OnListChangedCallback<ObservableArrayList<Button>>() {
+        override fun onChanged(sender: ObservableArrayList<Button>?) {
+            binding.fab.applyLayoutState()
+            binding.toolbar.applyLayoutState()
+        }
+
+        override fun onItemRangeRemoved(
+            sender: ObservableArrayList<Button>?,
+            positionStart: Int,
+            itemCount: Int
+        ) {
+            binding.fab.applyLayoutState()
+            binding.toolbar.applyLayoutState()
+        }
+
+        override fun onItemRangeMoved(
+            sender: ObservableArrayList<Button>?,
+            fromPosition: Int,
+            toPosition: Int,
+            itemCount: Int
+        ) {
+            binding.fab.applyLayoutState()
+            binding.toolbar.applyLayoutState()
+        }
+
+        override fun onItemRangeInserted(
+            sender: ObservableArrayList<Button>?,
+            positionStart: Int,
+            itemCount: Int
+        ) {
+            binding.fab.applyLayoutState()
+            binding.toolbar.applyLayoutState()
+        }
+
+        override fun onItemRangeChanged(
+            sender: ObservableArrayList<Button>?,
+            positionStart: Int,
+            itemCount: Int
+        ) {
+            binding.fab.applyLayoutState()
+            binding.toolbar.applyLayoutState()
+        }
+    }
 
     private val editModeListener = object : Observable.OnPropertyChangedCallback() {
         override fun onPropertyChanged(sender: Observable?, propertyId: Int) {

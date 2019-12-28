@@ -31,24 +31,16 @@
                 app:layout_constraintHorizontal_bias="0.5" />
 
         <EditText
-                android:id="@+id/etButtonName"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                app:layout_constraintTop_toTopOf="@id/btnRound"
-                app:layout_constraintStart_toStartOf="@id/btnRound"
-                app:layout_constraintBottom_toBottomOf="@id/btnRound"
-                app:layout_constraintEnd_toEndOf="@id/btnRound"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
-                android:textColor="@color/black"
-                android:elevation="8dp"
-                android:gravity="center"
-                android:background="#00000000"
-                android:textColorHint="@color/material_drawer_hint_text"
-                tools:hint="TEST HINT"
+                android:id="@+id/etButtonLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/btnRound"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:hint="@string/button_label"
                 android:maxLines="1"
+                android:singleLine="true"
                 />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

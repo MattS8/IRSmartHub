@@ -6,7 +6,7 @@
             android:id="@+id/container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/colorPrimaryExtraDark"
+            android:background="@color/black"
             android:animateLayoutChanges="true"
             android:clipChildren="false"
             android:clipToPadding="false"
@@ -80,7 +80,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
-                app:backgroundTint="@color/colorPrimaryDark"
+                app:backgroundTint="@color/colorCardDark"
                 app:fabAlignmentMode="center"
                 app:fabCradleMargin="8dp"
                 app:fabCradleRoundedCornerRadius="16dp"
@@ -114,7 +114,9 @@
                         android:layout_marginEnd="24dp"
                         android:drawableTop="@drawable/ic_my_remotes_icon"
                         android:drawablePadding="-8dp"
-                        android:drawableTint="@color/selectable_text_colored"
+                        app:drawableTint="@color/selectable_text_colored"
+                        android:textAllCaps="false"
+                        android:background="?selectableItemBackground"
                 />
 
                 <TextView
@@ -149,7 +151,9 @@
                         android:layout_marginTop="4dp"
                         android:drawableTop="@drawable/ic_my_devices_icons"
                         android:drawablePadding="-8dp"
-                        android:drawableTint="@color/selectable_text_colored"
+                        app:drawableTint="@color/selectable_text_colored"
+                        android:textAllCaps="false"
+                        android:background="?selectableItemBackground"
                 />
 
             </androidx.constraintlayout.widget.ConstraintLayout>

@@ -17,6 +17,7 @@ import android.view.ViewOutlineProvider
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.widget.TextViewCompat
 import com.bumptech.glide.Glide
@@ -33,6 +34,7 @@ import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.
 import com.ms8.smartirhub.android.remote_control.views.asymmetric_gridview.Utils
 import com.wajahatkarim3.easyvalidation.core.view_ktx.validUrl
 import org.jetbrains.anko.backgroundResource
+import org.jetbrains.anko.margin
 
 class RemoteButtonView(context: Context, attrs: AttributeSet) : FrameLayout(context, attrs) {
     private var buttonTextView  : TextView?     = null
@@ -47,6 +49,8 @@ class RemoteButtonView(context: Context, attrs: AttributeSet) : FrameLayout(cont
     fun setupProperties(properties : Button.Properties) {
         // save bgStyle
         bgStyle = properties.bgStyle
+
+        Log.d("TEST", "Setting up properties with bg ${properties.bgStyle}")
 
         /* set background resource and margins
            note: certain bg styles are exempt from set margins
@@ -65,12 +69,26 @@ class RemoteButtonView(context: Context, attrs: AttributeSet) : FrameLayout(cont
             Button.Companion.BgStyle.BG_ROUND_RECT ->
             {
                 backgroundResource = R.drawable.btn_bg_round_rect_ripple
-                (layoutParams as MarginLayoutParams).setMargins(
-                    Utils.dpToPx(context, properties.marginStart.toFloat()),
-                    Utils.dpToPx(context, properties.marginTop.toFloat()),
-                    Utils.dpToPx(context, properties.marginEnd.toFloat()),
-                    Utils.dpToPx(context, properties.marginBottom.toFloat())
-                )
+                if (layoutParams is ConstraintLayout.LayoutParams) {
+                    (layoutParams as ConstraintLayout.LayoutParams).apply {
+                        dimensionRatio = "3:1"
+                        setMargins(
+                            Utils.dpToPx(context, properties.marginStart.toFloat()),
+                            Utils.dpToPx(context, properties.marginTop.toFloat()),
+                            Utils.dpToPx(context, properties.marginEnd.toFloat()),
+                            Utils.dpToPx(context, properties.marginBottom.toFloat())
+                        )
+                    }
+                } else {
+                    (layoutParams as MarginLayoutParams).setMargins(
+                        Utils.dpToPx(context, properties.marginStart.toFloat()),
+                        Utils.dpToPx(context, properties.marginTop.toFloat()),
+                        Utils.dpToPx(context, properties.marginEnd.toFloat()),
+                        Utils.dpToPx(context, properties.marginBottom.toFloat())
+                    )
+                    layoutParams.width = MarginLayoutParams.MATCH_PARENT
+                    layoutParams.height = MarginLayoutParams.WRAP_CONTENT
+                }
             }
             Button.Companion.BgStyle.BG_ROUND_RECT_BOTTOM ->
             {
@@ -166,10 +184,22 @@ class RemoteButtonView(context: Context, attrs: AttributeSet) : FrameLayout(cont
                 IMG_RADIAL_UP -> buttonImageView?.setImageDrawable(context.getDrawable(R.drawable.ic_keyboard_arrow_up_black_24dp))
                 IMG_RADIAL_DOWN -> buttonImageView?.setImageDrawable(context.getDrawable(R.drawable.ic_keyboard_arrow_down_black_24dp))
                 else -> {
+                    Log.d("TEST", "Checking URL")
                     if (properties.image.validUrl())
                         buttonImageView?.let { Glide.with(it).load(properties.image).into(it) }
                 }
             }
+//            val states = arrayOf(
+//                IntArray(1).apply { set(0, android.R.attr.state_pressed) },
+//                IntArray(1).apply { set(0, android.R.attr.state_enabled) },
+//                IntArray(1).apply { set(0, -android.R.attr.state_enabled) }
+//                )
+//            val colors = IntArray(3).apply {
+//                set(1, ContextCompat.getColor(context, R.color.colorButtonBG))
+//                set(1, ContextCompat.getColor(context, R.color.white))
+//                set(1, ContextCompat.getColor(context, R.color.warm_grey))
+//            }
+//            buttonImageView?.imageTintList = ColorStateList(states, colors)
         } else if (buttonImageView != null) {
             removeView(buttonImageView)
             buttonImageView = null
@@ -177,6 +207,7 @@ class RemoteButtonView(context: Context, attrs: AttributeSet) : FrameLayout(cont
 
         // set background tint
         backgroundTintList = if (properties.bgTint != "") {
+            Log.d("TEST", "adding custom bg tint")
             ColorStateList.valueOf(Color.parseColor(properties.bgTint))
         } else {
             ColorStateList.valueOf(ContextCompat.getColor(context, R.color.colorButtonBG))
@@ -208,6 +239,7 @@ class RemoteButtonView(context: Context, attrs: AttributeSet) : FrameLayout(cont
 
     @SuppressLint("LogNotTimber")
     private fun addTextView() {
+        Log.d("TEST", "Adding text view")
         buttonTextView = TextView(context)
             .apply {
                 textAlignment = View.TEXT_ALIGNMENT_CENTER

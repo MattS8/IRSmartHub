@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
 import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.widget.TextViewCompat
 import androidx.databinding.Observable
@@ -108,11 +109,16 @@ class RemoteLayoutView(context: Context, attrs: AttributeSet): AsymmetricRecycle
 
     class ButtonViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder(
         when (viewType) {
+            Button.Companion.ButtonStyle.STYLE_BTN_NO_MARGIN.value -> {
+                Log.d("TEST", "--- HERE")
+                LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false)
+            }
             Button.Companion.ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND.value -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false)
             Button.Companion.ButtonStyle.STYLE_BTN_INCREMENTER_VERTICAL.value -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_inc_vert, parent, false)
             Button.Companion.ButtonStyle.STYLE_BTN_RADIAL_W_CENTER.value -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_radial, parent, false)
             Button.Companion.ButtonStyle.STYLE_BTN_RADIAL.value -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_radial, parent, false)
             Button.Companion.ButtonStyle.STYLE_CREATE_BUTTON.value -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_create_new, parent, false)
+            Button.Companion.ButtonStyle.STYLE_SPACE.value -> FrameLayout(parent.context)
 
             else -> LayoutInflater.from(parent.context).inflate(R.layout.v_rmt_btn_base, parent, false)
         }
@@ -120,11 +126,11 @@ class RemoteLayoutView(context: Context, attrs: AttributeSet): AsymmetricRecycle
         var button: Button? = null
 
         fun bind(position: Int) {
-            if (position >= AppState.tempData.tempRemoteProfile.buttons.size) {
-                bindCreateNewButton()
-            } else {
-                button = AppState.tempData.tempRemoteProfile.buttons[position]
-                button?.let { b ->
+            when {
+                position >= AppState.tempData.tempRemoteProfile.buttons.size -> bindCreateNewButton()
+                AppState.tempData.tempRemoteProfile.buttons[position].type == Button.Companion.ButtonStyle.STYLE_SPACE -> bindSpaceButton()
+                else -> AppState.tempData.tempRemoteProfile.buttons[position].let { b ->
+                    Log.d("TEST", "bind button - bg = ${button?.properties?.get(0)?.bgStyle}")
                     when (b.type) {
                         Button.Companion.ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND -> bindSingleActionButton(b)
                         Button.Companion.ButtonStyle.STYLE_BTN_INCREMENTER_VERTICAL -> bindIncrementerButton(b)
@@ -136,9 +142,14 @@ class RemoteLayoutView(context: Context, attrs: AttributeSet): AsymmetricRecycle
             }
         }
 
+        private fun bindSpaceButton() {
+            //todo - Is there anything needed to make the space "button" look right?
+        }
+
         private fun bindCreateNewButton() {
             itemView.findViewById<TextView>(R.id.btnRmtCreateNew).apply {
                 setOnClickListener {
+                    Log.d("TEST", "CLICKED")
                     AppState.tempData.tempRemoteProfile.isCreatingNewButton.set(true)
                     AppState.tempData.tempRemoteProfile.isCreatingNewButton.notifyChange()
                 }
@@ -227,6 +238,16 @@ class RemoteLayoutView(context: Context, attrs: AttributeSet): AsymmetricRecycle
                 RealtimeDatabaseFunctions.sendCommandToHub(button.commands[0])
                 Log.d("TEST", "BUTTON CLICKED")
             }
+        }
+    }
+
+    private fun onButtonPressed(button: Button, command : RemoteProfile.Command) {
+        if (AppState.tempData.tempRemoteProfile.inEditMode.get())
+        {
+
+        } else
+        {
+            RealtimeDatabaseFunctions.sendCommandToHub(command)
         }
     }
 

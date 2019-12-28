@@ -47,12 +47,29 @@ class Button(typeTemp : ButtonStyle) {
                 commands.clear()
             }
             // 1 property/command needed
-            ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND,
-            ButtonStyle.STYLE_BTN_NO_MARGIN ->
-            {
+            ButtonStyle.STYLE_BTN_SINGLE_ACTION_ROUND -> {
                 columnSpan = 1
                 rowSpan = 1
-                properties.clear().also { properties.add(Properties()) }
+                properties.clear().also { properties.add(
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_CIRCLE
+//                            marginTop = 8
+//                            marginBottom = 8
+                        }) }
+                commands.clear().also { commands.add(RemoteProfile.Command()) }
+            }
+            ButtonStyle.STYLE_BTN_NO_MARGIN ->
+            {
+                columnSpan = 2
+                rowSpan = 1
+                properties.clear().also { properties.add(
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_ROUND_RECT
+                            marginTop = 8
+                            marginBottom = 8
+                        }) }
                 commands.clear().also { commands.add(RemoteProfile.Command()) }
             }
             // 2 properties/commands needed

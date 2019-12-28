@@ -161,6 +161,7 @@ class ButtonCreator {
             null -> Log.e("ButtonCreator", "showBottomDialog - Context was not set")
             else ->
             {
+                Log.d("TEST", "dialogState = $dialogState")
                 when (dialogState) {
                     ButtonDialogState.CHOOSE_TYPE -> { showChooseButtonTypeDialog(context!!) }
                     ButtonDialogState.SETUP_BUTTON -> { showButtonSetupDialog(context!!) }
@@ -191,6 +192,7 @@ class ButtonCreator {
     }
 
     private fun createButtonClicked(button : Button, isMissingCommands : () -> Boolean) {
+        Log.d("Test", "Checking if missing command... ${isMissingCommands()}")
         if (isMissingCommands()) {
             context?.let {
                 AlertDialog.Builder(it)
@@ -237,7 +239,7 @@ class ButtonCreator {
                 val buttonContainerBinding = VButtonSetupBinding.inflate(context.layoutInflater, bottomSheetBinding.createSheetContent, true)
                 val roundButtonBinding = VRmtBtnSingleSetupBinding.inflate(context.layoutInflater, buttonContainerBinding?.buttonContainer, true)
 
-                roundButtonBinding.etButtonName.setHint(R.string.button_name_hint)
+                roundButtonBinding.etButtonLabel.setHint(R.string.button_name_hint)
                 roundButtonBinding.btnRound.setOnClickListener { transitionToCommandDialog(0) }
 
                 // setup outer-most view
@@ -245,6 +247,7 @@ class ButtonCreator {
 
                 buttonContainerBinding.btnCreate.setOnClickListener {
                     AppState.tempData.tempButton.get()?.let { b ->
+                        b.properties[0].text = roundButtonBinding.etButtonLabel.text.toString()
                         createButtonClicked(b) {b.commands[0].actions.size > 0}
                     }
                 }
@@ -268,6 +271,7 @@ class ButtonCreator {
 
                 buttonContainerBinding.btnCreate.setOnClickListener {
                     AppState.tempData.tempButton.get()?.let { b ->
+                        b.properties[0].text = fullButtonBinding.etButtonLabel.text.toString()
                         createButtonClicked(b) {b.commands[0].actions.size > 0}
                     }
                 }
@@ -291,7 +295,6 @@ class ButtonCreator {
                 val incrementerBinding : VRmtBtnIncVertSetupBinding? = DataBindingUtil.inflate(context.layoutInflater, R.layout.v_rmt_btn_inc_vert_setup, buttonContainerBinding?.buttonContainer, true)
 
             // setup inner-most view
-                incrementerBinding?.txtButtonName?.hint = context.getString(R.string.button_name_hint)
 
                 incrementerBinding?.btnTop?.setupProperties(button.properties[0])
                 incrementerBinding?.btnTop?.setOnClickListener { transitionToCommandDialog(0) }
@@ -302,6 +305,10 @@ class ButtonCreator {
             // setup middle view
                 buttonContainerBinding?.btnCreate?.setOnClickListener {
                     AppState.tempData.tempButton.get()?.let { b ->
+                        incrementerBinding?.etTopLabel?.text?.toString()?.let { b.properties[0].text = it }
+                        incrementerBinding?.txtButtonName?.editText?.text?.toString()?.let { b.properties[1].text = it }
+                        incrementerBinding?.etBottomLabel?.text?.toString()?.let { b.properties[2].text = it }
+
                         createButtonClicked(b) {b.commands[0].actions.size > 0 && b.commands[1].actions.size > 0}
                     }
                 }
@@ -325,7 +332,7 @@ class ButtonCreator {
 
             // button setup (goes inside setup button container)
                 val radialBinding : VRmtBtnRadialSetupBinding? = DataBindingUtil.inflate(context.layoutInflater, R.layout.v_rmt_btn_radial_setup, buttonContainerBinding?.buttonContainer, true)
-
+                radialBinding?.etButtonLabel?.visibility = View.GONE
             // remove center button
                 radialBinding?.btnCenter?.visibility = View.GONE
 
@@ -370,6 +377,7 @@ class ButtonCreator {
 
             // button setup (goes inside setup button container)
                 val radialBinding : VRmtBtnRadialSetupBinding? = DataBindingUtil.inflate(context.layoutInflater, R.layout.v_rmt_btn_radial_setup, buttonContainerBinding?.buttonContainer, true)
+                radialBinding?.etButtonLabel?.visibility = View.VISIBLE
 
             // setup inner-most view
                 radialBinding?.btnTop?.setupProperties(button.properties[0])
@@ -390,6 +398,7 @@ class ButtonCreator {
             // setup middle view
                 buttonContainerBinding?.btnCreate?.setOnClickListener {
                     AppState.tempData.tempButton.get()?.let { b ->
+                        radialBinding?.etButtonLabel?.text?.toString()?.let { b.properties[4].text = it }
                         createButtonClicked(b) {b.commands[0].actions.size > 0
                                 && b.commands[1].actions.size > 0
                                 && b.commands[2].actions.size > 0
@@ -406,6 +415,8 @@ class ButtonCreator {
         // Button Types requiring no setup:
             Button.Companion.ButtonStyle.STYLE_SPACE ->
             {
+                // This is needed because, since no new dialog is created, the logic to set isTransitioning after dialog dismissal is not called
+                isTransitioning = false
                 createButton(Button(Button.Companion.ButtonStyle.STYLE_SPACE))
             }
         // Invalid button to setup:
@@ -418,6 +429,7 @@ class ButtonCreator {
     private fun dismissBottomDialog(transitioning: Boolean = false) {
         Log.d("Test", "dismiss... ${createButtonDialog == null}")
         createButtonDialog?.let {
+            Log.d("TEST", "DIALOG WASN'T NULL (transitionting = $transitioning)")
             isTransitioning = transitioning
             it.dismiss()
             createButtonDialog = null
@@ -433,6 +445,7 @@ class ButtonCreator {
 
 
     private fun createButton(button: Button) {
+        Log.d("TEST", "Creating button...")
         // add the temp button to the current remote
         AppState.tempData.tempRemoteProfile.buttons.add(button)
 
@@ -513,8 +526,11 @@ class ButtonCreator {
             val buttonType = Button.buttonStyleFromInt(position) ?: throw Exception("Unknown button type ($position)")
 
             buttonTitle.text = Button.nameFromStyle(holder.itemView.context, buttonType)
-            Glide.with(buttonImage).load(Button.imageResourceFromStyle(buttonType)).into(buttonImage)
+            val buttonResource = Button.imageResourceFromStyle(buttonType)
+            if (buttonResource != 0)
+                Glide.with(buttonImage).load(buttonResource).into(buttonImage)
             holder.itemView.setOnClickListener {
+                Log.d("TEST", "setting buttonType to $buttonType")
                 AppState.tempData.tempButton.set(Button(buttonType))
 
                 // transition to 'setup button dialog'

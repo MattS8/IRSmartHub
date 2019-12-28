@@ -149,7 +149,7 @@
                         android:layout_height="wrap_content"
                         android:id="@+id/btnShowAdvancedInfo"
                         android:textAllCaps="false"
-                        style="@style/Widget.AppCompat.Button.Borderless.Colored"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:gravity="start|center_vertical"
                         android:layout_marginStart="8dp"
                         app:layout_constraintStart_toStartOf="parent" android:layout_marginEnd="8dp"
@@ -225,7 +225,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/btnStartListening" android:layout_marginBottom="24dp"
-                style="@style/AppTheme.Button.SplashSignIn.Colored"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintVertical_bias="1.0"
                 app:layout_constraintTop_toBottomOf="@+id/btnTestSignal"
@@ -248,7 +248,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/infoLayout"
                 app:layout_constraintStart_toStartOf="parent" app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintEnd_toStartOf="@+id/btnStartListening"
-                style="@style/Widget.AppCompat.Button.Borderless"/>
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

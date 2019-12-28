@@ -30,7 +30,7 @@
                 app:layout_constraintStart_toStartOf="@id/btnTop"
                 app:layout_constraintEnd_toEndOf="@id/btnTop"
                 android:id="@+id/txtButtonName"
-                android:textColor="@color/black"
+                android:textColor="@color/white"
                 android:background="@color/colorButtonBG"
                 android:stateListAnimator="@animator/selector_button_elevation"
                 android:autoSizeTextType="uniform"
