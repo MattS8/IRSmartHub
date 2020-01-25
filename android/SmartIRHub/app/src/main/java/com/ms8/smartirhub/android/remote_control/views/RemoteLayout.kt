@@ -14,6 +14,7 @@ import com.ms8.smartirhub.android.databinding.FRemoteCurrentBinding
 import com.ms8.smartirhub.android.remote_control.button.creation.ButtonCreator
 import com.ms8.smartirhub.android.remote_control.button.models.Button
 import com.ms8.smartirhub.android.remote_control.creation.RemoteCreator
+import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 
 class RemoteLayout {
     var binding: FRemoteCurrentBinding? = null
@@ -31,18 +32,20 @@ class RemoteLayout {
         }
     }
 
-    var onAddNewButton = {}
-
     private var isListening : Boolean = false
 
     val buttonCreator = ButtonCreator()
 
-    private val remoteLayoutAdapter = RemoteLayoutView.RemoteLayoutAdapter()
+    private val remoteLayoutAdapter = RemoteLayoutAdapter()
 
     var topPadding = 0
     set(value) {
         field = value
         binding?.remoteLayout?.topPadding = topPadding
+    }
+
+    fun setButtonPressedListener(listener: (buttonPosition: Int, command: RemoteProfile.Command?) -> Unit) {
+        remoteLayoutAdapter.onButtonPressed = listener
     }
 
     fun applyBackgroundTint() {

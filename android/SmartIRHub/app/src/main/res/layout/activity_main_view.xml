@@ -164,20 +164,30 @@
 
 
         <!-- Toolbar -->
-        <com.ms8.smartirhub.android.main_view.views.CenteredToolbar
+
+        <LinearLayout
+                android:id="@+id/toolbarLayout"
                 android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:id="@+id/toolbar"
-                android:layout_marginTop="@dimen/fsw_nav_height"
-                android:layout_marginStart="32dp"
-                android:layout_marginEnd="32dp"
+                android:layout_height="wrap_content"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintVertical_bias="0"
                 android:layout_gravity="top"
-        />
+                android:orientation="vertical"
+                >
+            <com.ms8.smartirhub.android.main_view.views.CenteredToolbar
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize"
+                    android:id="@+id/toolbar"
+                    android:layout_marginTop="@dimen/fsw_nav_height"
+                    android:layout_marginStart="32dp"
+                    android:layout_marginEnd="32dp"
+
+                    />
+        </LinearLayout>
+
 
         <FrameLayout
                 android:layout_width="match_parent"

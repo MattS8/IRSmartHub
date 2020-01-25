@@ -16,6 +16,7 @@ import com.ms8.smartirhub.android.firebase.FirestoreActions
 import com.ms8.smartirhub.android.models.firestore.Hub
 import com.ms8.smartirhub.android.models.firestore.Hub.Companion.DEFAULT_HUB
 import com.ms8.smartirhub.android.models.firestore.IrSignal
+import com.ms8.smartirhub.android.remote_control.button.creation.ButtonCreator.Companion.NEW_BUTTON
 import com.ms8.smartirhub.android.remote_control.button.models.Button
 import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.ADD_TO_END
 import com.ms8.smartirhub.android.remote_control.button.models.Button.Companion.ID_BUTTONS
@@ -40,6 +41,8 @@ class RemoteProfile: Observable {
     @get:Exclude
     var isCreatingNewButton : ObservableBoolean                                 = ObservableBoolean().apply { set(false) }
 
+    @get:Exclude
+    var newButtonPosition   : Int                                               = NEW_BUTTON
     private val callbacks   : ArrayList<Observable.OnPropertyChangedCallback>   = ArrayList()
 
 /*

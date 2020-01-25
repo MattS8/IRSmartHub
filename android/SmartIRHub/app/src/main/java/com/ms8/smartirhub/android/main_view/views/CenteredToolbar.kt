@@ -174,6 +174,10 @@ class CenteredToolbar(context: Context, attrs: AttributeSet) : androidx.appcompa
 ----------------------------------------------
 */
 
+    fun setUtilButtonOnClick(onClick: OnClickListener?) {
+        _utilButton.setOnClickListener(onClick)
+    }
+
     @SuppressLint("LogNotTimber")
     fun selectTitleText() {
         if (layoutState != LayoutState.REMOTES_FAV_EDITING) {

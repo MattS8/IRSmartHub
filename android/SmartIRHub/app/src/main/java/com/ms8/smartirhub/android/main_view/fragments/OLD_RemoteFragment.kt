@@ -4,14 +4,19 @@ package com.ms8.smartirhub.android.main_view.fragments
 import android.content.Intent
 import android.os.Bundle
 import android.util.DisplayMetrics
-import android.util.TypedValue
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.google.firebase.firestore.FirebaseFirestore
 import com.ms8.smartirhub.android.database.AppState
 import com.ms8.smartirhub.android.databinding.FRemoteCurrentBinding
+import com.ms8.smartirhub.android.firebase.FirestoreActions
+import com.ms8.smartirhub.android.firebase.RealtimeDatabaseFunctions
 import com.ms8.smartirhub.android.main_view.MainViewActivity
-import com.ms8.smartirhub.android.remote_control.button.creation.ButtonTypeCreation
+import com.ms8.smartirhub.android.remote_control.button.creation.ButtonCreator
+import com.ms8.smartirhub.android.remote_control.button.creation.ButtonCreator.Companion.NEW_BUTTON
+import com.ms8.smartirhub.android.remote_control.button.models.Button
 import com.ms8.smartirhub.android.remote_control.command.creation.GetFromRemoteActivity
 import com.ms8.smartirhub.android.remote_control.models.RemoteProfile
 import com.ms8.smartirhub.android.remote_control.views.RemoteLayout
@@ -23,9 +28,6 @@ class OLD_RemoteFragment : MainFragment() {
     val remoteLayout  = RemoteLayout()
     var binding : FRemoteCurrentBinding? = null
     private var screenHeight = 800
-
-    // ------ Button Creation Variables
-    val buttonTypeCreation = ButtonTypeCreation()
 
 /*
 -----------------------------------------------
@@ -47,6 +49,21 @@ class OLD_RemoteFragment : MainFragment() {
         intent.putExtra(GetFromRemoteActivity.EXTRA_REMOTE_UID, remote.uid)
         intent.putExtra(GetFromRemoteActivity.EXTRA_TYPE, GetFromRemoteActivity.Companion.ResultType.ACTIONS)
         startActivityForResult(intent, RequestCodes.GET_ACTIONS_FROM_REMOTE)
+    }
+
+    fun onButtonPressed(buttonPosition: Int, command: RemoteProfile.Command?) {
+        if (AppState.tempData.tempRemoteProfile.inEditMode.get())
+        {
+            Log.d("TEST", "Editing button $buttonPosition")
+            AppState.tempData.tempRemoteProfile.newButtonPosition = buttonPosition
+            if (buttonPosition != NEW_BUTTON)
+                AppState.tempData.tempButton.set(AppState.tempData.tempRemoteProfile.buttons[buttonPosition])
+            remoteLayout.buttonCreator.showBottomDialog()
+        } else
+        {
+            RealtimeDatabaseFunctions.sendCommandToHub(command)
+            Log.d("TEST", "Sending command from button $buttonPosition")
+        }
     }
 
 /*
@@ -95,6 +112,7 @@ class OLD_RemoteFragment : MainFragment() {
     override fun onResume() {
         super.onResume()
         remoteLayout.startListening()
+        remoteLayout.setButtonPressedListener { buttonPosition, command -> onButtonPressed(buttonPosition, command) }
         remoteLayout.binding = binding
         remoteLayout.buttonCreator.apply {
             //onCreationComplete = remoteCreationCompleteListener
@@ -102,13 +120,12 @@ class OLD_RemoteFragment : MainFragment() {
             onRequestActionsFromRemote = requestActionFromRemoteListener
         }
         //AppState.tempData.tempRemoteProfile.buttons.addOnListChangedCallback(updateNameListener)
-
-        buttonTypeCreation.onCanceled = {  }
     }
 
     override fun onPause() {
         super.onPause()
         remoteLayout.stopListening()
+        remoteLayout.setButtonPressedListener { _, _ ->  }
         remoteLayout.binding = null
         remoteLayout.buttonCreator.apply {
             onCreationComplete = {}

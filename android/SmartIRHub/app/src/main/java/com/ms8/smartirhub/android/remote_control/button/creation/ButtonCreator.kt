@@ -29,11 +29,11 @@ import org.jetbrains.anko.layoutInflater
 import java.lang.Exception
 
 class ButtonCreator {
-/*
-----------------------------------------------
-    Public Listeners
-----------------------------------------------
-*/
+    /*
+    ----------------------------------------------
+        Public Listeners
+    ----------------------------------------------
+    */
     var onCreateDialogDismiss: (fromBackPressed: Boolean) -> Unit = {}
     var onCreateDialogShow: () -> Unit = {}
     var onCreationComplete: (completedButton: Button) -> Unit = {}
@@ -445,9 +445,17 @@ class ButtonCreator {
 
 
     private fun createButton(button: Button) {
-        Log.d("TEST", "Creating button...")
-        // add the temp button to the current remote
-        AppState.tempData.tempRemoteProfile.buttons.add(button)
+        val buttonPosition = AppState.tempData.tempRemoteProfile.newButtonPosition
+        if (buttonPosition == NEW_BUTTON)
+        {
+            Log.d("TEST", "Creating new button...")
+            // add the temp button to the current remote
+            AppState.tempData.tempRemoteProfile.buttons.add(button)
+        } else
+        {
+            Log.d("TEST", "Updating button $buttonPosition...")
+            AppState.tempData.tempRemoteProfile.buttons[buttonPosition] = button
+        }
 
         // call the onCreationComplete listener now
         onCreationComplete(button)
@@ -455,6 +463,9 @@ class ButtonCreator {
         // reset tempButton and change isCreatingNewButton to false
         AppState.tempData.tempButton.set(null)
         AppState.tempData.tempRemoteProfile.isCreatingNewButton.set(false)
+
+        // reset link to button that was being edited/created - probably not needed, but will keep a consistent result if I mess up in calling "create/edit button"
+        AppState.tempData.tempRemoteProfile.newButtonPosition = NEW_BUTTON
 
         dismissBottomDialog()
     }
@@ -488,6 +499,8 @@ class ButtonCreator {
     }
 
     companion object {
+        const val NEW_BUTTON = -1
+
         private fun dialogStateFromInt(intVal : Int) = ButtonDialogState.values().associateBy(ButtonDialogState::value)[intVal]
 
         fun readStateFromParcel(parcel: Parcel) : State {
@@ -543,5 +556,4 @@ class ButtonCreator {
             LayoutInflater.from(parent.context).inflate(
                 R.layout.v_item_button_type, null))
     }
-
 }
