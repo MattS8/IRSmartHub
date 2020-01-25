@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">IR Smart Hub</string>
+
+
+    <string name="client_id" translatable="false">
+        152988922698-8oq2ogokh7khth08q9h2mtodgmb6k8bg.apps.googleusercontent.com
+    </string>
+    <string name="hint_create_new_remote">Create a new remote by tapping the</string>
+    <string name="hint_create_new_remote_ending">button below.</string>
+    <string name="coming_soon">Feature coming soon!</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="err_empty_remote_name">Please name the remote before saving!</string>
+    <string name="err_name_req_start">Remote names must be between</string>
+    <string name="err_name_req_end">characters and contain no special characters</string>
+    <string name="err_unknown_save_remote">Something went wrong while saving. Please try again.</string>
+    <string name="add_button">Add  Button</string>
+    <string name="hint_add_buttons_to_remote">Add some buttons by tapping the</string>
+    <string name="hint_add_buttons_to_remote_ending">button below.</string>
+    <string name="nav_remotes">My Remotes</string>
+    <string name="nav_devices">My Devices</string>
+    <string name="hint_remote_name">Enter Remote Name:</string>
+    <string name="title_all_remotes">All Remotes</string>
+    <string name="title_my_ir_hubs">My IR SmartHubs</string>
+    <string name="title_my_devices">My Devices</string>
+    <string name="title_new_remote">New Remote</string>
+    <string name="title_edit_new_remote">Edit New Remote</string>
+    <string name="title_current_remote">Current Remote</string>
+    <string name="menu_select_dif_remote">Select Different Remote</string>
+    <string name="menu_view_current_remote">View Current Remote</string>
+    <string name="menu_view_all_devices">View All Devices</string>
+    <string name="create_new_remote">Create New Remote</string>
+</resources>

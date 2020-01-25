@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#a1887f</color>
+    <color name="colorPrimaryDark">#121212</color>
+    <color name="colorPrimaryLight">#d7ccc8</color>
+    <color name="colorAccent">#eeeeee</color>
+    <color name="colorAccentDark">#554e342e</color>
+
+    <color name="colorBgRemote">#424242</color>
+    <color name="colorBgRemoteEditMode">#647C64</color>
+    <color name="colorBgRemoteButton">#e0e0e0</color>
+    <color name="colorBgFlashbar">#212121</color>
+    <color name="colorBgNav">#212121</color>
+    <color name="colorBgFAB">@android:color/white</color>
+    <color name="colorBgFABEditMode">#eceff1</color>
+    <color name="colorBgFABDoneEditing">#f1f8e9</color>
+    <color name="colorFABIconEditDone">#498205</color>
+
+    <color name="colorTextFlashbarComingSoon">#FFFF8D</color>
+
+    <color name="colorBtnToolbar">#ffffff</color>
+</resources>

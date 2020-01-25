@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="rmt_corner_radius">48dp</dimen>
+    <dimen name="btn_rmt_corner_radius">4dp</dimen>
+    <dimen name="nav_fsw_height">24dp</dimen>
+
+    <dimen name="toolbar_margin_remote">32dp</dimen>
+    <dimen name="toolbar_margin">12dp</dimen>
+</resources>
