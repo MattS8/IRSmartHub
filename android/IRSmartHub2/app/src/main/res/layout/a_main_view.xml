@@ -10,51 +10,47 @@
         android:clipChildren="false"
         android:clipToPadding="false"
         android:fitsSystemWindows="true"
-        android:paddingTop="@dimen/nav_fsw_height"
-        >
+        android:paddingTop="@dimen/nav_fsw_height">
 
 
         <!-- Fragment View -->
 
         <androidx.viewpager.widget.ViewPager
+            android:id="@+id/frame_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/frame_layout"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/nav_view"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_anchorGravity="bottom"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            />
+            app:layout_constraintBottom_toTopOf="@id/nav_view"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_dummy"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/fab_dummy"
             android:layout_margin="32dp"
-            app:layout_anchorGravity="center"
-            app:layout_anchor="@id/nav_view"
             android:alpha=".0"
-            app:elevation="0dp"
-            android:elevation="0dp"
             android:clickable="false"
-            app:rippleColor="@color/colorAccent"
-            />
+            android:elevation="0dp"
+            app:elevation="0dp"
+            app:layout_anchor="@id/nav_view"
+            app:layout_anchorGravity="center"
+            app:rippleColor="@color/colorAccent" />
 
         <com.ms8.irsmarthub.main_menu.views.MainFAB
+            android:id="@+id/fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/fab"
             android:layout_margin="32dp"
-            app:layout_anchorGravity="center"
-            app:layout_anchor="@id/fab_dummy"
-            app:backgroundTint="@color/white"
-            app:srcCompat="@drawable/ic_mode_edit_white_24dp"
             android:tint="@android:color/black"
+            app:backgroundTint="@color/white"
             app:drawableTint="@android:color/black"
+            app:layout_anchor="@id/fab_dummy"
+            app:layout_anchorGravity="center"
             app:rippleColor="@color/colorAccent"
-            />
+            app:srcCompat="@drawable/ic_mode_edit_white_24dp" />
 
         <!-- Bottom Nav -->
 
@@ -67,79 +63,73 @@
             app:backgroundTint="@color/colorBgNav"
             app:fabAlignmentMode="center"
             app:fabCradleMargin="8dp"
-            app:fabCradleRoundedCornerRadius="16dp"
-            >
+            app:fabCradleRoundedCornerRadius="16dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_gravity="center"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                >
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
                 <TextView
                     android:id="@+id/btnMyRemotes"
                     android:layout_width="wrap_content"
                     android:layout_height="?actionBarSize"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="24dp"
+                    android:background="?selectableItemBackground"
                     android:clickable="true"
+                    android:clipToPadding="false"
+                    android:drawableTop="@drawable/ic_my_remotes"
+                    android:drawablePadding="-8dp"
                     android:focusable="true"
                     android:gravity="center"
                     android:maxLines="1"
-                    android:textSize="14sp"
-                    android:textColor="@color/selectable_text_colored"
                     android:text="@string/nav_remotes"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintVertical_bias="0"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/fab_dummy_space"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginStart="24dp"
-                    android:layout_marginEnd="24dp"
-                    android:drawableTop="@drawable/ic_my_remotes"
-                    android:drawablePadding="-8dp"
-                    app:drawableTint="@color/selectable_text_colored"
                     android:textAllCaps="false"
-                    android:background="?selectableItemBackground"
-                    android:clipToPadding="false"
-                    />
+                    android:textColor="@color/selectable_text_colored"
+                    android:textSize="14sp"
+                    app:drawableTint="@color/selectable_text_colored"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/fab_dummy_space"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0" />
 
                 <TextView
                     android:id="@+id/fab_dummy_space"
                     android:layout_width="56dp"
                     android:layout_height="56dp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintVertical_bias="0"
-                    />
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0" />
 
                 <TextView
                     android:id="@+id/btnMyDevices"
                     android:layout_width="wrap_content"
                     android:layout_height="?actionBarSize"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="24dp"
+                    android:background="?selectableItemBackground"
                     android:clickable="true"
+                    android:clipToPadding="false"
+                    android:drawableTop="@drawable/ic_my_devices"
+                    android:drawablePadding="-8dp"
                     android:focusable="true"
                     android:gravity="center"
                     android:maxLines="1"
-                    android:textSize="14sp"
-                    android:textColor="@color/selectable_text_colored"
                     android:text="@string/title_my_devices"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintVertical_bias="0"
-                    app:layout_constraintStart_toEndOf="@id/fab_dummy_space"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginStart="24dp"
-                    android:layout_marginEnd="24dp"
-                    android:layout_marginTop="4dp"
-                    android:drawableTop="@drawable/ic_my_devices"
-                    android:drawablePadding="-8dp"
-                    app:drawableTint="@color/selectable_text_colored"
                     android:textAllCaps="false"
-                    android:background="?selectableItemBackground"
-                    android:clipToPadding="false"
-                    />
+                    android:textColor="@color/selectable_text_colored"
+                    android:textSize="14sp"
+                    app:drawableTint="@color/selectable_text_colored"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/fab_dummy_space"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -147,27 +137,25 @@
 
         <!-- Toolbar -->
         <com.ms8.irsmarthub.main_menu.views.CenteredToolbar
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:id="@+id/toolbar"
+            android:layout_gravity="top"
             android:layout_marginStart="32dp"
             android:layout_marginEnd="32dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintVertical_bias="0"
-            android:layout_gravity="top"
-            />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0" />
 
 
         <FrameLayout
+            android:id="@+id/bottomSheetFrame"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/bottomSheetFrame"
             app:behavior_hideable="true"
-            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
-            >
+            app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
 
         </FrameLayout>

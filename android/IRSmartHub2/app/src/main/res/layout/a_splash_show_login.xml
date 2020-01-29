@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/splashContainer"
+        android:background="@color/colorPrimaryDark"
+        android:animateLayoutChanges="true"
+        >
+
+        <ImageView
+            android:id="@+id/splashLogo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:contentDescription="@string/content_description_app_logo"
+            android:layout_marginTop="32dp"
+            android:src="@drawable/splash_logo"
+            app:layout_constraintVertical_bias="0.0"
+            />
+
+        <!-- Title -->
+        <TextView
+            android:textAppearance="@style/TextAppearance.SplashHeader"
+            android:text="@string/splash_welcome"
+            android:layout_width="0dp"
+            android:gravity="center"
+            android:layout_height="wrap_content"
+            android:id="@+id/welcomeTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginEnd="32dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="32dp" app:layout_constraintTop_toBottomOf="@id/splashLogo"
+            app:layout_constraintVertical_bias="0.0"
+            />
+
+
+        <FrameLayout
+            android:visibility="invisible"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/frameLayout" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/space" android:background="@color/colorPrimaryDark">
+
+        </FrameLayout>
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@+id/frameLayout"
+            app:layout_constraintEnd_toEndOf="@+id/frameLayout" android:layout_marginEnd="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/welcomeTitle" app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintVertical_bias="0.25" android:id="@+id/space"/>
+
+        <androidx.cardview.widget.CardView
+            app:cardBackgroundColor="@color/colorBgCardDark"
+            android:id="@+id/signInContainer"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@id/welcomeTitle"
+            app:layout_constraintBottom_toBottomOf="@id/frameLayout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginBottom="14dp"
+            app:layout_constraintVertical_bias="0.25" android:layout_marginTop="32dp">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+
+                android:id="@+id/cardContainer"
+                android:animateLayoutChanges="true"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <include android:id="@+id/layoutSignIn"
+                    android:visibility="gone"
+                    layout="@layout/v_splash_login_sign_in"/>
+
+                <include android:id="@+id/layoutSignUp"
+                    android:visibility="gone"
+                    layout="@layout/v_splash_login_sign_up" />
+
+                <include android:id="@+id/layoutUsername"
+                    android:visibility="gone"
+                    layout="@layout/v_splash_login_username" />
+
+                <TextView
+                    android:textAppearance="@style/TextAppearance.SplashSubHeader"
+                    android:text="@string/splash_welcome_desc"
+                    android:layout_width="0dp"
+                    android:gravity="center"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/welcomeDescription"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginEnd="32dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginStart="32dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.48000002"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintBottom_toTopOf="@+id/signInGoogle"
+                    app:layout_constraintVertical_chainStyle="packed"/>
+
+                <com.google.android.gms.common.SignInButton android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/signInGoogle"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:layout_marginTop="32dp"
+                    app:buttonSize="wide"
+
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintBottom_toTopOf="@+id/btnSignIn"
+                    app:layout_constraintVertical_chainStyle="packed"
+                    app:layout_constraintTop_toBottomOf="@+id/welcomeDescription"/>
+
+                <Button
+                    android:text="@string/splash_sign_in_with_email"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/btnSignIn"
+                    style="@style/SplashTheme.Button"
+                    app:layout_constraintEnd_toEndOf="@+id/signInGoogle"
+                    android:layout_marginTop="16dp"
+                    app:layout_constraintStart_toStartOf="@+id/signInGoogle"
+                    android:minWidth="150dp"
+                    android:textAllCaps="false"
+                    app:layout_constraintTop_toBottomOf="@+id/signInGoogle"
+                    app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintBottom_toTopOf="@+id/no_account"/>
+
+                <br.com.simplepass.loadingbutton.customViews.CircularProgressButton
+                    android:text="@string/splash_sign_up_with_email"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/btnSignUpEmail"
+                    style="@style/SplashTheme.Button.Colored"
+                    app:layout_constraintEnd_toEndOf="@+id/signInGoogle"
+                    android:minWidth="150dp"
+                    android:textAllCaps="false"
+                    app:layout_constraintTop_toBottomOf="@+id/no_account"
+                    app:layout_constraintStart_toStartOf="@+id/signInGoogle" android:layout_marginTop="8dp"
+                    app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintHorizontal_bias="0.5"
+                    />
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.SplashSubHeader"
+                    android:textSize="14sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:id="@+id/no_account"
+                    android:text="@string/splash_prompt_no_account"
+                    android:gravity="center_horizontal"
+                    app:layout_constraintTop_toBottomOf="@+id/btnSignIn"
+                    app:layout_constraintVertical_bias="0.0" android:layout_marginStart="32dp"
+                    android:layout_marginEnd="32dp" app:layout_constraintHorizontal_bias="0.5"
+                    app:layout_constraintBottom_toTopOf="@+id/btnSignUpEmail"
+                    android:visibility="invisible"
+                    />
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.cardview.widget.CardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
+

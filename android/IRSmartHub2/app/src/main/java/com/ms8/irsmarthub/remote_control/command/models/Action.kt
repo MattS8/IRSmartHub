@@ -18,7 +18,7 @@ data class Action(
     }
 
     companion object {
-        fun fromFirebaseObject(actionMap : Map<String, Any?>) : Action {
+        fun copyFrom(actionMap : Map<String, Any?>) : Action {
             return Action()
                 .apply {
                     hubUID = actionMap["hubUID"] as String

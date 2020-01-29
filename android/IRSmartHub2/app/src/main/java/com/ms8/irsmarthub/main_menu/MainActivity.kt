@@ -1,7 +1,6 @@
 package com.ms8.irsmarthub.main_menu
 
 import android.graphics.Paint
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
@@ -12,21 +11,20 @@ import android.view.MenuItem
 import android.view.View
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
+import androidx.appcompat.app.AppCompatActivity
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.Observable
-import androidx.databinding.ObservableField
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import com.ms8.irsmarthub.R
 import com.ms8.irsmarthub.database.AppState.tempData
 import com.ms8.irsmarthub.databinding.AMainViewBinding
-import com.ms8.irsmarthub.main_menu.fragments.RemoteFragment
 import com.ms8.irsmarthub.main_menu.MainMenuAdapter.Companion.LayoutState
 import com.ms8.irsmarthub.main_menu.fragments.MyDevicesFragment
 import com.ms8.irsmarthub.main_menu.fragments.MyRemotesFragment
-import com.ms8.irsmarthub.main_menu.fragments.MySmartHubsFragment
+import com.ms8.irsmarthub.main_menu.fragments.RemoteFragment
 import com.ms8.irsmarthub.remote_control.remote.views.asymmetric_gridview.Utils
 import com.ms8.irsmarthub.utils.findNavBarHeight
 
@@ -84,6 +82,7 @@ class MainActivity : AppCompatActivity(), ViewPager.OnPageChangeListener, View.O
     ----------------------------------------------
     */
     private val remoteFragment = RemoteFragment()
+    private val allRemotesFragment = MyRemotesFragment()
     private lateinit var pagerAdapter: MainMenuAdapter
     private fun setupPagerAdapter(pagerState: MainMenuAdapter.Companion.State) {
         pagerAdapter = MainMenuAdapter(
@@ -94,7 +93,6 @@ class MainActivity : AppCompatActivity(), ViewPager.OnPageChangeListener, View.O
                 addFragment(remoteFragment, MainMenuAdapter.Companion.ViewPagerList.REMOTES)
                 addFragment(MyRemotesFragment(), MainMenuAdapter.Companion.ViewPagerList.REMOTES)
                 addFragment(MyDevicesFragment(), MainMenuAdapter.Companion.ViewPagerList.DEVICES)
-                addFragment(MySmartHubsFragment(), MainMenuAdapter.Companion.ViewPagerList.DEVICES)
             }
     }
 

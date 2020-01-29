@@ -18,12 +18,12 @@ data class Command(
 
     companion object {
         @Suppress("UNCHECKED_CAST")
-        fun fromFirebaseObject(commandMap : Map<String, Any?>) : Command {
+        fun copyFrom(commandMap : Map<String, Any?>) : Command {
             return Command()
                 .apply {
                     if (commandMap.containsKey("actions")) {
                         (commandMap["actions"] as List<Map<String, Any?>>).forEach { a ->
-                            actions.add(Action.fromFirebaseObject(a))
+                            actions.add(Action.copyFrom(a))
                         }
                     }
                 }

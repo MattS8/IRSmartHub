@@ -65,11 +65,18 @@ class RemoteFragment: MainFragment() {
     override fun onResume() {
         super.onResume()
 
+        // Listen for remote button presses
         remoteAdapter.setButtonPressedListener { buttonPosition, command -> onButtonPressed(buttonPosition, command) }
+
+        // Dynamically show/hide the toolbar and action bar on scroll
         binding?.remoteLayout?.addOnScrollListener((activity as MainActivity).showHideUIElementsScrollListener)
 
         // Listen for changes to button layout
         AppState.tempData.tempRemote.buttons.addOnListChangedCallback(buttonLayoutChangeListener)
+
+        // Sets the tempRemote to the user's favorite, or sets up a default favorite if they don't have one.
+        // If a remote is already loaded, or there are no remotes fetched, this does nothing.
+        AppState.setupTempRemote()
     }
 
     override fun onPause() {
@@ -94,17 +101,17 @@ class RemoteFragment: MainFragment() {
         context?.let { c ->
             // Setup prompt
             val promptVisibility = if (newList.size == 0 && !inEditMode) View.VISIBLE else View.GONE
-            val promptText1 = if (AppState.tempData.tempUser.remotes.size == 0)
-                R.string.hint_create_new_remote
-            else
+            val promptText1 = if (AppState.tempData.tempRemote.uid.get()?.isNotEmpty() == true)
                 R.string.hint_add_buttons_to_remote
+            else
+                R.string.hint_create_new_remote
             val promptText2 = R.string.hint_add_buttons_to_remote_ending
             val promptDrawable = ContextCompat.getDrawable(
                 c,
-                if (AppState.tempData.tempUser.remotes.size == 0)
-                    R.drawable.ic_new_remote
+                if (AppState.tempData.tempRemote.uid.get()?.isNotEmpty() == true)
+                    R.drawable.ic_mode_edit_white_24dp
                 else
-                    R.drawable.ic_mode_edit_white_24dp)
+                R.drawable.ic_new_remote)
             binding?.txtCreateFirstRemoteP1?.apply {
                 visibility = promptVisibility
                 setText(promptText1)

@@ -21,7 +21,7 @@ class Button(typeTemp: Type) {
     }
 
     private fun setupPropertiesAndCommands() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     fun toFirebaseObject() : Map<String, Any?> {
@@ -70,7 +70,7 @@ class Button(typeTemp: Type) {
                     {
                         try {
                             (buttonMap["commands"] as List<Map<String, Any?>>).forEach { c ->
-                                commands.add(Command.fromFirebaseObject(c))
+                                commands.add(Command.copyFrom(c))
                             }
                         } catch (e: Exception) {Log.e("Button", "$e") }
                     }

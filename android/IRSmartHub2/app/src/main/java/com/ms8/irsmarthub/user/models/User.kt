@@ -7,15 +7,13 @@ data class User(
     var defaultHub: String = "",
     var favRemote: String = "",
     var uid: String = "",
-    var groups: ArrayList<String> = ArrayList(),
     var username: String = "",
     var hubs: ArrayList<String> = ArrayList(),
-    var irSignals: ArrayList<String> = ArrayList(),
     var remotes: ArrayList<String> = ArrayList()
 ) {
     override fun toString(): String {
-        return "USER: uid = ${uid}, defaultHub = $defaultHub, groups (size) = ${groups.size}, username = ${username}, " +
-                "hubs (size) = ${hubs.size}, irSignals (size) = ${irSignals.size}, remotes (size) = ${remotes.size}"
+        return "USER: uid = ${uid}, defaultHub = $defaultHub, username = ${username}, " +
+                "hubs (size) = ${hubs.size}, remotes (size) = ${remotes.size}"
     }
 
     fun toFirebaseObject() : Map<String, Any?> {
@@ -27,10 +25,6 @@ data class User(
                 put("hubs", ArrayList<String>()
                     .apply {
                         addAll(hubs)
-                    })
-                put("irSignals", ArrayList<String>()
-                    .apply {
-                        addAll(irSignals)
                     })
                 put("remotes", ArrayList<String>()
                     .apply {
@@ -56,12 +50,6 @@ data class User(
                     newUser.hubs.clear()
                     @Suppress("UNCHECKED_CAST")
                     newUser.hubs.addAll(userMap["hubs"] as Collection<String>)
-                } catch (e : Exception) { Log.e(TAG, "$e") }
-            if (userMap.containsKey("irSignals"))
-                try {
-                    newUser.irSignals.clear()
-                    @Suppress("UNCHECKED_CAST")
-                    newUser.irSignals.addAll(userMap["irSignals"] as Collection<String>)
                 } catch (e : Exception) { Log.e(TAG, "$e") }
             if (userMap.containsKey("remotes"))
                 try {

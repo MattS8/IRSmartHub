@@ -52,7 +52,7 @@ class MainMenuAdapter(
 */
     override fun getItem(position: Int): Fragment {
         return when (navPositionFromLayoutState()) {
-            FP_MY_DEVICES -> devicesFragList[position].newInstance()
+            FP_MY_DEVICES -> devicesFragList[0].newInstance()
             FP_MY_REMOTES -> remotesFragList[position].newInstance()
             else -> {
                 Log.e(TAG, "(getItem) - Unknown navPosition: ${navPositionFromLayoutState()}")

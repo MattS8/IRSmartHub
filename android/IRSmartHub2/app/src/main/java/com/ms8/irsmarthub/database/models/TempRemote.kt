@@ -71,11 +71,15 @@ class TempRemote(
         ?.maxLength(MAX_REMOTE_NAME_LENGTH)
         ?.check() ?: false
 
-/*
-----------------------------------------------
-    Companion Objects
-----------------------------------------------
-*/
+    fun clear() {
+
+    }
+
+    /*
+    ----------------------------------------------
+        Companion Objects
+    ----------------------------------------------
+    */
     companion object {
 
     }

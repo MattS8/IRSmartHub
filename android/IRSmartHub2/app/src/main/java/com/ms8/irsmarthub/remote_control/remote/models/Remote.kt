@@ -32,9 +32,10 @@ data class Remote(
     }
 
     companion object {
-        fun fromSnapshot(snapshot: DocumentSnapshot) : Remote {
+        fun copyFrom(snapshot: DocumentSnapshot) : Remote? {
             val newRemote = snapshot.toObject(Remote::class.java)
-                ?: Remote()
+                ?: return null
+
 
             // set uid
             newRemote.uid = snapshot.id
@@ -46,7 +47,7 @@ data class Remote(
                     (snapshot["buttons"] as List<Map<String, Any?>>).forEach { b ->
                         newRemote.buttons.add(Button.fromFirebaseObject(b))
                     }
-                } catch (exception : Exception) { Log.e("Remote", "$exception") }
+                } catch (exception : Exception) { return null }
             }
 
             return newRemote
