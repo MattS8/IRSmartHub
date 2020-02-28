@@ -79,7 +79,7 @@ object AppState {
             tempData.tempUser.favRemote.set(remote.uid)
             tempData.tempRemote.copyFrom(favRemote)
 
-            FirestoreFunctions.User.setUser(tempData.tempUser.toUser())
+            FirestoreFunctions.User.setUser()
         }
     }
 

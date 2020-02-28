@@ -2,6 +2,13 @@ package com.ms8.irsmarthub.remote_control.button.models
 
 import android.util.Log
 import com.ms8.irsmarthub.remote_control.command.models.Command
+import com.ms8.irsmarthub.remote_control.button.models.Properties.Companion.BgStyle
+import com.ms8.irsmarthub.remote_control.button.models.Properties.Companion.IMG_ADD
+import com.ms8.irsmarthub.remote_control.button.models.Properties.Companion.IMG_RADIAL_DOWN
+import com.ms8.irsmarthub.remote_control.button.models.Properties.Companion.IMG_RADIAL_LEFT
+import com.ms8.irsmarthub.remote_control.button.models.Properties.Companion.IMG_RADIAL_RIGHT
+import com.ms8.irsmarthub.remote_control.button.models.Properties.Companion.IMG_RADIAL_UP
+import com.ms8.irsmarthub.remote_control.button.models.Properties.Companion.IMG_SUBTRACT
 import java.lang.Exception
 
 class Button(typeTemp: Type) {
@@ -21,7 +28,142 @@ class Button(typeTemp: Type) {
     }
 
     private fun setupPropertiesAndCommands() {
-        //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+// different button types require different number of properties/commands
+        // this ensures whenever the type is changed, there are enough property/command variables to support the selected type
+        when (type) {
+            // no property/command needed
+            Type.STYLE_SPACE ->
+            {
+                columnSpan = 1
+                rowSpan = 1
+                properties.clear()
+                commands.clear()
+            }
+            Type.STYLE_CREATE_BUTTON ->
+            {
+                Log.e("Button", "setupPropertiesAndCommands - setting up properties and commands for 'Create Button'... this should not happen!")
+                columnSpan = 1
+                rowSpan = 4
+                properties.clear()
+                commands.clear()
+            }
+            // 1 property/command needed
+            Type.BASIC -> {
+                columnSpan = 1
+                rowSpan = 1
+                properties.clear().also { properties.add(
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_CIRCLE
+//                            marginTop = 8
+//                            marginBottom = 8
+                        }) }
+                commands.clear().also { commands.add(Command()) }
+            }
+            Type.STYLE_BTN_NO_MARGIN ->
+            {
+                columnSpan = 2
+                rowSpan = 1
+                properties.clear().also { properties.add(
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_ROUND_RECT
+                            marginTop = 8
+                            marginBottom = 8
+                        }) }
+                commands.clear().also { commands.add(Command()) }
+            }
+            // 2 properties/commands needed
+            Type.STYLE_BTN_INCREMENTER_VERTICAL ->
+            {
+                rowSpan = 2
+                columnSpan = 1
+                properties.clear().also { properties.addAll(
+                    listOf(
+                        Properties()
+                            .apply {
+                                bgStyle = BgStyle.BG_ROUND_RECT_TOP
+                                image = IMG_ADD
+                                marginBottom = 0
+                            },
+                        Properties()
+                            .apply {
+                                bgStyle = BgStyle.BG_ROUND_RECT
+                                marginStart = 0
+                                marginEnd = 0
+                                marginTop = 4
+                                marginBottom = 4
+                            },
+                        Properties()
+                            .apply {
+                                bgStyle = BgStyle.BG_ROUND_RECT_BOTTOM
+                                image = IMG_SUBTRACT
+                                marginTop = 0
+                            })) }
+                commands.clear().also { commands.addAll(listOf(Command(), Command())) }
+            }
+            // 4 properties/commands needed
+            Type.STYLE_BTN_RADIAL ->
+            {
+                rowSpan = 2
+                columnSpan = 2
+                properties.clear().also { properties.addAll(listOf(
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_RADIAL_TOP
+                            image = IMG_RADIAL_UP
+                        },
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_RADIAL_END
+                            image = IMG_RADIAL_RIGHT
+                        },
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_RADIAL_BOTTOM
+                            image = IMG_RADIAL_DOWN
+                        },
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_RADIAL_START
+                            image = IMG_RADIAL_LEFT
+                        })) }
+                commands.clear().also { commands.addAll(listOf(Command(), Command(), Command(), Command())) }
+            }
+            // 5 properties/commands needed
+            Type.STYLE_BTN_RADIAL_W_CENTER ->
+            {
+                rowSpan = 2
+                columnSpan = 2
+                properties.clear().also { properties.addAll(listOf(
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_RADIAL_TOP
+                            image = IMG_RADIAL_UP
+                        },
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_RADIAL_END
+                            image = IMG_RADIAL_RIGHT
+                        },
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_RADIAL_BOTTOM
+                            image = IMG_RADIAL_DOWN
+                        },
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_RADIAL_START
+                            image = IMG_RADIAL_LEFT
+                        },
+                    Properties()
+                        .apply {
+                            bgStyle = BgStyle.BG_RADIAL_CENTER
+                        }
+                )) }
+                commands.clear().also { commands.addAll(listOf(Command(), Command(), Command(), Command(), Command())) }
+            }
+        }
     }
 
     fun toFirebaseObject() : Map<String, Any?> {
@@ -79,6 +221,7 @@ class Button(typeTemp: Type) {
 
         enum class Type {
             BASIC,
+            STYLE_BTN_NO_MARGIN,
             STYLE_BTN_INCREMENTER_VERTICAL,
             STYLE_SPACE,
             STYLE_BTN_RADIAL,

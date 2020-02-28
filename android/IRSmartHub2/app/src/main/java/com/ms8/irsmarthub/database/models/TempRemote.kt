@@ -2,9 +2,11 @@ package com.ms8.irsmarthub.database.models
 
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.ObservableArrayList
+import androidx.databinding.ObservableArrayMap
 import androidx.databinding.ObservableField
 import com.ms8.irsmarthub.remote_control.button.models.Button
 import com.ms8.irsmarthub.remote_control.remote.models.Remote
+import com.ms8.irsmarthub.remote_control.remote.models.RemotePermissions
 import com.ms8.irsmarthub.utils.MyValidators.MAX_REMOTE_NAME_LENGTH
 import com.ms8.irsmarthub.utils.NoSpecialCharacterAllowSpaceAndUnderscoreRule
 import com.ms8.irsmarthub.utils.showInvalidRemoteNameFlashbar

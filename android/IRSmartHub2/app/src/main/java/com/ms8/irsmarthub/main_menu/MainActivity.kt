@@ -82,7 +82,6 @@ class MainActivity : AppCompatActivity(), ViewPager.OnPageChangeListener, View.O
     ----------------------------------------------
     */
     private val remoteFragment = RemoteFragment()
-    private val allRemotesFragment = MyRemotesFragment()
     private lateinit var pagerAdapter: MainMenuAdapter
     private fun setupPagerAdapter(pagerState: MainMenuAdapter.Companion.State) {
         pagerAdapter = MainMenuAdapter(
@@ -147,11 +146,15 @@ class MainActivity : AppCompatActivity(), ViewPager.OnPageChangeListener, View.O
     override fun onResume() {
         super.onResume()
         tempData.tempRemote.inEditMode.addOnPropertyChangedCallback(editModeChangedListener)
+        tempData.tempRemote.uid.addOnPropertyChangedCallback(remoteChangeListener)
+        tempData.tempRemote.name.addOnPropertyChangedCallback(remoteChangeListener)
     }
 
     override fun onPause() {
         super.onPause()
         tempData.tempRemote.inEditMode.removeOnPropertyChangedCallback(editModeChangedListener)
+        tempData.tempRemote.uid.removeOnPropertyChangedCallback(remoteChangeListener)
+        tempData.tempRemote.name.removeOnPropertyChangedCallback(remoteChangeListener)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -362,6 +365,19 @@ class MainActivity : AppCompatActivity(), ViewPager.OnPageChangeListener, View.O
                 changeLayoutState(LayoutState.REMOTES_FAV_EDITING, true)
             } else if (pagerAdapter.getLayoutState() == LayoutState.REMOTES_FAV_EDITING && !inEditMode) {
                 changeLayoutState(LayoutState.REMOTES_FAV, true)
+            }
+        }
+    }
+
+    private val remoteChangeListener = object : Observable.OnPropertyChangedCallback() {
+        override fun onPropertyChanged(sender: Observable?, propertyId: Int) {
+            when (pagerAdapter.getLayoutState()) {
+                LayoutState.REMOTES_FAV, LayoutState.REMOTES_FAV_EDITING ->
+                {
+                    binding.toolbar.applyLayoutState()
+                    binding.fab.applyLayoutState()
+                }
+                else -> {}
             }
         }
     }

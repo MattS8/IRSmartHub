@@ -56,6 +56,7 @@ class RemoteFragment: MainFragment() {
         binding?.remoteLayout?.apply {
             activity?.getActionBarSize()?.let { topPadding = it }
             setupAdapter(remoteAdapter)
+            Log.d("TEST", "Binding inflated!")
         }
 
         updateRemoteLayout()

@@ -1,6 +1,6 @@
 package com.ms8.irsmarthub.remote_control.remote.models
 
-import android.util.Log
+import android.util.ArrayMap
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.IgnoreExtraProperties
@@ -13,9 +13,10 @@ data class Remote(
     var owner: String = "",
     var ownerUsername: String = "",
     @get:Exclude
-    var buttons: ArrayList<Button> = ArrayList()
+    var buttons: ArrayList<Button> = ArrayList(),
+    @get:Exclude
+    var userPermissions: ArrayMap<String, RemotePermissions> = ArrayMap()
 ) {
-
     fun toFirebaseObject() : Map<String, Any?> {
         return HashMap<String, Any?>()
             .apply {
@@ -35,7 +36,6 @@ data class Remote(
         fun copyFrom(snapshot: DocumentSnapshot) : Remote? {
             val newRemote = snapshot.toObject(Remote::class.java)
                 ?: return null
-
 
             // set uid
             newRemote.uid = snapshot.id

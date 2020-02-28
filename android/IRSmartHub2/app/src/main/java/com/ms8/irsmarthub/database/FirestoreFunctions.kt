@@ -12,6 +12,7 @@ import com.ms8.irsmarthub.hub.models.Hub
 import com.ms8.irsmarthub.hub.models.HubPermissions
 import com.ms8.irsmarthub.remote_control.command.models.IrSignal
 import com.ms8.irsmarthub.remote_control.remote.models.Remote
+import com.ms8.irsmarthub.remote_control.remote.models.RemotePermissions
 import com.ms8.irsmarthub.user.models.User
 import org.jetbrains.anko.doAsync
 
@@ -53,7 +54,7 @@ object FirestoreFunctions {
                 .addOnFailureListener { e -> AppState.errorData.signInError.set(e) }
         }
 
-        fun setUser(newUser: com.ms8.irsmarthub.user.models.User) {
+        fun setUser(newUser: com.ms8.irsmarthub.user.models.User = AppState.tempData.tempUser.toUser()) {
             val uid = FirebaseAuth.getInstance().currentUser?.uid
 
             if (uid == null){
@@ -194,23 +195,22 @@ object FirestoreFunctions {
     private fun onRemoteDataSnapshot(snapshot: DocumentSnapshot?, exception: Exception?) {
         when {
             exception != null ->
-                AppState.errorData.fetchUserDataError.set(Exception("(fetchUserData - onRemoteDataSnapshot) - Snapshot listener returned error: $exception"))
+                AppState.errorData.fetchUserDataError.set(Exception("(fetchUserData - onRemoteDataSnapshot)" +
+                        " Snapshot listener returned error: $exception"))
             !snapshot!!.exists() ->
             {
-                AppState.errorData.fetchUserDataError.set(Exception("(fetchUserData - onRemoteDataSnapshot) - No remote found for uid: ${snapshot.id}"))
+                AppState.errorData.fetchUserDataError.set(Exception("(fetchUserData - onRemoteDataSnapshot)" +
+                        " No remote found for uid: ${snapshot.id}"))
                 AppState.userData.remotes.remove(snapshot.id)
             }
             else -> {
                 val remoteResult = Remote.copyFrom(snapshot)
-                if (remoteResult == null) {
-                    AppState.errorData.fetchUserDataError.set(Exception("(fetchUserData - onRemoteDataSnapshot) - Unable to convert snapshot to remote (${snapshot.data.toString()})"))
-                    return
-                }
-
-                Log.d(TAG, "TEST - (onRemoteDataSnapshot) - got remote data: ${remoteResult.name} | ${remoteResult.uid} | has ${remoteResult.buttons.size} buttons")
+                    ?: return AppState.errorData.fetchUserDataError.set(Exception("(fetchUserData - onRemoteDataSnapshot)" +
+                            " Unable to convert snapshot to remote (${snapshot.data.toString()})"))
 
                 // Add remote
                 AppState.userData.remotes[snapshot.id] = remoteResult
+
                 doAsync {
                     // Fetch missing IR signals for remote
                     remoteResult.buttons.forEach { button ->
@@ -223,7 +223,28 @@ object FirestoreFunctions {
                         }
                     }
                 }
+
+                // Fetch user's permissions
+                val uid = FirebaseAuth.getInstance().currentUser?.uid
+                    ?: return AppState.errorData.fetchUserDataError.set(Exception("(fetchUserData - onRemoteDataSnapshot) - Not signed in!"))
+                FirebaseFirestore.getInstance().collection("remotes").document(remoteResult.uid).collection("users")
+                    .document(uid).get().addOnCompleteListener { task -> onRemotePermissionsSnapshot(task, remoteResult.uid) }
             }
+        }
+    }
+
+    private fun onRemotePermissionsSnapshot(task: Task<DocumentSnapshot>, remoteUID: String) {
+        when {
+            task.isSuccessful -> {
+                val remotePermissions = RemotePermissions.copyFrom(task.result)
+                    ?: return AppState.errorData.fetchUserDataError.set(Exception("(fetchUserData - onHubPermissionsSnapshot)" +
+                            " Unable to convert snapshot to HubPermissions (${task.result?.data.toString()})"))
+
+                AppState.userData.remotes[remoteUID]?.userPermissions?.put(remotePermissions.uid, remotePermissions)
+            }
+            else ->
+                AppState.errorData.fetchUserDataError.set(Exception("(fetchUserData - onIrSignalDataSnapshot)" +
+                        " Problem fetching IR signal (${task.result?.id} failed with exception: ${task.exception})"))
         }
     }
 
@@ -232,30 +253,35 @@ object FirestoreFunctions {
             task.isSuccessful -> {
                 val irSignalResult = IrSignal.copyFrom(task.result)
                 if (irSignalResult == null) {
-                    AppState.errorData.fetchUserDataError.set(Exception("(fetchUserData - onIrSignalDataSnapshot) Unable to convert snapshot to IrSignal (${task.result?.data.toString()})"))
+                    AppState.errorData.fetchUserDataError.set(Exception("(fetchUserData - onIrSignalDataSnapshot) " +
+                            "Unable to convert snapshot to IrSignal (${task.result?.data.toString()})"))
                     return
                 }
                 AppState.userData.signals[irSignalResult.uid] = irSignalResult
             }
             else ->
-                AppState.errorData.fetchUserDataError.set(Exception("Problem fetching IR signal (${task.result?.id} failed with exception: ${task.exception})"))
+                AppState.errorData.fetchUserDataError.set(Exception("Problem fetching IR signal (${task.result?.id} failed with exception: " +
+                        "${task.exception})"))
         }
     }
 
     private fun onHubDataSnapshot(snapshot: DocumentSnapshot?, exception: Exception?) {
         when {
             exception != null ->
-                AppState.errorData.fetchUserDataError.set(Exception("(fetchUserData - onHubDataSnapshot) - Snapshot listener returned error: $exception"))
+                AppState.errorData.fetchUserDataError.set(Exception("(fetchUserData - onHubDataSnapshot)" +
+                        " Snapshot listener returned error: $exception"))
             !snapshot!!.exists() ->
             {
-                AppState.errorData.fetchUserDataError.set(Exception("fetchUserData - onHubDataSnapshot) - No hub found for uid: ${snapshot.id}"))
+                AppState.errorData.fetchUserDataError.set(Exception("fetchUserData - onHubDataSnapshot)" +
+                        " No hub found for uid: ${snapshot.id}"))
                 AppState.userData.hubs.remove(snapshot.id)
             }
             else ->
             {
                 val hubResult = Hub.fromSnapshot(snapshot)
                 if (hubResult == null) {
-                    AppState.errorData.fetchUserDataError.set(Exception("(fetchUserData - onHubDataSnapshot) - Unable to convert snapshot to Hub (${snapshot.data.toString()})"))
+                    AppState.errorData.fetchUserDataError.set(Exception("(fetchUserData - onHubDataSnapshot)" +
+                            " Unable to convert snapshot to Hub (${snapshot.data.toString()})"))
                     return
                 }
                 // Add hub
@@ -266,8 +292,8 @@ object FirestoreFunctions {
                     AppState.errorData.fetchUserDataError.set(Exception("(fetchUserData - onHubDataSnapshot) - Not signed in!"))
                     return
                 }
-                FirebaseFirestore.getInstance().collection("hubs").document(hubResult.uid).collection("users").document(uid)
-                    .get().addOnCompleteListener { task -> onHubPermissionsSnapshot(task, hubResult.uid) }
+                FirebaseFirestore.getInstance().collection("hubs").document(hubResult.uid).collection("users")
+                    .document(uid).get().addOnCompleteListener { task -> onHubPermissionsSnapshot(task, hubResult.uid) }
             }
         }
     }
@@ -280,13 +306,15 @@ object FirestoreFunctions {
             task.isSuccessful -> {
                 val hubPermissions = HubPermissions.copyFrom(task.result)
                 if (hubPermissions == null) {
-                    AppState.errorData.fetchUserDataError.set(Exception("(fetchUserData - onHubPermissionsSnapshot) - Unable to convert snapshot to HubPermissions (${task.result?.data.toString()})"))
+                    AppState.errorData.fetchUserDataError.set(Exception("(fetchUserData - onHubPermissionsSnapshot)" +
+                            " Unable to convert snapshot to HubPermissions (${task.result?.data.toString()})"))
                     return
                 }
                 AppState.userData.hubs[hubUID]?.userPermissions?.put(hubPermissions.uid, hubPermissions)
             }
             else ->
-                AppState.errorData.fetchUserDataError.set(Exception("(fetchUserData - onIrSignalDataSnapshot) - Problem fetching IR signal (${task.result?.id} failed with exception: ${task.exception})"))
+                AppState.errorData.fetchUserDataError.set(Exception("(fetchUserData - onIrSignalDataSnapshot)" +
+                        " Problem fetching IR signal (${task.result?.id} failed with exception: ${task.exception})"))
         }
     }
 

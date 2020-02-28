@@ -16,7 +16,7 @@ import com.ms8.irsmarthub.remote_control.remote.views.asymmetric_gridview.AGVRec
 import com.ms8.irsmarthub.remote_control.remote.views.asymmetric_gridview.AsymmetricItem
 import org.jetbrains.anko.textColor
 
-class RemoteLayoutAdapter: AGVRecyclerViewAdapter<RemoteLayoutAdapter.ButtonViewHolder>() {
+class RemoteLayoutAdapter2: AGVRecyclerViewAdapter<RemoteLayoutAdapter2.ButtonViewHolder>() {
     var buttons: ArrayList<Button> = ArrayList()
     set(value) {
         field = value

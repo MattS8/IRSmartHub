@@ -121,18 +121,22 @@ class RemoteButtonView(context: Context, attrs: AttributeSet) : FrameLayout(cont
             }
             BgStyle.BG_RADIAL_TOP ->
             {
+                Log.d("TEST", "binding - setting bg to RADIAL_TOP")
                 backgroundResource = R.drawable.bg_btn_rmt_radial_top_ripple
             }
             BgStyle.BG_RADIAL_END ->
             {
+                Log.d("TEST", "binding - setting bg to RADIAL_END")
                 backgroundResource = R.drawable.bg_btn_rmt_radial_end_ripple
             }
             BgStyle.BG_RADIAL_BOTTOM ->
             {
+                Log.d("TEST", "binding - setting bg to RADIAL_BOTTOM")
                 backgroundResource = R.drawable.bg_btn_rmt_radial_bottom_ripple
             }
             BgStyle.BG_RADIAL_START ->
             {
+                Log.d("TEST", "binding - setting bg to RADIAL_START")
                 backgroundResource = R.drawable.bg_btn_rmt_radial_start_ripple
             }
             BgStyle.BG_RADIAL_CENTER ->

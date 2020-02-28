@@ -60,4 +60,6 @@
     <string name="err_email_nonexistant_desc">No account with that email account was found. Try signing up instead.</string>
     <string name="username_taken_title">Username Already Taken</string>
     <string name="err_username_taken_desc">An account with that username already exists. Please select a different one  and try again.</string>
+    <string name="content_description_btn_fav_remote">Favorite this remote</string>
+    <string name="iv_edit_remote_name">Edit Name</string>
 </resources>
