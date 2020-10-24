@@ -1,0 +1,93 @@
+{
+  "project_info": {
+    "project_number": "152988922698",
+    "firebase_url": "https://ir-home-hub.firebaseio.com",
+    "project_id": "ir-home-hub",
+    "storage_bucket": "ir-home-hub.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:152988922698:android:10a2a5636f51ef46a687b3",
+        "android_client_info": {
+          "package_name": "com.ms8.irsmarthub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "152988922698-b30c8r88ckfav047c258h8ud8ut7lqdd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ms8.irsmarthub",
+            "certificate_hash": "65bd7871c8497cd4aa587b8d3ad1ac5a6f414e6d"
+          }
+        },
+        {
+          "client_id": "152988922698-c120ek4ktvgkq3gk6q4qcd6mkvm9co0h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFlXYb6aR983zkbgTybLchtiZ9rJu9FVM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "152988922698-8oq2ogokh7khth08q9h2mtodgmb6k8bg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:152988922698:android:4ee3926b4325e0de",
+        "android_client_info": {
+          "package_name": "com.ms8.smartirhub.android"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "152988922698-6rmmvm4uo967uoe0f1ull5p3h0qeaonp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ms8.smartirhub.android",
+            "certificate_hash": "65bd7871c8497cd4aa587b8d3ad1ac5a6f414e6d"
+          }
+        },
+        {
+          "client_id": "152988922698-f3djfa8m5pgtc3hped0k0k5kdq13psco.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ms8.smartirhub.android",
+            "certificate_hash": "63952de6d1662336c8080c9d4bce5b6f74653877"
+          }
+        },
+        {
+          "client_id": "152988922698-c120ek4ktvgkq3gk6q4qcd6mkvm9co0h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFlXYb6aR983zkbgTybLchtiZ9rJu9FVM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "152988922698-8oq2ogokh7khth08q9h2mtodgmb6k8bg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">IR Smart Hub</string>
+    <string name="main_actions">Main Controls</string>
+    <string name="turn_on">Turn On</string>
+    <string name="turn_off">Turn Off</string>
+    <string name="vol_up">Vol Up</string>
+    <string name="vol_down">Vol Down</string>
+    <string name="volume_actions">Volume Controls</string>
+    <string name="other_controls">Other Controls</string>
+    <string name="tv_on">TV On</string>
+    <string name="tv_off">TV Off</string>
+    <string name="mute">Mute</string>
+    <string name="toggle_mute">Toggle Mute</string>
+    <string name="tv_on_off">TV On / Off</string>
+    <string name="setup_buttons">Setup Buttons</string>
+    <string name="finish">Done</string>
+    <string name="ir_device_id">IR Device Id</string>
+    <string name="versionLabel">Version:</string>
+    <string name="app_info">App Info</string>
+
+    <string name="version">0.1.0</string>
+    <string name="tap_on_a_button_above_to_begin_the_pairing_process_with_your_ir_device">Tap on a button above to begin the pairing process with your IR device.</string>
+    <string name="extra_options">Extra Options</string>
+    <string name="capture_command">Capture Command</string>
+    <string name="pair_desc">Point your remote at the IR device and press the button your wish to pair.</string>
+    <string name="err_overflow_title">Error:  Overflow</string>
+    <string name="err_overflow_desc">Too much data was read into the IR device. The remote button may have been held down too long!</string>
+    <string name="err_timeout_title">Error: Timeout</string>
+    <string name="err_timeout_desc">The IR hub took to long to detect a signal. Please try again.</string>
+    <string name="err_unknown_title">Error: Unknown</string>
+    <string name="err_unknown_desc">An unknown error has occurred. Please try again.</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="signal_received_title">Signal Received</string>
+    <string name="save">Save</string>
+
+
+</resources>
