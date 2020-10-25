@@ -53,14 +53,17 @@ static const uint16_t FAILED_DELAY			= 150;
 static const uint16_t READ_RAW_DATA_TIMEOUT = 5000;
 
 /* ---- Global Variables ---- */
-HubAction hubAction;
-HubResult hubResult;
-FirebaseData firebaseDataSEND;
-FirebaseData firebaseDataRECV;
+	HubAction hubAction;
+	HubResult hubResult;
+	FirebaseData firebaseDataSEND;
+	FirebaseData firebaseDataRECV;
+
 
 class IRSmartHubFirebaseFunctions {
 public:
 	void connect();
+	bool sendAction();
+	bool sendResult();
 	//void setHubName(const String& name);
 
 	//void sendError(const int errCode);
@@ -76,6 +79,7 @@ public:
 	String BasePath = "";
 	String SetupPath = "";
 
+
 #ifdef IRSMARTHUB_UNIT_TESTS
 	int test_parseHubResultToJson();
 	int test_parseJsonToHubAction();
@@ -83,7 +87,8 @@ public:
 #endif
 
 private:
-	bool sendToFirebase(const String& path, FirebaseJson firebaseJson);
+	bool sendToFirebase(const String& path, FirebaseJson& firebaseJson);
+
 	//void sendRawData(const decode_results& results);
 
 	//void readRawData(uint16_t numChunks);

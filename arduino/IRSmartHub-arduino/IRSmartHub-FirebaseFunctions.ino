@@ -1,9 +1,10 @@
 #include "IRSmartHub-FirebaseFunctions.h"
 // Copyright 2019 Matthew Steinhardt
 
-/* --- Forward Declarations --- */
-void handleActionReceived(StreamData data);
+/** Forward Declarations **/
 void handleTimeout(bool timeout);
+void handleActionReceived(StreamData data);
+void runAction();
 
 /**	Connects to firebase endpoint and begins streaming. **/
 #define CON_DEBUG
@@ -26,16 +27,8 @@ void IRSmartHubFirebaseFunctions::connect()
     initializeHubResult();
 
  	// Set initial action to NONE
-
-    FirebaseJson json;
-    json.add("sender", hubAction.sender);
-    json.add("timestamp", hubAction.timestamp);
-    json.add("type", hubAction.type);
-    json.add("rawLen", hubAction.rawLen);
-    json.add("reapeat", hubAction.repeat ? 1 : 0);
-
-    bool success = sendToFirebase(ActionPath, json);
-	delay(300);
+    bool success = sendAction();
+	delay(1000);
 
 	if (!success) {
         delay(2000);
@@ -92,7 +85,6 @@ void handleActionReceived(StreamData data)
             printResult(data);
             Serial.println();
         #endif
-
         FirebaseJson *json = data.jsonObjectPtr();
         size_t len = json->iteratorBegin();
         String key, value = "";
@@ -115,9 +107,13 @@ void handleActionReceived(StreamData data)
                 Serial.println("Unexpected action response...");
                 Serial.print("TYPE: ");
                 Serial.println(type == FirebaseJson::JSON_OBJECT ? "object" : "array");
+                Serial.print("KEY: ");
+                Serial.println(key);
                 #endif
             }
         }
+
+        runAction();
 
     } else {
         #ifdef HAR_DEBUG
@@ -129,12 +125,74 @@ void handleActionReceived(StreamData data)
     }
 }
 
+#define ACTION_DEBUG
+void runAction() {
+  switch (hubAction.type)
+  {
+  case IR_ACTION_LEARN:
+    #ifdef ACTION_DEBUG
+    Serial.println();
+    Serial.println("Listening for new IR signal...");
+    #endif
+    //todo - start listening for new IR signal
+    break;
+  
+  case IR_ACTION_SEND:
+    #ifdef ACTION_DEBUG
+    Serial.println();
+    Serial.println("Sending IR signal...");
+    #endif
+    //todo - send ir signal (from rawData)
+    break;
+
+  case IR_ACTION_NONE:
+    #ifdef ACTION_DEBUG
+    Serial.println();
+    Serial.println("Doing nothing...");
+    #endif
+    break;
+
+  default:
+    #ifdef ACTION_DEBUG
+    Serial.println();
+    Serial.print("Unknown action received (TYPE = ");
+    Serial.print(hubAction.type);
+    Serial.println(")");
+    #endif
+    break;
+  }
+}
+
+bool IRSmartHubFirebaseFunctions::sendAction() {
+    FirebaseJson json;
+    json.add("sender", hubAction.sender);
+    json.add("timestamp", hubAction.timestamp);
+    json.add("type", hubAction.type);
+    json.add("rawLen", hubAction.rawLen);
+    json.add("repeat", hubAction.repeat ? 1 : 0);
+
+    return sendToFirebase(ActionPath, json);
+}
+
+bool IRSmartHubFirebaseFunctions::sendResult() {
+  FirebaseJson json;
+  json.add("resultCode", hubResult.resultCode);
+  json.add("code", hubResult.code);
+  json.add("timestamp", hubResult.timestamp);
+  json.add("encoding", hubResult.encoding);
+  json.add("rawData", hubResult.rawData);
+  json.add("rawLen", hubResult.rawLen);
+  json.add("repeat", hubResult.repeat);
+
+  return sendToFirebase(ResultPath, json);
+}
+
 /**
  *	Attempts to send the FirebaseJson object to the designated path. 
  *  Returns TRUE if the action succeeded and FALSE if there was an error.
 **/
 #define FF_DEBUG
-bool IRSmartHubFirebaseFunctions::sendToFirebase(const String& path, FirebaseJson firebaseJson)
+bool IRSmartHubFirebaseFunctions::sendToFirebase(const String& path, FirebaseJson& firebaseJson)
 {
     if (Firebase.set(firebaseDataSEND, path, firebaseJson)) {
         #ifdef FF_DEBUG
@@ -192,7 +250,7 @@ void IRSmartHubFirebaseFunctions::initializeHubResult()
 
 
 /** -------- DEBUG FUNCTION -------- **/
-
+#if defined(HAR_DEBUG)
 void printResult(StreamData &data)
 {
 
@@ -319,3 +377,4 @@ void printResult(StreamData &data)
     file.close();
   }
 }
+#endif

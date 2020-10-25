@@ -31,6 +31,6 @@
 #define OFF HIGH
 
 const String AP_NAME_BASE = "IRSmartHub-";
-const uint32_t SMART_HUB_BAUD_RATE = 115200;
+const uint32_t SMART_HUB_BAUD_RATE = 74880;
 
 #endif

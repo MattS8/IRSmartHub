@@ -21,8 +21,15 @@ void connectToWifi()
 		Serial.print(".");
 #endif // CON_WIFI_DEBUG
 		delay(300);
-		if (millis() - timeoutStart > 8000)
+		if (millis() - timeoutStart > 8000){
+			#ifdef CON_WIFI_DEBUG
+			Serial.println();
+			Serial.println("Couldn't connect to wifi... timeout.");
+			delay(1000);
+			#endif
 			ESP.restart();
+		}
+			
 	}
 #ifdef CON_WIFI_DEBUG
 	Serial.println();
@@ -85,5 +92,7 @@ void setup()
 
 void loop()
 {
-
+	#ifdef LOOP_DEBUG
+	Serial.print(".");
+	#endif
 }
