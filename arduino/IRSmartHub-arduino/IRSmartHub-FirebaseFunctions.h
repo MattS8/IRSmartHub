@@ -1,6 +1,8 @@
 #ifndef IRSMARTHUB_FIREBASE_FUNCTIONC_H
 #define IRSMARTHUB_FIREBASE_FUNCTIONC_H
 
+#define IR_FUNCTIONS_ENABLED
+
 #include "FirebaseESP8266.h"
 #include <ESP8266WiFi.h>
 #include "IRrecv.h"						// Used to send IR data from decode_results
@@ -61,13 +63,21 @@ static const uint16_t READ_RAW_DATA_TIMEOUT = 5000;
 
 class IRSmartHubFirebaseFunctions {
 public:
+	// Init Functions
 	void connect();
+
+	// Send Functions
 	bool sendAction();
 	bool sendResult();
+	bool sendError(const int errCode);
+	#ifdef IR_FUNCTIONS_ENABLED
+	bool sendRecordedSignal(const decode_results& results);
+	#endif
+
 	//void setHubName(const String& name);
 
-	//void sendError(const int errCode);
-	//void sendRecordedSignal(const decode_results& results);
+	
+	
 
 	//int maxRetries = DEFAULT_MAX_RETRIES;
 
@@ -79,24 +89,17 @@ public:
 	String BasePath = "";
 	String SetupPath = "";
 
-
-#ifdef IRSMARTHUB_UNIT_TESTS
-	int test_parseHubResultToJson();
-	int test_parseJsonToHubAction();
-	int test_parseHubActionToJson();
-#endif
-
 private:
 	bool sendToFirebase(const String& path, FirebaseJson& firebaseJson);
 
-	//void sendRawData(const decode_results& results);
-
+	#ifdef IR_FUNCTIONS_ENABLED
+	bool sendRawData(const decode_results& results);
 	//void readRawData(uint16_t numChunks);
-
-	//String resultToHexidecimal(const decode_results& result);
-	//uint16_t getCorrectedRawLength(const decode_results& results);
-
-	/*String	rawDataToString(const decode_results& results, uint16_t startPos);*/
+	String resultToHexidecimal(const decode_results& result);
+	uint16_t getCorrectedRawLength(const decode_results& results);
+	String	rawDataToString(volatile uint16_t* rawbuf, uint16_t rawLen, uint16_t startPos, bool limitToChunk);
+	static String uint64ToString(uint64_t input, uint8_t base = 10);
+	#endif
 
 	//FirebaseJson parseHubResultToJson();
 	//void parseJsonToHubAction(const String jsonStr);

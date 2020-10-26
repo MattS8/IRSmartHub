@@ -1,11 +1,12 @@
 #ifndef IRSMART_HUB_ARDUINO
 #define IRSMART_HUB_ARDUINO
 
-#define OUT
+#define FIREBASE_FUNCTIONS_ENABLED
+#define IR_FUNCTIONS_ENABLED
 
-#ifdef IRSMARTHUB_UNIT_TESTS
-#include "UnitTests.h"
-#endif
+#define OUT
+#define ON LOW
+#define OFF HIGH
 
 
 #include "FirebaseESP8266.h"
@@ -17,19 +18,13 @@
 
 
 /* ------------------------- Firebase ------------------------- */
-#include "IRSmartHub-FirebaseFunctions.h"
-
+#include "IRSmartHub-FirebaseFunctions.h"           // Contains all functionality having to do with communicating w/Firebase Realtime Database
 
 /* ------------------------ IR Functions ----------------------- */
-// Smart IR Modules
-#ifdef IR_DEBUG
-#include "IRSmartHubDebug.h"						// Debugging functions
-#endif
-//#include "ArduinoIRFunctions.h"					// Contains all functionality having to do with controlling the IR sender/receiver
+#include "IRSmartHub-IRFunctions.h"					// Contains all functionality having to do with controlling the IR sender/receiver
 
-#define ON LOW
-#define OFF HIGH
 
+// Constants
 const String AP_NAME_BASE = "IRSmartHub-";
 const uint32_t SMART_HUB_BAUD_RATE = 74880;
 

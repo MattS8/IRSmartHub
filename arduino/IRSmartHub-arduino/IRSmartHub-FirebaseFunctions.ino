@@ -163,6 +163,14 @@ void runAction() {
   }
 }
 
+/**
+ * Attempts to send a HubAction to the normal
+ * ActionPath. 
+ * 
+ * Returns TRUE if the action was successfully sent.
+ * Returns FALSE if the action failed to send.
+ * 
+**/
 bool IRSmartHubFirebaseFunctions::sendAction() {
     FirebaseJson json;
     json.add("sender", hubAction.sender);
@@ -174,6 +182,15 @@ bool IRSmartHubFirebaseFunctions::sendAction() {
     return sendToFirebase(ActionPath, json);
 }
 
+
+/**
+ * Attempts to send a HubResult to the normal
+ * ResultPath. 
+ * 
+ * Returns TRUE if the result was successfully sent.
+ * Returns FALSE if the result failed to send.
+ * 
+**/
 bool IRSmartHubFirebaseFunctions::sendResult() {
   FirebaseJson json;
   json.add("resultCode", hubResult.resultCode);
@@ -183,6 +200,29 @@ bool IRSmartHubFirebaseFunctions::sendResult() {
   json.add("rawData", hubResult.rawData);
   json.add("rawLen", hubResult.rawLen);
   json.add("repeat", hubResult.repeat);
+
+  return sendToFirebase(ResultPath, json);
+}
+
+/**
+ * Attempts to send an error HubResult. This error object
+ * can be found in the normal ResultPath. 
+ * 
+ * Returns TRUE if the error was successfully sent.
+ * Returns FALSE if the error failed to send.
+ * 
+**/
+bool IRSmartHubFirebaseFunctions::sendError(const int errCode) {
+  // Ensure hubResult doesn't contain garbage
+  initializeHubResult();
+
+  // Set only resultCode and timestamp
+  hubResult.resultCode = errCode;
+  hubResult.timestamp = String(millis());
+
+  FirebaseJson json;
+  json.add("resultCode", hubResult.resultCode);
+  json.add("timestamp", hubResult.timestamp);
 
   return sendToFirebase(ResultPath, json);
 }
@@ -247,6 +287,172 @@ void IRSmartHubFirebaseFunctions::initializeHubResult()
 	hubResult.resultCode = 0;
 	hubResult.repeat = false;
 }
+
+/** -------- IR-Related Functions -------- **/
+
+#ifdef IR_FUNCTIONS_ENABLED
+/**
+ *
+ **/
+#define SND_REC_SIG_DEBUG
+bool IRSmartHubFirebaseFunctions::sendRecordedSignal(const decode_results& results)
+{
+  // Ensure HubResult doesn't contain garbage
+	initializeHubResult();
+
+	hubResult.resultCode = RES_SEND_SIG;
+	hubResult.encoding = results.decode_type; //typeToString(results.decode_type, results.repeat);
+	hubResult.code = "0x" + resultToHexidecimal(results);
+	hubResult.timestamp = String(millis());
+	//hubResult.rawData = rawDataToString(results);
+	hubResult.rawLen = getCorrectedRawLength(results);
+
+  if (!sendResult()) {
+    #ifdef SND_REC_SIG_DEBUG
+    Serial.println();
+    Serial.println("Failed to send signal result... skipping rawData send!");
+    #endif
+
+    return false;
+  }
+
+	return sendRawData(results);
+}
+
+/**
+ *	Sends raw data in chunks of 50 words at a time. The first thing sent is
+ *	the number of chunks, followed by each chunk with its position in the
+ *	array.
+**/
+#define RAW_DATA_DEBUG
+bool IRSmartHubFirebaseFunctions::sendRawData(const decode_results& results) {
+  String path = BasePath + "/rawData";
+  int numChunks = getCorrectedChunkCount(hubResult.rawLen);
+
+  #ifdef RAW_DATA_DEBUG
+    Serial.println();
+  #endif
+
+	for (int i = 0; i < numChunks; i++) {
+		String rawDataStr = rawDataToString(results.rawbuf, results.rawlen, (i * CHUNK_SIZE) + 1, true);
+
+  #ifdef RAW_DATA_DEBUG
+		Serial.print("Sending: ");
+		Serial.println(rawDataStr);
+  #endif
+    if (!Firebase.setString(firebaseDataSEND, path + "/" + i, rawDataStr)) {
+      #ifdef RAW_DATA_DEBUG
+      Serial.println();
+      Serial.print("Failed to upload rawData (chunk ");
+      Serial.print(i+1);
+      Serial.print("/");
+      Serial.println(numChunks);
+      Serial.println("). Skipping the rest of the rawData...");
+      #endif
+
+      return false;
+    }
+	}
+
+  #ifdef RAW_DATA_DEBUG
+    Serial.println("Done!");
+  #endif
+
+  return true;
+}
+
+/**
+ *	Return the corrected length of a 'raw' format array structure after over-large values are
+ *	converted into multiple entries. (Function logic from IRutils: https://github.com/markszabo/IRremoteESP8266)
+**/
+uint16_t IRSmartHubFirebaseFunctions::getCorrectedRawLength(const decode_results& results) 
+{
+	uint16_t extended_length = results.rawlen - 1;
+	for (uint16_t i = 0; i < results.rawlen - 1; i++) 
+	{
+		uint32_t usecs = results.rawbuf[i] * kRawTick;
+		// Add two extra entries for multiple larger than UINT16_MAX it is.
+		extended_length += (usecs / (UINT16_MAX + 1)) * 2;
+	}
+
+	return extended_length;
+}
+
+String IRSmartHubFirebaseFunctions::resultToHexidecimal(const decode_results& result) {
+  String output = "";
+  output += uint64ToString(result.value, 16);
+
+  return output;
+}
+
+/**
+  *	Converts the raw data from array of uint16_t to a string.
+  * Note: Trying to convert more than CHUNK_SIZE could lead to
+  *	memory instability.
+ **/
+String IRSmartHubFirebaseFunctions::rawDataToString(volatile uint16_t* rawbuf, uint16_t rawLen, uint16_t startPos, bool limitToChunk)
+{
+	String output = "";
+	// Dump data
+
+	uint32_t usecs;
+	for (uint16_t i = startPos; i < rawLen && (i - startPos < CHUNK_SIZE || !limitToChunk); i++)
+	{
+		// If data is > UINT16_MAX, add multiple entries
+		for (usecs = rawbuf[i] * kRawTick; usecs > UINT16_MAX; usecs -= UINT16_MAX)
+		{
+			output += uint64ToString(UINT16_MAX);
+			if (i % 2)
+				output += F(", 0,  ");
+			else
+				output += F(",  0, ");
+		}
+		output += uint64ToString(usecs, 10);
+		if (i < rawLen - 1)
+			output += F(", ");						// ',' not needed on the last one
+		if (i % 2 == 0)
+			output += ' ';							// Extra if it was even.
+	}
+
+	// End declaration
+	output += F("\0");
+
+	return output;
+}
+
+/**
+  *	Gets the number of chunks needed based on the 
+  *	length of the rawData array. This function
+  *	always rounds up to ensure enough chunks are
+  *	allocated.
+ **/
+uint16_t getCorrectedChunkCount(uint16_t rawLen)
+{
+	uint16_t count = ceil(rawLen / CHUNK_SIZE);
+
+	return count * CHUNK_SIZE < rawLen ? count + 1 : count;
+}
+
+String IRSmartHubFirebaseFunctions::uint64ToString(uint64_t input, uint8_t base)
+{
+	String result = "";
+	// Check we have a base that we can actually print.
+	// i.e. [0-9A-Z] == 36
+	if (base < 2 || base > 36) base = 10;
+
+	do
+	{
+		char c = input % base;
+		input /= base;
+
+		c += c < 10 ? '0' : 'A' - 10;
+
+		result = c + result;
+	} while (input);
+
+	return result;
+}
+#endif
 
 
 /** -------- DEBUG FUNCTION -------- **/
