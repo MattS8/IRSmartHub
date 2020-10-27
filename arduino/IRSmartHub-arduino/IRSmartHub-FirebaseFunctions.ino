@@ -4,7 +4,6 @@
 /** Forward Declarations **/
 void handleTimeout(bool timeout);
 void handleActionReceived(StreamData data);
-void runAction();
 
 /**	Connects to firebase endpoint and begins streaming. **/
 #define CON_DEBUG
@@ -113,8 +112,7 @@ void handleActionReceived(StreamData data)
             }
         }
 
-        runAction();
-
+        newHubActionReceieved = true;
     } else {
         #ifdef HAR_DEBUG
             Serial.print("Stream returned non-JSON response: ");
@@ -123,44 +121,6 @@ void handleActionReceived(StreamData data)
 
         return;
     }
-}
-
-#define ACTION_DEBUG
-void runAction() {
-  switch (hubAction.type)
-  {
-  case IR_ACTION_LEARN:
-    #ifdef ACTION_DEBUG
-    Serial.println();
-    Serial.println("Listening for new IR signal...");
-    #endif
-    //todo - start listening for new IR signal
-    break;
-  
-  case IR_ACTION_SEND:
-    #ifdef ACTION_DEBUG
-    Serial.println();
-    Serial.println("Sending IR signal...");
-    #endif
-    //todo - send ir signal (from rawData)
-    break;
-
-  case IR_ACTION_NONE:
-    #ifdef ACTION_DEBUG
-    Serial.println();
-    Serial.println("Doing nothing...");
-    #endif
-    break;
-
-  default:
-    #ifdef ACTION_DEBUG
-    Serial.println();
-    Serial.print("Unknown action received (TYPE = ");
-    Serial.print(hubAction.type);
-    Serial.println(")");
-    #endif
-    break;
-  }
 }
 
 /**
@@ -228,6 +188,18 @@ bool IRSmartHubFirebaseFunctions::sendError(const int errCode) {
 }
 
 /**
+ *	Sends raw data in chunks of 50 words at a time. The first thing sent is
+ *	the number of chunks, followed by each chunk with its position in the
+ *	array.
+**/
+#define RAW_DATA_DEBUG
+bool IRSmartHubFirebaseFunctions::sendRawData(int index, String rawDataStr) {
+  String path = BasePath + "/rawData/" + index;
+
+  return Firebase.setString(firebaseDataSEND, path, rawDataStr);
+}
+
+/**
  *	Attempts to send the FirebaseJson object to the designated path. 
  *  Returns TRUE if the action succeeded and FALSE if there was an error.
 **/
@@ -288,174 +260,8 @@ void IRSmartHubFirebaseFunctions::initializeHubResult()
 	hubResult.repeat = false;
 }
 
-/** -------- IR-Related Functions -------- **/
-
-#ifdef IR_FUNCTIONS_ENABLED
-/**
- *
- **/
-#define SND_REC_SIG_DEBUG
-bool IRSmartHubFirebaseFunctions::sendRecordedSignal(const decode_results& results)
-{
-  // Ensure HubResult doesn't contain garbage
-	initializeHubResult();
-
-	hubResult.resultCode = RES_SEND_SIG;
-	hubResult.encoding = results.decode_type; //typeToString(results.decode_type, results.repeat);
-	hubResult.code = "0x" + resultToHexidecimal(results);
-	hubResult.timestamp = String(millis());
-	//hubResult.rawData = rawDataToString(results);
-	hubResult.rawLen = getCorrectedRawLength(results);
-
-  if (!sendResult()) {
-    #ifdef SND_REC_SIG_DEBUG
-    Serial.println();
-    Serial.println("Failed to send signal result... skipping rawData send!");
-    #endif
-
-    return false;
-  }
-
-	return sendRawData(results);
-}
-
-/**
- *	Sends raw data in chunks of 50 words at a time. The first thing sent is
- *	the number of chunks, followed by each chunk with its position in the
- *	array.
-**/
-#define RAW_DATA_DEBUG
-bool IRSmartHubFirebaseFunctions::sendRawData(const decode_results& results) {
-  String path = BasePath + "/rawData";
-  int numChunks = getCorrectedChunkCount(hubResult.rawLen);
-
-  #ifdef RAW_DATA_DEBUG
-    Serial.println();
-  #endif
-
-	for (int i = 0; i < numChunks; i++) {
-		String rawDataStr = rawDataToString(results.rawbuf, results.rawlen, (i * CHUNK_SIZE) + 1, true);
-
-  #ifdef RAW_DATA_DEBUG
-		Serial.print("Sending: ");
-		Serial.println(rawDataStr);
-  #endif
-    if (!Firebase.setString(firebaseDataSEND, path + "/" + i, rawDataStr)) {
-      #ifdef RAW_DATA_DEBUG
-      Serial.println();
-      Serial.print("Failed to upload rawData (chunk ");
-      Serial.print(i+1);
-      Serial.print("/");
-      Serial.println(numChunks);
-      Serial.println("). Skipping the rest of the rawData...");
-      #endif
-
-      return false;
-    }
-	}
-
-  #ifdef RAW_DATA_DEBUG
-    Serial.println("Done!");
-  #endif
-
-  return true;
-}
-
-/**
- *	Return the corrected length of a 'raw' format array structure after over-large values are
- *	converted into multiple entries. (Function logic from IRutils: https://github.com/markszabo/IRremoteESP8266)
-**/
-uint16_t IRSmartHubFirebaseFunctions::getCorrectedRawLength(const decode_results& results) 
-{
-	uint16_t extended_length = results.rawlen - 1;
-	for (uint16_t i = 0; i < results.rawlen - 1; i++) 
-	{
-		uint32_t usecs = results.rawbuf[i] * kRawTick;
-		// Add two extra entries for multiple larger than UINT16_MAX it is.
-		extended_length += (usecs / (UINT16_MAX + 1)) * 2;
-	}
-
-	return extended_length;
-}
-
-String IRSmartHubFirebaseFunctions::resultToHexidecimal(const decode_results& result) {
-  String output = "";
-  output += uint64ToString(result.value, 16);
-
-  return output;
-}
-
-/**
-  *	Converts the raw data from array of uint16_t to a string.
-  * Note: Trying to convert more than CHUNK_SIZE could lead to
-  *	memory instability.
- **/
-String IRSmartHubFirebaseFunctions::rawDataToString(volatile uint16_t* rawbuf, uint16_t rawLen, uint16_t startPos, bool limitToChunk)
-{
-	String output = "";
-	// Dump data
-
-	uint32_t usecs;
-	for (uint16_t i = startPos; i < rawLen && (i - startPos < CHUNK_SIZE || !limitToChunk); i++)
-	{
-		// If data is > UINT16_MAX, add multiple entries
-		for (usecs = rawbuf[i] * kRawTick; usecs > UINT16_MAX; usecs -= UINT16_MAX)
-		{
-			output += uint64ToString(UINT16_MAX);
-			if (i % 2)
-				output += F(", 0,  ");
-			else
-				output += F(",  0, ");
-		}
-		output += uint64ToString(usecs, 10);
-		if (i < rawLen - 1)
-			output += F(", ");						// ',' not needed on the last one
-		if (i % 2 == 0)
-			output += ' ';							// Extra if it was even.
-	}
-
-	// End declaration
-	output += F("\0");
-
-	return output;
-}
-
-/**
-  *	Gets the number of chunks needed based on the 
-  *	length of the rawData array. This function
-  *	always rounds up to ensure enough chunks are
-  *	allocated.
- **/
-uint16_t getCorrectedChunkCount(uint16_t rawLen)
-{
-	uint16_t count = ceil(rawLen / CHUNK_SIZE);
-
-	return count * CHUNK_SIZE < rawLen ? count + 1 : count;
-}
-
-String IRSmartHubFirebaseFunctions::uint64ToString(uint64_t input, uint8_t base)
-{
-	String result = "";
-	// Check we have a base that we can actually print.
-	// i.e. [0-9A-Z] == 36
-	if (base < 2 || base > 36) base = 10;
-
-	do
-	{
-		char c = input % base;
-		input /= base;
-
-		c += c < 10 ? '0' : 'A' - 10;
-
-		result = c + result;
-	} while (input);
-
-	return result;
-}
-#endif
-
-
 /** -------- DEBUG FUNCTION -------- **/
+
 #if defined(HAR_DEBUG)
 void printResult(StreamData &data)
 {

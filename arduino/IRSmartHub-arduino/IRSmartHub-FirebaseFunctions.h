@@ -1,11 +1,8 @@
 #ifndef IRSMARTHUB_FIREBASE_FUNCTIONC_H
 #define IRSMARTHUB_FIREBASE_FUNCTIONC_H
 
-#define IR_FUNCTIONS_ENABLED
-
 #include "FirebaseESP8266.h"
 #include <ESP8266WiFi.h>
-#include "IRrecv.h"						// Used to send IR data from decode_results
 
 typedef struct HubAction {
 	String sender;
@@ -30,15 +27,6 @@ static const String FIREBASE_HOST = "ir-home-hub.firebaseio.com";
 static const String FIREBASE_AUTH = "OVupEOIVjxTW1brlm02WISnExnOWRBxc9yhJVyPy";
 
 /* -------------------- 
-    Result Codes
-    -------------------- */
-static const int RES_SEND_SIG	= 700;
-static const int RES_SEND_SUCC	= 701;
-static const int ERR_UNKNOWN	= 800;
-static const int ERR_TIMEOUT	= 801;
-static const int ERR_OVERFLOW	= 802;
-
-/* -------------------- 
     Hub Actions
    -------------------- */
 static const int IR_ACTION_NONE	 = 0;
@@ -59,6 +47,7 @@ static const uint16_t READ_RAW_DATA_TIMEOUT = 5000;
 	HubResult hubResult;
 	FirebaseData firebaseDataSEND;
 	FirebaseData firebaseDataRECV;
+	bool newHubActionReceieved = false;							// Used to signal a new action was read
 
 
 class IRSmartHubFirebaseFunctions {
@@ -70,9 +59,9 @@ public:
 	bool sendAction();
 	bool sendResult();
 	bool sendError(const int errCode);
-	#ifdef IR_FUNCTIONS_ENABLED
-	bool sendRecordedSignal(const decode_results& results);
-	#endif
+	bool sendRawData(int index, String rawDataStr);
+
+	
 
 	//void setHubName(const String& name);
 
@@ -91,15 +80,6 @@ public:
 
 private:
 	bool sendToFirebase(const String& path, FirebaseJson& firebaseJson);
-
-	#ifdef IR_FUNCTIONS_ENABLED
-	bool sendRawData(const decode_results& results);
-	//void readRawData(uint16_t numChunks);
-	String resultToHexidecimal(const decode_results& result);
-	uint16_t getCorrectedRawLength(const decode_results& results);
-	String	rawDataToString(volatile uint16_t* rawbuf, uint16_t rawLen, uint16_t startPos, bool limitToChunk);
-	static String uint64ToString(uint64_t input, uint8_t base = 10);
-	#endif
 
 	//FirebaseJson parseHubResultToJson();
 	//void parseJsonToHubAction(const String jsonStr);
