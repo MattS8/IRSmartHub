@@ -9,7 +9,7 @@
 #define OFF HIGH
 
 
-#include "FirebaseESP8266.h"
+//#include "FirebaseESP8266.h"
 #include <ESP8266WiFi.h>
 
 //#include <DNSServer.h>            				// Local DNS Server used for redirecting all requests to the configuration portal
@@ -26,6 +26,6 @@
 
 // Constants
 const String AP_NAME_BASE = "IRSmartHub-";
-const uint32_t SMART_HUB_BAUD_RATE = 74880;
+const uint32_t SMART_HUB_BAUD_RATE = 115200;
 
 #endif

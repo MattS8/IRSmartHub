@@ -187,7 +187,8 @@ String IRSmartHubIRFunctions::uint64ToString(uint64_t input, uint8_t base)
 /** -------- DEBUG FUNCTIONS -------- **/
 
 #if defined(RD_NXT_SIG_DEBUG)
-void printResults(decode_results *results)
+#include "IRutils.h"
+void printResults(const decode_results *results)
 {
 	Serial.println("Human Readable Basic Info:");
 	Serial.println(resultToHumanReadableBasic(results));
