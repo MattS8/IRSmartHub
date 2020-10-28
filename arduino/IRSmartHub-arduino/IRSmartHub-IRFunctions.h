@@ -40,7 +40,7 @@ public:
 	**/
 	void readNextSignal();
 
-	void sendSignal(uint16_t* rawDataStr, uint16_t rawlen, bool bRepeat);
+	void sendSignal(uint16_t* rawData, uint16_t rawlen, bool bRepeat);
 
 	void init();
 
@@ -54,11 +54,11 @@ public:
 
 	String uint64ToString(uint64_t input, uint8_t base = 10);
 
+	uint16_t* parseRawDataString(const char* dataStr, uint16_t* rawData, uint16_t startPos);
+
 	ReadResult readResult;
 
 private:
-	uint16_t* parseRawDataString(const char* dataStr, uint16_t rawlen);
-
 	IRrecv irReceiver = IRrecv(IR_RECV_PIN, 
 							   IR_RECV_BUFFER_SIZE, 
 							   IR_RECV_MESSAGE_TIMEOUT, 

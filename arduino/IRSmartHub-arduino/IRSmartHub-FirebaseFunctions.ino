@@ -9,118 +9,134 @@ void handleActionReceived(StreamData data);
 #define CON_DEBUG
 void IRSmartHubFirebaseFunctions::connect()
 {
-	// Start firebase connection
-	Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
-    Firebase.reconnectWiFi(true);
+  // Start firebase connection
+  Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
+  Firebase.reconnectWiFi(true);
 
-    //Set the size of WiFi rx/tx buffers in the case where we want to work with large data.
-    // firebaseDataSEND.setBSSLBufferSize(1024, 1024);
-    // firebaseDataRECV.setBSSLBufferSize(1024, 1024);
+  //Set the size of WiFi rx/tx buffers in the case where we want to work with large data.
+  // firebaseDataSEND.setBSSLBufferSize(1024, 1024);
+  // firebaseDataRECV.setBSSLBufferSize(1024, 1024);
 
-    //Set the size of HTTP response buffers in the case where we want to work with large data.
-    // firebaseDataSEND.setResponseSize(1024);
-    // firebaseDataRECV.setBSSLBufferSize(1024, 1024);
+  //Set the size of HTTP response buffers in the case where we want to work with large data.
+  // firebaseDataSEND.setResponseSize(1024);
+  // firebaseDataRECV.setBSSLBufferSize(1024, 1024);
 
-	// Extra safe initialization
-	initializeHubAction();
-    initializeHubResult();
+  // Extra safe initialization
+  initializeHubAction();
+  initializeHubResult();
 
- 	// Set initial action to NONE
-    bool success = sendAction();
-	delay(1000);
+  // Set initial action to NONE
+  bool success = sendAction();
+  delay(1000);
 
-	if (!success) {
-        delay(2000);
-        ESP.reset();
-    }
+  if (!success)
+  {
+    delay(2000);
+    ESP.reset();
+  }
 
-    success = Firebase.beginStream(firebaseDataRECV, ActionPath);
-    if (!success) {
-        #ifdef CON_DEBUG
-            Serial.println("------------------------------------");
-            Serial.println("Can't begin stream connection...");
-            Serial.println("REASON: " + firebaseDataRECV.errorReason());
-            Serial.println("------------------------------------");
-            Serial.println();
-        #endif
-        delay(2000);
-        ESP.reset();
-    }
+  success = Firebase.beginStream(firebaseDataRECV, ActionPath);
+  if (!success)
+  {
+#ifdef CON_DEBUG
+    Serial.println("------------------------------------");
+    Serial.println("Can't begin stream connection...");
+    Serial.println("REASON: " + firebaseDataRECV.errorReason());
+    Serial.println("------------------------------------");
+    Serial.println();
+#endif
+    delay(2000);
+    ESP.reset();
+  }
 
-    Firebase.setStreamCallback(firebaseDataRECV, handleActionReceived, handleTimeout);
- }
-
+  Firebase.setStreamCallback(firebaseDataRECV, handleActionReceived, handleTimeout);
+}
 
 /**
  * Captures any timeout events that occur during streaming.
-**/ 
+**/
 #define TIMEOUT_DEBUG
-void handleTimeout(bool timeout) 
+void handleTimeout(bool timeout)
 {
-    #ifdef TIMEOUT_DEBUG
-        if (timeout) {
-            Serial.println();
-            Serial.println("Stream timeout, resume streaming...");
-            Serial.println();
-        }
-    #endif
-
+#ifdef TIMEOUT_DEBUG
+  if (timeout)
+  {
+    Serial.println();
+    Serial.println("Stream timeout, resume streaming...");
+    Serial.println();
+  }
+#endif
 }
 
 /**
  * Parses receieved data into an action that the hub can act on.
-**/ 
+**/
 #define HAR_DEBUG
-void handleActionReceived(StreamData data) 
+void handleActionReceived(StreamData data)
 {
-    if (data.dataType() == "json") {
-        #ifdef HAR_DEBUG
-            Serial.println("Stream data available...");
-            Serial.println("STREAM PATH: " + data.streamPath());
-            Serial.println("EVENT PATH: " + data.dataPath());
-            Serial.println("DATA TYPE: " + data.dataType());
-            Serial.println("EVENT TYPE: " + data.eventType());
-            Serial.print("VALUE: ");
-            printResult(data);
-            Serial.println();
-        #endif
-        FirebaseJson *json = data.jsonObjectPtr();
-        size_t len = json->iteratorBegin();
-        String key, value = "";
-        int type = 0;
+  if (data.dataType() == "json")
+  {
+#ifdef HAR_DEBUG
+    Serial.println("Stream data available...");
+    Serial.println("STREAM PATH: " + data.streamPath());
+    Serial.println("EVENT PATH: " + data.dataPath());
+    Serial.println("DATA TYPE: " + data.dataType());
+    Serial.println("EVENT TYPE: " + data.eventType());
+    Serial.print("VALUE: ");
+    printResult(data);
+    Serial.println();
+#endif
+    FirebaseJson *json = data.jsonObjectPtr();
+    size_t len = json->iteratorBegin();
+    String key, value = "";
+    int type = 0;
 
-        for (size_t i = 0; i < len; i++) {
-            json->iteratorGet(i, type, key, value);
-            if (key == "type") {
-                hubAction.type = value.toInt();
-            } else if (key == "rawLen") {
-                hubAction.rawLen = value.toInt();
-            } else if (key == "sender") {
-                hubAction.sender = value;
-            } else if (key == "timestamp") {
-                hubAction.timestamp = value;
-            } else if (key == "repeat") {
-                hubAction.repeat = value.toInt();
-            } else {
-                #ifdef HAR_DEBUG
-                Serial.println("Unexpected action response...");
-                Serial.print("TYPE: ");
-                Serial.println(type == FirebaseJson::JSON_OBJECT ? "object" : "array");
-                Serial.print("KEY: ");
-                Serial.println(key);
-                #endif
-            }
-        }
-
-        newHubActionReceieved = true;
-    } else {
-        #ifdef HAR_DEBUG
-            Serial.print("Stream returned non-JSON response: ");
-            Serial.println(data.dataType());
-        #endif
-
-        return;
+    for (size_t i = 0; i < len; i++)
+    {
+      json->iteratorGet(i, type, key, value);
+      if (key == "type")
+      {
+        hubAction.type = value.toInt();
+      }
+      else if (key == "rawLen")
+      {
+        hubAction.rawLen = value.toInt();
+      }
+      else if (key == "sender")
+      {
+        hubAction.sender = value;
+      }
+      else if (key == "timestamp")
+      {
+        hubAction.timestamp = value;
+      }
+      else if (key == "repeat")
+      {
+        hubAction.repeat = value.toInt();
+      }
+      else
+      {
+#ifdef HAR_DEBUG
+        Serial.println("Unexpected action response...");
+        Serial.print("TYPE: ");
+        Serial.println(type == FirebaseJson::JSON_OBJECT ? "object" : "array");
+        Serial.print("KEY: ");
+        Serial.println(key);
+#endif
+      }
     }
+
+    newHubActionReceieved = true;
+  }
+  else
+  {
+#ifdef HAR_DEBUG
+    Serial.print("Stream returned non-JSON response: ");
+    Serial.println(data.dataType());
+#endif
+
+    return;
+  }
 }
 
 /**
@@ -131,17 +147,17 @@ void handleActionReceived(StreamData data)
  * Returns FALSE if the action failed to send.
  * 
 **/
-bool IRSmartHubFirebaseFunctions::sendAction() {
-    FirebaseJson json;
-    json.add("sender", hubAction.sender);
-    json.add("timestamp", hubAction.timestamp);
-    json.add("type", hubAction.type);
-    json.add("rawLen", hubAction.rawLen);
-    json.add("repeat", hubAction.repeat ? 1 : 0);
+bool IRSmartHubFirebaseFunctions::sendAction()
+{
+  FirebaseJson json;
+  json.add("sender", hubAction.sender);
+  json.add("timestamp", hubAction.timestamp);
+  json.add("type", hubAction.type);
+  json.add("rawLen", hubAction.rawLen);
+  json.add("repeat", hubAction.repeat ? 1 : 0);
 
-    return sendToFirebase(ActionPath, json);
+  return sendToFirebase(ActionPath, json);
 }
-
 
 /**
  * Attempts to send a HubResult to the normal
@@ -151,7 +167,8 @@ bool IRSmartHubFirebaseFunctions::sendAction() {
  * Returns FALSE if the result failed to send.
  * 
 **/
-bool IRSmartHubFirebaseFunctions::sendResult() {
+bool IRSmartHubFirebaseFunctions::sendResult()
+{
   FirebaseJson json;
   json.add("resultCode", hubResult.resultCode);
   json.add("code", hubResult.code);
@@ -172,7 +189,8 @@ bool IRSmartHubFirebaseFunctions::sendResult() {
  * Returns FALSE if the error failed to send.
  * 
 **/
-bool IRSmartHubFirebaseFunctions::sendError(const int errCode) {
+bool IRSmartHubFirebaseFunctions::sendError(const int errCode)
+{
   // Ensure hubResult doesn't contain garbage
   initializeHubResult();
 
@@ -193,7 +211,8 @@ bool IRSmartHubFirebaseFunctions::sendError(const int errCode) {
  *	array.
 **/
 #define RAW_DATA_DEBUG
-bool IRSmartHubFirebaseFunctions::sendRawData(int index, String rawDataStr) {
+bool IRSmartHubFirebaseFunctions::sendRawData(int index, String rawDataStr)
+{
   String path = BasePath + "/rawData/" + index;
 
   return Firebase.setString(firebaseDataSEND, path, rawDataStr);
@@ -204,30 +223,33 @@ bool IRSmartHubFirebaseFunctions::sendRawData(int index, String rawDataStr) {
  *  Returns TRUE if the action succeeded and FALSE if there was an error.
 **/
 #define FF_DEBUG
-bool IRSmartHubFirebaseFunctions::sendToFirebase(const String& path, FirebaseJson& firebaseJson)
+bool IRSmartHubFirebaseFunctions::sendToFirebase(const String &path, FirebaseJson &firebaseJson)
 {
-    if (Firebase.set(firebaseDataSEND, path, firebaseJson)) {
-        #ifdef FF_DEBUG
-            Serial.println("------------------------------------");
-            Serial.println("Successfully sent data!");
-            Serial.println("PATH: " + firebaseDataSEND.dataPath());
-            Serial.println("TYPE: " + firebaseDataSEND.dataType());
-            Serial.println("------------------------------------");
-            Serial.println();
-        #endif
+  if (Firebase.set(firebaseDataSEND, path, firebaseJson))
+  {
+#ifdef FF_DEBUG
+    Serial.println("------------------------------------");
+    Serial.println("Successfully sent data!");
+    Serial.println("PATH: " + firebaseDataSEND.dataPath());
+    Serial.println("TYPE: " + firebaseDataSEND.dataType());
+    Serial.println("------------------------------------");
+    Serial.println();
+#endif
 
-        return true;
-    } else {
-        #ifdef FF_DEBUG
-            Serial.println("------------------------------------");
-            Serial.println("Failed to send data...");
-            Serial.println("REASON: " + firebaseDataSEND.errorReason());
-            Serial.println("------------------------------------");
-            Serial.println();
-        #endif
+    return true;
+  }
+  else
+  {
+#ifdef FF_DEBUG
+    Serial.println("------------------------------------");
+    Serial.println("Failed to send data...");
+    Serial.println("REASON: " + firebaseDataSEND.errorReason());
+    Serial.println("------------------------------------");
+    Serial.println();
+#endif
 
-        return false;
-    }
+    return false;
+  }
 }
 
 /**
@@ -235,15 +257,15 @@ bool IRSmartHubFirebaseFunctions::sendToFirebase(const String& path, FirebaseJso
  **/
 void IRSmartHubFirebaseFunctions::initializeHubAction()
 {
-	if (hubAction.rawData != NULL)
-		free(hubAction.rawData);
+  if (hubAction.rawData != NULL)
+    free(hubAction.rawData);
 
-	hubAction.type = 0;
-	hubAction.rawData = NULL;
-	hubAction.rawLen = 0;
-	hubAction.sender = "_none_";
-	hubAction.timestamp = "_none_";
-	hubAction.repeat = false;
+  hubAction.type = 0;
+  hubAction.rawData = NULL;
+  hubAction.rawLen = 0;
+  hubAction.sender = "_none_";
+  hubAction.timestamp = "_none_";
+  hubAction.repeat = false;
 }
 
 /**
@@ -251,13 +273,13 @@ void IRSmartHubFirebaseFunctions::initializeHubAction()
  **/
 void IRSmartHubFirebaseFunctions::initializeHubResult()
 {
-	hubResult.code = "_none_";
-	hubResult.encoding = 0;
-	hubResult.rawData = "_none_";
-	hubResult.rawLen = 0;
-	hubResult.timestamp = "_none_";
-	hubResult.resultCode = 0;
-	hubResult.repeat = false;
+  hubResult.code = "_none_";
+  hubResult.encoding = 0;
+  hubResult.rawData = "_none_";
+  hubResult.rawLen = 0;
+  hubResult.timestamp = "_none_";
+  hubResult.resultCode = 0;
+  hubResult.repeat = false;
 }
 
 /** -------- DEBUG FUNCTION -------- **/

@@ -61,12 +61,11 @@ public:
 	bool sendError(const int errCode);
 	bool sendRawData(int index, String rawDataStr);
 
-	
+	// Initialization functions for action/result objects
+	void initializeHubAction();
+	void initializeHubResult();
 
 	//void setHubName(const String& name);
-
-	
-	
 
 	//int maxRetries = DEFAULT_MAX_RETRIES;
 
@@ -80,14 +79,14 @@ public:
 
 private:
 	bool sendToFirebase(const String& path, FirebaseJson& firebaseJson);
+	
 
 	//FirebaseJson parseHubResultToJson();
 	//void parseJsonToHubAction(const String jsonStr);
 	//void getNextWord(const char* &startWord, const char* &endWord, int& startWordPos, int& endWordPos);
 	//void getNextNumber(const char* &startWord, const char*& endWord, int& startWordPos, int& endWordPos);
 
-	void initializeHubAction();
-	void initializeHubResult();
+
 };
 
 #endif

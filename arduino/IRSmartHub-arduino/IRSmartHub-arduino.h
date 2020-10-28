@@ -1,16 +1,22 @@
 #ifndef IRSMART_HUB_ARDUINO
 #define IRSMART_HUB_ARDUINO
 
-#define FIREBASE_FUNCTIONS_ENABLED
-#define IR_FUNCTIONS_ENABLED
+/* 
+    ------------------------------------------------------------------ 
+    Enable / Disable modules by commenting/uncommenting these #defines 
+    ------------------------------------------------------------------ 
+*/
+#define FIREBASE_FUNCTIONS_ENABLED                  // Enable Firebase functionality
+#define IR_FUNCTIONS_ENABLED                        // Enable IR send/receive functionality
 
+/* ------------------------------------------------------------------  */
+
+// Generic #defines
 #define OUT
 #define ON LOW
 #define OFF HIGH
 
-
-//#include "FirebaseESP8266.h"
-#include <ESP8266WiFi.h>
+#include <ESP8266WiFi.h>                            // Needed to connect to wifi
 
 //#include <DNSServer.h>            				// Local DNS Server used for redirecting all requests to the configuration portal
 //#include <ESP8266WebServer.h>     				// Local WebServer used to serve the configuration portal
@@ -18,10 +24,14 @@
 
 
 /* ------------------------- Firebase ------------------------- */
+#ifdef FIREBASE_FUNCTIONS_ENABLED
 #include "IRSmartHub-FirebaseFunctions.h"           // Contains all functionality having to do with communicating w/Firebase Realtime Database
+#endif
 
 /* ------------------------ IR Functions ----------------------- */
+#ifdef IR_FUNCTIONS_ENABLED
 #include "IRSmartHub-IRFunctions.h"					// Contains all functionality having to do with controlling the IR sender/receiver
+#endif
 
 
 // Constants

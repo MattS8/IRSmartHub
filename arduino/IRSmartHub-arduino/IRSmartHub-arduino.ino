@@ -93,8 +93,10 @@ void setup()
 	// Turn onboard LED off
 	digitalWrite(LED_BUILTIN, OFF);
 
-	// 	// Start connection to firebase process
+// 	// Start connection to firebase process
+#ifdef FIREBASE_FUNCTIONS_ENABLED
 	FirebaseFunctions.connect();
+#endif
 }
 
 void loop()
@@ -103,10 +105,13 @@ void loop()
 	Serial.print(".");
 #endif
 
+#ifdef FIREBASE_FUNCTIONS_ENABLED
 	if (newHubActionReceieved)
 		runAction();
+#endif
 }
 
+#ifdef FIREBASE_FUNCTIONS_ENABLED
 #define ACTION_DEBUG
 void runAction()
 {
@@ -116,19 +121,23 @@ void runAction()
 	switch (hubAction.type)
 	{
 	case IR_ACTION_LEARN:
-#ifdef ACTION_DEBUG
-		Serial.println();
-		Serial.println("Listening for new IR signal...");
-#endif
+#ifdef IR_FUNCTIONS_ENABLED
 		learnSignal();
+#else
+		Serial.println("\n--------\nWarning: IR Functionality Disabled. No signal will be learned!\n--------");
+#endif
+		// Clear hub action on backend to prevent repeated action
+		FirebaseFunctions.initializeHubAction();
+		FirebaseFunctions.sendAction();
 		break;
 
 	case IR_ACTION_SEND:
-#ifdef ACTION_DEBUG
-		Serial.println();
-		Serial.println("Sending IR signal...");
+#ifdef IR_FUNCTIONS_ENABLED
+		if (readRawData(IRFunctions.getCorrectedChunkCount(hubAction.rawLen)))
+			IRFunctions.sendSignal(hubAction.rawData, hubAction.rawLen, hubAction.repeat);
+#else
+		Serial.println("\n--------\nWarning: IR Functionality Disabled. Can't send IR signal to IR blaster!\n--------");
 #endif
-		//todo - send ir signal (from rawData)
 		break;
 
 	case IR_ACTION_NONE:
@@ -148,6 +157,106 @@ void runAction()
 		break;
 	}
 }
+
+/**
+ *	Begins reading raw data chunks until all raw data has been
+ *	received or a timeout occurs. On successful completetion,
+ *	a RES_SEND_SUCC result is sent. On timeout, an ERR_TIMEOUT
+ *	result is sent. 
+ *	The resulting raw data is written into hubAction.rawData.
+ * 
+ *	Note: This function assumes hubAction has been initialized
+ *	prior to calling.
+**/
+#define RRD_DEBUG
+#ifdef IR_FUNCTIONS_ENABLED
+bool readRawData(uint16_t numChunks)
+{
+	int chunksReceived = 0;
+	long unsigned startTime = millis();
+	String chunk;
+	String path = FirebaseFunctions.BasePath + "/rawData/" + chunksReceived;
+	uint16_t *marker;
+
+#ifdef RRD_DEBUG
+	if (hubAction.rawData != NULL)
+	{
+		Serial.println("WARNING: rawData was not NULL at start of readRawData()...");
+	}
+#endif
+
+	// Allocate memory for rawData array
+	hubAction.rawData = (uint16_t *)calloc(hubAction.rawLen, sizeof(uint16_t));
+	marker = hubAction.rawData;
+
+#ifdef RRD_DEBUG
+	Serial.print("Reading in ");
+	Serial.print(numChunks);
+	Serial.println(" chunks...");
+#endif
+
+	while (chunksReceived < numChunks && millis() - startTime < READ_RAW_DATA_TIMEOUT)
+	{
+		// Read chunks
+		if (Firebase.getString(firebaseDataRECV, path, chunk))
+		{
+			marker = IRFunctions.parseRawDataString(chunk.c_str(), hubAction.rawData, chunksReceived * CHUNK_SIZE);
+			path = FirebaseFunctions.BasePath + "/rawData/" + ++chunksReceived;
+		}
+		else
+		{
+#ifdef RRD_DEBUG
+			Serial.print("ERROR: Failed to read rawData string at ");
+			Serial.println(chunksReceived);
+#endif
+		}
+	}
+
+#ifdef RRD_DEBUG
+	for (int i = 0; i < numChunks; i++)
+	{
+		Serial.print("rawData[");
+		Serial.print(i);
+		Serial.print("]: ");
+		Serial.println(IRFunctions.rawDataToString(hubAction.rawData, hubAction.rawLen, i * CHUNK_SIZE, true));
+	}
+#endif
+
+	// Send err if chunksReceived != numChunks
+	if (chunksReceived != numChunks)
+	{
+#ifdef RRD_DEBUG
+		Serial.println("Didn't received all the chunks in alloted time.");
+#endif
+		FirebaseFunctions.sendError(ERR_TIMEOUT);
+		return false;
+	}
+	else
+	// Otherwise send success result
+	{
+		FirebaseFunctions.initializeHubResult();
+		hubResult.resultCode = RES_SEND_SUCC;
+		hubResult.timestamp = String(millis());
+		if (!FirebaseFunctions.sendResult())
+		{
+#ifdef RRD_DEBUG
+			Serial.println("ERROR: Failed to send succes result!");
+#endif
+		}
+
+		if (!Firebase.setString(firebaseDataSEND, FirebaseFunctions.BasePath + "/rawData", "_none_"))
+		{
+#ifdef RRD_DEBUG
+			Serial.println("ERROR: Failed to clear rawData endpoint!");
+#endif
+		}
+#ifdef RRD_DEBUG
+		Serial.println("Successfully read all raw data.");
+#endif
+		return true;
+	}
+}
+#endif // IR_FUNCTIONS_ENABLED
 
 /**
  * Tells the IR receiver to listen for an IR signal. Once a signal is read,
@@ -170,7 +279,7 @@ void learnSignal()
 		break;
 	case RES_SEND_SIG:
 		// Ensure HubResult doesn't contain garbage
-		//FirebaseFunctions.initializeHubResult();
+		FirebaseFunctions.initializeHubResult();
 
 		hubResult.resultCode = RES_SEND_SIG;
 		hubResult.encoding = IRFunctions.readResult.results.decode_type; //typeToString(results.decode_type, results.repeat);
@@ -235,3 +344,4 @@ void sendAllRawData()
 	Serial.println("Done!");
 #endif
 }
+#endif // FIREBASE_FUNCTIONS_ENABLED
