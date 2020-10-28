@@ -135,6 +135,9 @@ void runAction()
 #ifdef IR_FUNCTIONS_ENABLED
 		if (readRawData(IRFunctions.getCorrectedChunkCount(hubAction.rawLen)))
 			IRFunctions.sendSignal(hubAction.rawData, hubAction.rawLen, hubAction.repeat);
+		// Clear hub action on backend to prevent repeated action
+		FirebaseFunctions.initializeHubAction();
+		FirebaseFunctions.sendAction();
 #else
 		Serial.println("\n--------\nWarning: IR Functionality Disabled. Can't send IR signal to IR blaster!\n--------");
 #endif
