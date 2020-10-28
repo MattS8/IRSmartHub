@@ -3,6 +3,28 @@
 /**
  *
  **/
+
+#define IR_INIT_DEBUG
+void IRSmartHubIRFunctions::init() 
+{
+	irSender.begin();
+	#ifdef IR_INIT_DEBUG
+	Serial.println("IR functions initialized.");
+	#endif
+}
+
+#define SND_SIG_DEBUG
+void IRSmartHubIRFunctions::sendSignal(uint16_t* rawData, uint16_t rawLen, bool bRepeat)
+{
+	#ifdef SND_SIG_DEBUG
+	Serial.println("Sending IR signal...");
+	#endif
+
+	irSender.sendRaw(rawData, rawLen, SEND_FREQUENCY);
+
+	digitalWrite(IR_BLAST_PIN, ON);
+}
+
 #define RD_NXT_SIG_DEBUG
 void IRSmartHubIRFunctions::readNextSignal()
 {
@@ -98,6 +120,62 @@ String IRSmartHubIRFunctions::resultToHexidecimal(const decode_results& result) 
 
   return output;
 }
+
+/**
+  *	Converts a string of numbers into an array of numbers and places
+  *	the array into rawData. Returns a pointer to the next open spot
+  * in rawData array. 
+  *
+  *	Note: This function assumes there is enough memory allocated to
+  *	rawData to hold the amount of numbers found in dataStr.
+ **/
+#define PARSE_RD_DEBUG
+uint16_t* IRSmartHubIRFunctions::parseRawDataString(const char* dataStr, uint16_t* rawData, uint16_t startPos)
+{
+  // Next free position in rawData array
+  uint16_t rawDataPos = startPos;
+
+  // Points to next char to parse
+  char* pointer = (char*)dataStr;
+
+  #ifdef PARSE_RD_DEBUG
+  Serial.print("Parsing: ");
+  Serial.println(dataStr);
+  #endif
+
+  // Continue parsing until reach end of dataStr array
+  while (*pointer != '\0')
+  {
+    // Skip values that aren't numbers
+    if (*pointer < '0' || *pointer > '9')
+    {
+      pointer++;
+      continue;
+    }
+
+  #ifdef PARSE_RD_DEBUG
+    Serial.print("Setting rawData["); 
+    Serial.print(rawDataPos);
+    Serial.print("] = ");
+    //Serial.println(strtol(pointer, &pointer, 10));
+  #endif
+
+    // Set number in array
+    rawData[rawDataPos++] = strtol(pointer, &pointer, 10);
+
+  #ifdef PARSE_RD_DEBUG
+    Serial.println(rawData[rawDataPos - 1]);
+  #endif
+  }
+
+  #ifdef PARSE_RD_DEBUG
+  Serial.println("");
+  #endif
+
+  // Return next spot in rawData array
+  return rawData + rawDataPos;
+}
+
 
 /**
   *	Converts the raw data from array of uint16_t to a string.
